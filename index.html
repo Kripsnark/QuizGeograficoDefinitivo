@@ -526,7 +526,7 @@
         </div>
     </div>
     
-    <div id="version-badge">v1.8.5</div>
+    <div id="version-badge">v1.9.0</div>
 
     <div id="modal-overlay">
         <div id="modal-content">
@@ -1320,6 +1320,18 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             return "in <strong>" + a + "</strong>";
         }
         
+        function getPreposizioneAreaNegativa(area, num) {
+            if (!area) return "";
+            const a = area.toUpperCase();
+            const verbo = num === 1 ? "si trovi" : "si trovino";
+            
+            if (a === "CARAIBI" || a === "PAESI BALTICI") return "che <span class=\"negative-constraint\">NON</span> " + verbo + " nei <strong>" + a + "</strong>";
+            if (a === "MEDITERRANEO") return "che <span class=\"negative-constraint\">NON</span> " + verbo + " sul <strong>" + a + "</strong>";
+            if (a === "MEDIO ORIENTE" || a === "SUD-EST ASIATICO" || a === "AFRICA SETTENTRIONALE" || a === "AFRICA MERIDIONALE" || a === "GOLFO DI GUINEA" || a === "SUBCONTINENTE INDIANO") return "che <span class=\"negative-constraint\">NON</span> " + verbo + " nel <strong>" + a + "</strong>";
+            if (a === "PENISOLA BALCANICA" || a === "PENISOLA ARABICA" || a === "PENISOLA INDOCINESE" || a === "REGIONE ANDINA" || a === "AMAZZONIA") return "che <span class=\"negative-constraint\">NON</span> " + verbo + " nella <strong>" + a + "</strong>";
+            return "che <span class=\"negative-constraint\">NON</span> " + verbo + " in <strong>" + a + "</strong>";
+        }
+        
         function calcolaPuntiDomandaL1_3(format, numSoluzioni) {
             if (format === 10) return 90; 
             if (format === 0 || format === 1 || format === 9) return 50;
@@ -1534,43 +1546,48 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                     }
                 }
 
+                let finalQ = "";
+
                 switch(format) {
                     case 0:
                         if (num === 1) {
-                            return td.isComboInception 
+                            finalQ = td.isComboInception 
                                 ? `Nomina 1 ${cS} di uno <strong>STATO INDIPENDENTE</strong> che confina via terra con la nazione <strong>${td.targetNode.nome.toUpperCase()}</strong>.` 
                                 : `Qual è la ${cS} della nazione <strong>${td.targetNode.nome.toUpperCase()}</strong>?`;
                         } else {
-                            return td.isComboInception 
+                            finalQ = td.isComboInception 
                                 ? `Nomina ${cS_p} di altrettanti <strong>STATI INDIPENDENTI</strong> che confinano via terra con la nazione <strong>${td.targetNode.nome.toUpperCase()}</strong>.` 
                                 : "";
                         }
+                        break;
                     
                     case 1:
                         if (num === 1) {
-                            return td.isComboInception 
+                            finalQ = td.isComboInception 
                                 ? `Nomina 1 ${nI} che confina via terra con lo Stato la cui capitale è <strong>${td.targetNode.capitale.toUpperCase()}</strong>.` 
                                 : `Di quale ${sT} è capitale la città di <strong>${td.targetNode.capitale.toUpperCase()}</strong>?`;
                         } else {
-                            return td.isComboInception 
+                            finalQ = td.isComboInception 
                                 ? `Nomina ${nI_p} che confinano via terra con lo Stato la cui capitale è <strong>${td.targetNode.capitale.toUpperCase()}</strong>.` 
                                 : "";
                         }
+                        break;
                     
                     case 2:
                         if (num === 1) {
                             if (td.f2RequiresSymbol) {
-                                return `Nomina 1 ${sT} la cui bandiera include il <strong>${td.targetNode.colori_base[0].toUpperCase()}</strong> tra i colori di base e raffigura l'elemento grafico <strong>${td.f2RequiresSymbol.toUpperCase()}</strong>.`;
+                                finalQ = `Nomina 1 ${sT} la cui bandiera include il <strong>${td.targetNode.colori_base[0].toUpperCase()}</strong> tra i colori di base e raffigura l'elemento grafico <strong>${td.f2RequiresSymbol.toUpperCase()}</strong>.`;
                             } else {
-                                return `Nomina 1 ${sT} la cui bandiera ha come UNICI colori di base <strong>${td.targetNode.colori_base.join(', ').toUpperCase()}</strong>.`;
+                                finalQ = `Nomina 1 ${sT} la cui bandiera ha come UNICI colori di base <strong>${td.targetNode.colori_base.join(', ').toUpperCase()}</strong>.`;
                             }
                         } else {
                             if (td.f2RequiresSymbol) {
-                                return `Nomina ${sT_p} le cui bandiere includono il <strong>${td.targetNode.colori_base[0].toUpperCase()}</strong> tra i colori di base e raffigurano l'elemento grafico <strong>${td.f2RequiresSymbol.toUpperCase()}</strong>.`;
+                                finalQ = `Nomina ${sT_p} le cui bandiere includono il <strong>${td.targetNode.colori_base[0].toUpperCase()}</strong> tra i colori di base e raffigurano l'elemento grafico <strong>${td.f2RequiresSymbol.toUpperCase()}</strong>.`;
                             } else {
-                                return `Nomina ${sT_p} le cui bandiere hanno come UNICI colori di base <strong>${td.targetNode.colori_base.join(', ').toUpperCase()}</strong>.`;
+                                finalQ = `Nomina ${sT_p} le cui bandiere hanno come UNICI colori di base <strong>${td.targetNode.colori_base.join(', ').toUpperCase()}</strong>.`;
                             }
                         }
+                        break;
                     
                     case 3:
                         if (num === 1) {
@@ -1582,7 +1599,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                             if (td.isColoreEmblema) bT += `raffigura un elemento grafico di colore <strong>${td.elemScelto.toUpperCase()}</strong>`;
                             else bT += `raffigura l'elemento grafico <strong>${td.elemScelto.toUpperCase()}</strong>`;
                             if (td.negColor) bT += ` ma <span class="negative-constraint">NON</span> contiene il colore <strong>${td.negColor.toUpperCase()}</strong>`;
-                            return bT + ".";
+                            finalQ = bT + ".";
                         } else {
                             let bT = `Nomina ${sT_p}`;
                             if (td.reqArea) bT += ` ${areaP}`;
@@ -1592,51 +1609,53 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                             if (td.isColoreEmblema) bT += `raffigurano un elemento grafico di colore <strong>${td.elemScelto.toUpperCase()}</strong>`;
                             else bT += `raffigurano l'elemento grafico <strong>${td.elemScelto.toUpperCase()}</strong>`;
                             if (td.negColor) bT += ` ma <span class="negative-constraint">NON</span> contengono il colore <strong>${td.negColor.toUpperCase()}</strong>`;
-                            return bT + ".";
+                            finalQ = bT + ".";
                         }
+                        break;
                     
                     case 4:
-                        if (num === 1) {
-                            let f4t = `Nomina 1 ${nI} che confina via terra SIA con <strong>${td.reqConf1.toUpperCase()}</strong> SIA con <strong>${td.reqConf2.toUpperCase()}</strong>`;
-                            if (td.negBorder) f4t += ` ma <span class="negative-constraint">NON</span> con <strong>${td.negBorder.toUpperCase()}</strong>`;
-                            return f4t + ".";
-                        } else {
-                            let f4t = `Nomina ${nI_p} che confinano via terra SIA con <strong>${td.reqConf1.toUpperCase()}</strong> SIA con <strong>${td.reqConf2.toUpperCase()}</strong>`;
-                            if (td.negBorder) f4t += ` ma <span class="negative-constraint">NON</span> con <strong>${td.negBorder.toUpperCase()}</strong>`;
-                            return f4t + ".";
+                        let f4t = (num === 1) ? `Nomina 1 ${nI} che confina via terra SIA con <strong>${td.reqConf1.toUpperCase()}</strong> SIA con <strong>${td.reqConf2.toUpperCase()}</strong>` : `Nomina ${nI_p} che confinano via terra SIA con <strong>${td.reqConf1.toUpperCase()}</strong> SIA con <strong>${td.reqConf2.toUpperCase()}</strong>`;
+                        if (td.negBorders && td.negBorders.length > 0) {
+                            let negB = td.negBorders.map(b => `<strong>${b.toUpperCase()}</strong>`);
+                            if (negB.length === 1) f4t += ` ma <span class="negative-constraint">NON</span> con ${negB[0]}`;
+                            else f4t += ` ma <span class="negative-constraint">NON</span> con ${negB.join(" e <span class=\"negative-constraint\">NON</span> con ")}`;
                         }
+                        finalQ = f4t + ".";
+                        break;
                     
                     case 5:
                         if (num === 1) {
                             let t5 = `Nomina 1 ${nI}`;
                             if (td.reqArea) t5 += ` ${areaP}`;
                             t5 += ` che confina via terra con ESATTAMENTE <strong>${td.targetNode.confini.length}</strong> stati.`;
-                            return t5;
+                            finalQ = t5;
                         } else {
                             let t5 = `Nomina ${nI_p}`;
                             if (td.reqArea) t5 += ` ${areaP}`;
                             t5 += ` che confinano via terra con ESATTAMENTE <strong>${td.targetNode.confini.length}</strong> stati.`;
-                            return t5;
+                            finalQ = t5;
                         }
+                        break;
                     
                     case 6:
                         if (num === 1) {
-                            if (td.varEnigmistica === 0) return `Nomina 1 ${cS} ${areaP} che inizia con la lettera <strong>${td.reqCapInit.toUpperCase()}</strong>.`;
-                            if (td.varEnigmistica === 1) return `Nomina 1 ${cS} ${areaP} che finisce con la lettera <strong>${td.reqCapFin.toUpperCase()}</strong>.`;
-                            if (td.varEnigmistica === 2) return `Nomina 1 ${cS} ${areaP} che inizia per <strong>${td.reqCapInit.toUpperCase()}</strong> e finisce per <strong>${td.reqCapFin.toUpperCase()}</strong>.`;
+                            if (td.varEnigmistica === 0) finalQ = `Nomina 1 ${cS} ${areaP} che inizia con la lettera <strong>${td.reqCapInit.toUpperCase()}</strong>.`;
+                            if (td.varEnigmistica === 1) finalQ = `Nomina 1 ${cS} ${areaP} che finisce con la lettera <strong>${td.reqCapFin.toUpperCase()}</strong>.`;
+                            if (td.varEnigmistica === 2) finalQ = `Nomina 1 ${cS} ${areaP} che inizia per <strong>${td.reqCapInit.toUpperCase()}</strong> e finisce per <strong>${td.reqCapFin.toUpperCase()}</strong>.`;
                         } else {
-                            if (td.varEnigmistica === 0) return `Nomina ${cS_p} ${areaP} che iniziano con la lettera <strong>${td.reqCapInit.toUpperCase()}</strong>.`;
-                            if (td.varEnigmistica === 1) return `Nomina ${cS_p} ${areaP} che finiscono con la lettera <strong>${td.reqCapFin.toUpperCase()}</strong>.`;
-                            if (td.varEnigmistica === 2) return `Nomina ${cS_p} ${areaP} che iniziano per <strong>${td.reqCapInit.toUpperCase()}</strong> e finiscono per <strong>${td.reqCapFin.toUpperCase()}</strong>.`;
+                            if (td.varEnigmistica === 0) finalQ = `Nomina ${cS_p} ${areaP} che iniziano con la lettera <strong>${td.reqCapInit.toUpperCase()}</strong>.`;
+                            if (td.varEnigmistica === 1) finalQ = `Nomina ${cS_p} ${areaP} che finiscono con la lettera <strong>${td.reqCapFin.toUpperCase()}</strong>.`;
+                            if (td.varEnigmistica === 2) finalQ = `Nomina ${cS_p} ${areaP} che iniziano per <strong>${td.reqCapInit.toUpperCase()}</strong> e finiscono per <strong>${td.reqCapFin.toUpperCase()}</strong>.`;
                         }
                         break;
                     
                    case 7:
                         if (num === 1) {
-                            return `Nomina 1 ${nI} che confina via terra con <strong>${td.targetNode.confini[0].toUpperCase()}</strong>.`;
+                            finalQ = `Nomina 1 ${nI} che confina via terra con <strong>${td.targetNode.confini[0].toUpperCase()}</strong>.`;
                         } else {
-                            return `Nomina ${nI_p} che confinano via terra con <strong>${td.targetNode.confini[0].toUpperCase()}</strong>.`;
+                            finalQ = `Nomina ${nI_p} che confinano via terra con <strong>${td.targetNode.confini[0].toUpperCase()}</strong>.`;
                         }
+                        break;
                     
                     case 8:
                         let t8 = "";
@@ -1663,29 +1682,32 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                                 t8 += `<span class="negative-constraint">NON</span> contengono il colore <strong>${td.negColor.toUpperCase()}</strong>`;
                             }
                         }
-                        return t8 + ".";
+                        finalQ = t8 + ".";
+                        break;
                     
                     case 9:
                         if (num === 1) {
-                            return td.isComboInception 
+                            finalQ = td.isComboInception 
                                 ? `Nomina 1 ${nI} che confina via terra con il Paese${cloneHint} di <strong>QUESTA BANDIERA</strong>.` 
                                 : `Di quale ${sT}${cloneHint} è questa bandiera?`;
                         } else {
-                            return td.isComboInception 
+                            finalQ = td.isComboInception 
                                 ? `Nomina ${nI_p} che confinano via terra con il Paese${cloneHint} di <strong>QUESTA BANDIERA</strong>.` 
                                 : "";
                         }
+                        break;
                     
                     case 10:
                         if (num === 1) {
-                            return td.isComboInception 
+                            finalQ = td.isComboInception 
                                 ? `Nomina 1 ${cS} di uno <strong>STATO INDIPENDENTE</strong> che confina via terra con il Paese${cloneHint} di <strong>QUESTA BANDIERA</strong>.` 
                                 : `Qual è la ${cS} di questo <strong>STATO O TERRITORIO</strong>${cloneHint}?`;
                         } else {
-                            return td.isComboInception 
+                            finalQ = td.isComboInception 
                                 ? `Nomina ${cS_p} di altrettanti <strong>STATI INDIPENDENTI</strong> che confinano via terra con il Paese${cloneHint} di <strong>QUESTA BANDIERA</strong>.` 
                                 : "";
                         }
+                        break;
                     
                     case 11:
                         let t11 = "";
@@ -1726,7 +1748,8 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                             if (td.negColor) t11 += ` ma <span class="negative-constraint">NON</span> contengono il <strong>${td.negColor.toUpperCase()}</strong>`;
                             if (td.negInit) t11 += ` e i cui nomi <span class="negative-constraint">NON</span> iniziano per la lettera <strong>${td.negInit.toUpperCase()}</strong>`;
                         }
-                        return t11 + ".";
+                        finalQ = t11 + ".";
+                        break;
 
                     case 12:
                         let t12 = "";
@@ -1755,18 +1778,53 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                             if (td.negColor) t12 += ` ma <span class="negative-constraint">NON</span> contengono il colore <strong>${td.negColor.toUpperCase()}</strong>`;
                             if (td.negInit) t12 += (td.f12AskCapital) ? ` e i cui nomi <span class="negative-constraint">NON</span> iniziano per <strong>${td.negInit.toUpperCase()}</strong>` : ` e i cui nomi <span class="negative-constraint">NON</span> iniziano per <strong>${td.negInit.toUpperCase()}</strong>`;
                         }
-                        return t12 + ".";
+                        finalQ = t12 + ".";
+                        break;
                 }
-                return "";
+                
+                // SISTEMA DI AGGANCIO DELLE NUOVE NEGAZIONI GEOGRAFICHE
+                if (![0, 1, 9, 10].includes(format)) {
+                    let punc = finalQ.slice(-1);
+                    let base = finalQ.slice(0, -1);
+                    
+                    let extraNegs = [];
+                    if (td.negGeo) {
+                        if (td.negGeo === 'isola') extraNegs.push(num === 1 ? "che <span class=\"negative-constraint\">NON</span> sia insulare" : "che <span class=\"negative-constraint\">NON</span> siano insulari");
+                        else if (td.negGeo === 'costiera') extraNegs.push(num === 1 ? "che <span class=\"negative-constraint\">NON</span> sia costiero" : "che <span class=\"negative-constraint\">NON</span> siano costieri");
+                        else if (td.negGeo === 'interna') extraNegs.push(num === 1 ? "che abbia sbocchi sul mare" : "che abbiano sbocchi sul mare");
+                    }
+                    if (td.negArea) {
+                        extraNegs.push(getPreposizioneAreaNegativa(td.negArea, num));
+                    }
+                    
+                    if (extraNegs.length > 0) {
+                        base += ", " + extraNegs.join(" e ");
+                    }
+                    return base + punc;
+                }
+                return finalQ;
             };
 
             let tempValid = getValidAnswersArray(td, currentLevel);
             
-            let allowSmartNeg = (currentLevel === 5) ? true : (currentLevel >= 2);
-            if (tempValid.length > 1 && allowSmartNeg && !td.disableSmartNeg && Math.random() < 0.35) {
+            let isMitragliatrice = (currentLevel === 4) || (currentLevel === 5 && customConfig.maxCombo > 2);
+            let isCecchino = (currentLevel === 3) || (currentLevel === 5 && customConfig.maxCombo <= 2);
+            
+            let maxNegs = 0;
+            let negProb = 0;
+            if (currentLevel === 2) { maxNegs = 1; negProb = 0.40; } 
+            else if (isCecchino || isMitragliatrice) { maxNegs = 2; negProb = 0.85; }
+            
+            td.negBorders = []; 
+            
+            let allowSmartNeg = (currentLevel >= 2);
+            
+            if (tempValid.length > 1 && allowSmartNeg && !td.disableSmartNeg && Math.random() < negProb) {
                 let possibleNegColors = new Set();
                 let possibleNegInits = new Set();
                 let possibleNegBorders = new Set();
+                let possibleNegAreas = new Set();
+                let possibleNegGeos = new Set();
 
                 let targetColors = [...td.targetNode.colori_base, ...td.targetNode.colori_emblema];
                 let targetInit = td.targetNode.nome.charAt(0).toUpperCase();
@@ -1786,9 +1844,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                 otherCountries.forEach(c => {
                     if (td.format === 3 || td.format === 8 || td.format === 11 || td.format === 12) {
                         let colsToCheck = [...c.colori_base, ...c.colori_emblema];
-                        colsToCheck.forEach(col => {
-                            if (!targetColors.includes(col)) possibleNegColors.add(col);
-                        });
+                        colsToCheck.forEach(col => { if (!targetColors.includes(col)) possibleNegColors.add(col); });
                     }
                     if (td.format === 11 || td.format === 12) {
                         let cInit = c.nome.charAt(0).toUpperCase();
@@ -1799,22 +1855,66 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                             if (b !== 'mare' && !targetBorders.includes(b) && b !== targetNameLower) possibleNegBorders.add(b);
                         });
                     }
+                    
+                    let diffAreas = c.aree.filter(a => !td.targetNode.aree.includes(a));
+                    if (diffAreas.length > 0) possibleNegAreas.add(diffAreas[Math.floor(Math.random() * diffAreas.length)]);
+                    
+                    if (!td.reqGeo && c.tipoGeo !== td.targetNode.tipoGeo) {
+                        possibleNegGeos.add(c.tipoGeo);
+                    }
                 });
 
                 let negOptions = [];
                 possibleNegColors.forEach(c => negOptions.push({type: 'color', val: c}));
                 possibleNegInits.forEach(i => negOptions.push({type: 'init', val: i}));
                 possibleNegBorders.forEach(b => negOptions.push({type: 'border', val: b}));
+                possibleNegAreas.forEach(a => negOptions.push({type: 'area', val: a}));
+                possibleNegGeos.forEach(g => negOptions.push({type: 'geo', val: g}));
 
                 if (negOptions.length > 0) {
-                    let chosen = negOptions[Math.floor(Math.random() * negOptions.length)];
-                    if (chosen.type === 'color') td.negColor = chosen.val;
-                    if (chosen.type === 'init') td.negInit = chosen.val;
-                    if (chosen.type === 'border') td.negBorder = chosen.val;
+                    negOptions.sort(() => 0.5 - Math.random());
                     
-                    td.numVariables++; 
-                    tempValid = getValidAnswersArray(td, currentLevel);
+                    let appliedNegs = 0;
+                    let usedTypes = new Set();
+                    
+                    for (let opt of negOptions) {
+                        if (appliedNegs >= maxNegs) break;
+                        if (usedTypes.has(opt.type) && opt.type !== 'border') continue;
+                        if (opt.type === 'border' && td.negBorders.length >= (currentLevel >= 3 ? 2 : 1)) continue;
+
+                        let backupVal = null;
+                        if (opt.type === 'color') { backupVal = td.negColor; td.negColor = opt.val; }
+                        else if (opt.type === 'init') { backupVal = td.negInit; td.negInit = opt.val; }
+                        else if (opt.type === 'area') { backupVal = td.negArea; td.negArea = opt.val; }
+                        else if (opt.type === 'geo') { backupVal = td.negGeo; td.negGeo = opt.val; }
+                        else if (opt.type === 'border') td.negBorders.push(opt.val);
+
+                        td.numVariables++;
+                        let testValid = getValidAnswersArray(td, currentLevel);
+                        
+                        let rollback = false;
+                        if (testValid.length === 0) rollback = true; 
+                        else if (isMitragliatrice && testValid.length < 6) rollback = true; // SCUDO SALVA-COMBO L4!
+                        
+                        if (rollback) {
+                            if (opt.type === 'color') td.negColor = backupVal;
+                            else if (opt.type === 'init') td.negInit = backupVal;
+                            else if (opt.type === 'area') td.negArea = backupVal;
+                            else if (opt.type === 'geo') td.negGeo = backupVal;
+                            else if (opt.type === 'border') td.negBorders.pop();
+                            td.numVariables--;
+                        } else {
+                            appliedNegs++;
+                            usedTypes.add(opt.type);
+                            tempValid = testValid;
+                        }
+                    }
                 }
+            }
+
+            // CONTROLLO RIGIDO MINIMO 2 VARIABILI PER L3/L4 (Solo formati deduttivi)
+            if (currentLevel >= 3 && ![0, 1, 9, 10].includes(td.format) && td.numVariables < 2) {
+                return generateQuestion(); 
             }
 
             if (tempValid.length === 0) return generateQuestion(); 
@@ -1845,11 +1945,17 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                 
                 if (td.negColor && (country.colori_base.includes(td.negColor) || country.colori_emblema.includes(td.negColor))) continue;
                 
-                if (td.negBorder) {
-                    if (country.confini.includes(td.negBorder)) continue;
+                if (td.negBorders && td.negBorders.length > 0) {
+                    let hasNegBorder = false;
                     let cNames = [country.nome.toLowerCase(), ...country.alias_paese];
-                    if (cNames.includes(td.negBorder)) continue; 
+                    for (let nb of td.negBorders) {
+                        if (country.confini.includes(nb) || cNames.includes(nb)) { hasNegBorder = true; break; }
+                    }
+                    if (hasNegBorder) continue;
                 }
+                
+                if (td.negArea && country.aree.includes(td.negArea)) continue;
+                if (td.negGeo && country.tipoGeo === td.negGeo) continue;
                 
                 if (td.negInit) {
                     if (country.nome.toLowerCase().startsWith(td.negInit.toLowerCase())) continue;
@@ -2009,11 +2115,17 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             for (let country of globalDb) {
                 if (td.negColor && (country.colori_base.includes(td.negColor) || country.colori_emblema.includes(td.negColor))) continue;
                 
-                if (td.negBorder) {
-                    if (country.confini.includes(td.negBorder)) continue;
+                if (td.negBorders && td.negBorders.length > 0) {
+                    let hasNegBorder = false;
                     let cNames = [country.nome.toLowerCase(), ...country.alias_paese];
-                    if (cNames.includes(td.negBorder)) continue; 
+                    for (let nb of td.negBorders) {
+                        if (country.confini.includes(nb) || cNames.includes(nb)) { hasNegBorder = true; break; }
+                    }
+                    if (hasNegBorder) continue;
                 }
+                
+                if (td.negArea && country.aree.includes(td.negArea)) continue;
+                if (td.negGeo && country.tipoGeo === td.negGeo) continue;
                 
                 if (td.negInit) {
                     if (country.nome.toLowerCase().startsWith(td.negInit.toLowerCase())) continue;
