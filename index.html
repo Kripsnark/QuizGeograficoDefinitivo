@@ -526,7 +526,7 @@
         </div>
     </div>
     
-    <div id="version-badge">v1.9.0</div>
+    <div id="version-badge">v1.9.1</div>
 
     <div id="modal-overlay">
         <div id="modal-content">
@@ -807,14 +807,20 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             maxCombo: 1
         };
         
-        // --- SISTEMA DI SALVATAGGIO LOCALE (LOCALSTORAGE) ---
-        let allTimeBestScore = 0;
-        let allTimeBestStreak = 0;
-        let allTimeFotofinish = 0;
-        let allTimeGrazie = 0;
-        let allTimeNazioniCount = {}; 
-        let allTimeNazioniIgnorate = {}; 
-        let allTimeBestAvgTime = 0;     
+        // --- SISTEMA DI SALVATAGGIO LOCALE (LOCALSTORAGE) E BACKUP ---
+        let allTimeBestScore = 0; let allTimeBestStreak = 0;
+        let allTimeFotofinish = 0; let allTimeGrazie = 0;
+        let allTimeNazioniCount = {}; let allTimeNazioniIgnorate = {}; 
+        let allTimeBestAvgTime = 0;
+        let globalPlays = 0;
+
+        let statsByLevel = {
+            1: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 },
+            2: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 },
+            3: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 },
+            4: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0, fotofinish: 0, grazie: 0 },
+            5: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0, fotofinish: 0, grazie: 0 }
+        };
 
         function loadStats() {
             let saved = localStorage.getItem('geoQuizStats');
@@ -825,35 +831,48 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                 allTimeFotofinish = data.fotofinish || 0;
                 allTimeGrazie = data.grazie || 0;
                 allTimeNazioniCount = data.nazioniCount || {}; 
-                // Migrazione per non farti perdere i dati vecchi "Evitate"
                 allTimeNazioniIgnorate = data.nazioniIgnorate || data.nazioniEvitate || {}; 
-                allTimeBestAvgTime = data.bestAvgTime || 0;        
+                allTimeBestAvgTime = data.bestAvgTime || 0; 
+                statsByLevel = data.statsByLevel || statsByLevel;
+                globalPlays = data.globalPlays || 0;
             }
         }
         
         function saveStats() {
-            if (punteggio > allTimeBestScore) allTimeBestScore = punteggio;
-            if (bestStreak > allTimeBestStreak) allTimeBestStreak = bestStreak;
-            allTimeFotofinish += fotofinishCount;
-            allTimeGrazie += grazieRicevuteCount;
-            
-            for (let sigla in nazioniDigitateCount) {
-                allTimeNazioniCount[sigla] = (allTimeNazioniCount[sigla] || 0) + nazioniDigitateCount[sigla];
-            }
-            for (let sigla in nazioniIgnorateCount) { 
-                allTimeNazioniIgnorate[sigla] = (allTimeNazioniIgnorate[sigla] || 0) + nazioniIgnorateCount[sigla];
-            }
-            
             let data = {
-                bestScore: allTimeBestScore,
-                bestStreak: allTimeBestStreak,
-                fotofinish: allTimeFotofinish,
-                grazie: allTimeGrazie,
-                nazioniCount: allTimeNazioniCount,
-                nazioniIgnorate: allTimeNazioniIgnorate, 
-                bestAvgTime: allTimeBestAvgTime        
+                bestScore: allTimeBestScore, bestStreak: allTimeBestStreak,
+                fotofinish: allTimeFotofinish, grazie: allTimeGrazie,
+                nazioniCount: allTimeNazioniCount, nazioniIgnorate: allTimeNazioniIgnorate, 
+                bestAvgTime: allTimeBestAvgTime, statsByLevel: statsByLevel, globalPlays: globalPlays
             };
             localStorage.setItem('geoQuizStats', JSON.stringify(data));
+        }
+
+        function exportBackup() {
+            let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(localStorage.getItem('geoQuizStats') || "{}");
+            let node = document.createElement('a');
+            node.setAttribute("href", dataStr);
+            node.setAttribute("download", "geoquiz_backup.json");
+            document.body.appendChild(node);
+            node.click();
+            node.remove();
+        }
+
+        function importBackup(event) {
+            let file = event.target.files[0];
+            if (!file) return;
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    let contents = e.target.result;
+                    JSON.parse(contents); 
+                    localStorage.setItem('geoQuizStats', contents);
+                    loadStats();
+                    alert("✅ Salvataggio importato con successo!");
+                    closeModal(); openRecords(); 
+                } catch(err) { alert("❌ File di salvataggio non valido!"); }
+            };
+            reader.readAsText(file);
         }
 
         loadStats();
@@ -921,7 +940,8 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                 });
                 nazione.confini = landBorders; 
                 
-                if (landBorders.length === 0 || nazione.sigla === "GL") nazione.tipoGeo = "isola"; 
+                let eccezioniIsole = ["GL", "HT", "DO", "MF", "SX"];
+                if (landBorders.length === 0 || eccezioniIsole.includes(nazione.sigla)) nazione.tipoGeo = "isola"; 
                 else if (hasSea) nazione.tipoGeo = "costiera";
                 else nazione.tipoGeo = "interna"; 
 
@@ -1170,7 +1190,6 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
 
             const buildList = (arr, emptyMsg, color) => {
                 if (arr.length === 0) return `<p style="text-align:center; color:#888; font-size:13px;">${emptyMsg}</p>`;
-                // Tolto il gap per usare un'altezza fissa matematica
                 let h = `<div style="display:flex; flex-direction:column;">`;
                 arr.forEach((sn, idx) => {
                     h += `<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; height:42px;">
@@ -1185,33 +1204,58 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                 return h + `</div>`;
             };
 
-            let avgTimeStr = allTimeBestAvgTime > 0 ? allTimeBestAvgTime + "s" : "N/D";
+            const renderLvl = (name, s, isPro, vicThreshold) => {
+                let pStr = s.plays > 0 ? `${s.bestScore}` : `-`;
+                let vicStr = (vicThreshold && s.bestScore >= vicThreshold) ? " 🏆" : "";
+                
+                let h = `<div style="background:#2a2a2a; border:1px solid #444; border-radius:6px; padding:10px; text-align:left;">
+                    <div style="color:#ffd700; font-size:12px; font-weight:bold; margin-bottom:5px; border-bottom:1px solid #444; padding-bottom:3px;">${name} (Giocate: ${s.plays})</div>
+                    <div style="font-size:11px; color:#ccc; margin-bottom:2px;">Miglior Score: <strong style="color:#fff;">${pStr}${vicStr}</strong></div>
+                    <div style="font-size:11px; color:#ccc; margin-bottom:2px;">Miglior Serie: <strong style="color:#fff;">${s.bestStreak || 0}</strong></div>
+                    <div style="font-size:11px; color:#ccc;">Tempo Medio: <strong style="color:#fff;">${s.bestAvgTime > 0 ? s.bestAvgTime + "s" : "-"}</strong></div>`;
+                if (isPro) {
+                    h += `<div style="font-size:11px; color:#ccc; margin-top:2px;">Fotofinish: <strong style="color:#2196f3;">${s.fotofinish || 0}</strong></div>
+                          <div style="font-size:11px; color:#ccc; margin-top:2px;">Grazie: <strong style="color:#ffd700;">${s.grazie || 0}</strong></div>`;
+                }
+                h += `</div>`;
+                return h;
+            };
 
             let html = `
-                <div style="padding:5px; text-align:left;">
-                    <div style="display:flex; gap:15px; margin-bottom: 20px;">
+                <div style="padding:5px; text-align:center;">
+                    <div style="margin-bottom: 15px;">
+                        <p style="font-size:14px; margin:0 0 10px 0; color:#aaa; text-transform:uppercase; font-weight:bold;">Partite Globali Giocate: <span style="color:#fff;">${globalPlays}</span></p>
+                        <div style="display:flex; gap:10px; justify-content:center;">
+                            <button onclick="exportBackup()" style="flex:1; background:#2196f3; color:#fff; border:none; padding:8px; border-radius:4px; font-weight:bold; font-size:12px; cursor:pointer;">💾 ESPORTA JSON</button>
+                            <label style="flex:1; background:#ff9800; color:#fff; border:none; padding:8px; border-radius:4px; font-weight:bold; font-size:12px; cursor:pointer;">
+                                📂 IMPORTA JSON <input type="file" accept=".json" style="display:none;" onchange="importBackup(event)">
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom: 20px;">
+                        ${renderLvl("1. APOLIDE", statsByLevel[1], false, 2500)}
+                        ${renderLvl("2. ACCASATO", statsByLevel[2], false, 3500)}
+                        ${renderLvl("3. COSMOPOLITA", statsByLevel[3], false, 5000)}
+                        ${renderLvl("4. DIVINITÀ", statsByLevel[4], true, null)}
+                        ${renderLvl("5. CUSTOM", statsByLevel[5], true, null)}
+                    </div>
+                    
+                    <hr style="border:0; border-top:1px dashed #444; margin:20px 0;">
+                    
+                    <div style="display:flex; gap:15px; text-align:left;">
                         <div style="flex:1;">
                             <h3 style="color:#4caf50; margin:0 0 10px 0; font-size:13px; text-transform:uppercase; text-align:center;">Top 10 Usate</h3>
-                            ${buildList(sortedUsate, "Nessuna nazione usata", "#4caf50")}
+                            ${buildList(sortedUsate, "Nessuna nazione", "#4caf50")}
                         </div>
                         <div style="flex:1;">
                             <h3 style="color:#f44336; margin:0 0 10px 0; font-size:13px; text-transform:uppercase; text-align:center;">Top 10 Ignorate</h3>
                             ${buildList(sortedIgnorate, "Nessuna ignorata", "#f44336")}
                         </div>
                     </div>
-                    <hr style="border:0; border-top:1px solid #444; margin:15px 0;">
-                    <p style="font-size:14px; margin:8px 0;">🕊️ Totale Grazie Ricevute: <strong style="color:#ffd700; float:right;">${allTimeGrazie}</strong></p>
-                    <p style="font-size:14px; margin:8px 0;">⏱️ Totale Fotofinish: <strong style="color:#2196f3; float:right;">${allTimeFotofinish}</strong></p>
-                    <p style="font-size:14px; margin:8px 0;">⚡ Miglior Tempo Medio: <strong style="color:#00e676; float:right;">${avgTimeStr}</strong></p>
-                    <hr style="border:0; border-top:1px solid #444; margin:15px 0;">
-                    <p style="font-size:14px; margin:8px 0;">🔥 Miglior Serie: <strong style="color:#ff9800; float:right;">${allTimeBestStreak}</strong></p>
-                    <div style="text-align:center; margin-top:25px; padding-top:15px; border-top:2px dashed #444;">
-                        <p style="font-size:16px; margin:0 0 5px 0; color:#aaa; text-transform:uppercase; letter-spacing:1px;">Miglior Punteggio</p>
-                        <p style="font-size:36px; margin:0; font-weight:bold; color:#ffd700; text-shadow:0 2px 4px rgba(0,0,0,0.5);">${allTimeBestScore}</p>
-                    </div>
                 </div>
             `;
-            openModal("🏆 STORICO E RECORD", html);
+            openModal("🏆 RECORD E STATISTICHE", html);
         }
 
         function openCustomSetup() {
@@ -1790,7 +1834,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                     let extraNegs = [];
                     if (td.negGeo) {
                         if (td.negGeo === 'isola') extraNegs.push(num === 1 ? "che <span class=\"negative-constraint\">NON</span> sia insulare" : "che <span class=\"negative-constraint\">NON</span> siano insulari");
-                        else if (td.negGeo === 'costiera') extraNegs.push(num === 1 ? "che <span class=\"negative-constraint\">NON</span> sia costiero" : "che <span class=\"negative-constraint\">NON</span> siano costieri");
+                        else if (td.negGeo === 'costiera') extraNegs.push(num === 1 ? "che <span class=\"negative-constraint\">NON</span> sia costiera" : "che <span class=\"negative-constraint\">NON</span> siano costiere");
                         else if (td.negGeo === 'interna') extraNegs.push(num === 1 ? "che abbia sbocchi sul mare" : "che abbiano sbocchi sul mare");
                     }
                     if (td.negArea) {
@@ -1878,6 +1922,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                     let usedTypes = new Set();
                     
                     for (let opt of negOptions) {
+                        if (tempValid.length === 1) break; // BERSAGLIO ACQUISITO!
                         if (appliedNegs >= maxNegs) break;
                         if (usedTypes.has(opt.type) && opt.type !== 'border') continue;
                         if (opt.type === 'border' && td.negBorders.length >= (currentLevel >= 3 ? 2 : 1)) continue;
@@ -1894,6 +1939,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                         
                         let rollback = false;
                         if (testValid.length === 0) rollback = true; 
+                        else if (testValid.length === tempValid.length) rollback = true; // SCARTO INUTILE!
                         else if (isMitragliatrice && testValid.length < 6) rollback = true; // SCUDO SALVA-COMBO L4!
                         
                         if (rollback) {
@@ -2594,7 +2640,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
 
                 if (isLazy) {
                     puntiGuadagnati = Math.floor(puntiGuadagnati / 2);
-                    badgeText += "⚠️ GIÀ USATA! (Punti dimezzati)<br>";
+                    badgeText += "⚠️ DÉJÀ VU! (Malus pigrizia)<br>";
                     badgeBorder = "#ff9800";
                 }
                 
@@ -3000,19 +3046,38 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             let avgTime = totalAnswersSubmitted > 0 ? (totalActiveTimeMs / totalAnswersSubmitted / 1000).toFixed(1) : "0.0";
             document.getElementById("final-avg-time").innerText = avgTime + "s";
             
+            globalPlays++;
+            statsByLevel[currentLevel].plays++;
+            
+            let isNewRecord = false;
+            if (punteggio > statsByLevel[currentLevel].bestScore && punteggio > 0) {
+                statsByLevel[currentLevel].bestScore = punteggio;
+                isNewRecord = true;
+            }
+            if (bestStreak > statsByLevel[currentLevel].bestStreak) statsByLevel[currentLevel].bestStreak = bestStreak;
+            
             if (avgTime > 0) {
-                if (allTimeBestAvgTime === 0 || parseFloat(avgTime) < allTimeBestAvgTime) {
-                    allTimeBestAvgTime = parseFloat(avgTime);
+                if (statsByLevel[currentLevel].bestAvgTime === 0 || parseFloat(avgTime) < statsByLevel[currentLevel].bestAvgTime) {
+                    statsByLevel[currentLevel].bestAvgTime = parseFloat(avgTime);
                 }
             }
-
-            let isNewRecord = (punteggio > allTimeBestScore && punteggio > 0);
-            let badge = document.getElementById("new-record-badge");
-            if(isNewRecord) {
-                badge.style.display = "block";
-            } else {
-                badge.style.display = "none";
+            
+            if (currentLevel >= 4 || currentLevel === 5) { 
+                statsByLevel[currentLevel].fotofinish += fotofinishCount;
+                statsByLevel[currentLevel].grazie += grazieRicevuteCount;
             }
+
+            // Statistiche Globali Legacy
+            if (punteggio > allTimeBestScore) allTimeBestScore = punteggio;
+            if (bestStreak > allTimeBestStreak) allTimeBestStreak = bestStreak;
+            allTimeFotofinish += fotofinishCount;
+            allTimeGrazie += grazieRicevuteCount;
+            for (let sigla in nazioniDigitateCount) { allTimeNazioniCount[sigla] = (allTimeNazioniCount[sigla] || 0) + nazioniDigitateCount[sigla]; }
+            for (let sigla in nazioniIgnorateCount) { allTimeNazioniIgnorate[sigla] = (allTimeNazioniIgnorate[sigla] || 0) + nazioniIgnorateCount[sigla]; }
+            
+            let badge = document.getElementById("new-record-badge");
+            if(isNewRecord) badge.style.display = "block";
+            else badge.style.display = "none";
 
             saveStats(); 
 
