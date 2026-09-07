@@ -1,4 +1,4 @@
-const CACHE_NAME = 'geoquiz-v1.8.0';
+const CACHE_NAME = 'geoquiz-v1.8.1';
 
 // Quando installi l'app, salva subito i file base
 self.addEventListener('install', (event) => {
