@@ -1,6 +1,5 @@
-const CACHE_NAME = 'geoquiz-v1.8.3';
+const CACHE_NAME = 'geoquiz-v1.8.5';
 
-// Salva i file, ma NON attivare la versione nuova finché non te lo dice l'utente
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
@@ -13,7 +12,6 @@ self.addEventListener('install', (event) => {
     );
 });
 
-// Cancella le versioni vecchie quando si attiva
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys().then((cacheNames) => {
@@ -29,7 +27,6 @@ self.addEventListener('activate', (event) => {
     return self.clients.claim();
 });
 
-// Pesca dalla memoria
 self.addEventListener('fetch', (event) => {
     event.respondWith(
         caches.match(event.request).then((cachedResponse) => {
@@ -44,7 +41,7 @@ self.addEventListener('fetch', (event) => {
     );
 });
 
-// Ascolta l'ordine dell'utente per aggiornare l'app
+// Questo è il ricevitore che aspetta il clic sul banner!
 self.addEventListener('message', (event) => {
     if (event.data === 'SKIP_WAITING') {
         self.skipWaiting();
