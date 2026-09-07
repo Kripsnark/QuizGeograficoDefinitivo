@@ -1,4 +1,4 @@
-const CACHE_NAME = 'geoquiz-v1.8.2';
+const CACHE_NAME = 'geoquiz-v1.8.3';
 
 // Salva i file, ma NON attivare la versione nuova finché non te lo dice l'utente
 self.addEventListener('install', (event) => {

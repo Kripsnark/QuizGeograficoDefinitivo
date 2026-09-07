@@ -117,14 +117,14 @@
             background-color: #1e1e1e;
             color: #ccc;
             border: 1px solid #444;
-            padding: 8px 25px;
+            padding: 6px 16px;
             cursor: pointer;
             border-radius: 20px;
             font-weight: bold;
-            font-size: 14px;
+            font-size: 12px;
             transition: all 0.2s;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            margin-top: 40px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 10px; 
             display: none;
         }
         #home-btn:hover {
@@ -390,6 +390,9 @@
     </style>
 </head>
 <body>
+<div id="update-banner" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#2196f3; color:#fff; padding:12px 25px; border-radius:30px; z-index:9999; cursor:pointer; font-weight:bold; box-shadow:0 4px 10px rgba(0,0,0,0.6); text-transform:uppercase; font-size:14px; border:2px solid #fff;" onclick="applyUpdate()">
+        🚀 Nuovo aggiornamento disponibile! Clicca per ricaricare
+    </div>
 
     <div id="game-container">
         
@@ -463,6 +466,9 @@
         </div>
 
         <div id="header">
+            <!-- Tasto spostato qui in cima, al sicuro! -->
+            <button id="home-btn" onclick="resetGame()">🏠 Riavvia Partita</button>
+            
             <div id="score-display">
                 <span>Esatte: <span id="esatte-counter">0</span></span>
                 <span>Punti: <span id="punti-counter" class="score-highlight">0</span></span>
@@ -497,8 +503,6 @@
             </div>
         </div>
 
-        <button id="home-btn" onclick="resetGame()">🏠 Riavvia Partita</button>
-
         <div id="game-over-screen">
             <div id="game-over-title">GAME OVER</div>
             <div id="game-over-msg"></div>
@@ -522,7 +526,7 @@
         </div>
     </div>
     
-    <div id="version-badge">v1.8.2</div>
+    <div id="version-badge">v1.8.3</div>
 
     <div id="modal-overlay">
         <div id="modal-content">
@@ -1166,15 +1170,16 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
 
             const buildList = (arr, emptyMsg, color) => {
                 if (arr.length === 0) return `<p style="text-align:center; color:#888; font-size:13px;">${emptyMsg}</p>`;
-                let h = `<div style="display:flex; flex-direction:column; gap:6px;">`;
+                // Tolto il gap per usare un'altezza fissa matematica
+                let h = `<div style="display:flex; flex-direction:column;">`;
                 arr.forEach((sn, idx) => {
-                    h += `<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:4px;">
-                            <div style="display:flex; align-items:center; gap:6px;">
-                                <span style="color:#777; font-weight:bold; font-size:12px;">${idx + 1}.</span>
-                                <img src="GIF/${sn.sigla.toLowerCase()}.jpg" style="width:20px; border-radius:2px;" onerror="this.style.display='none'">
-                                <span style="color:#ccc; font-weight:bold; font-size:12px;">${sn.nome.toUpperCase()}</span>
+                    h += `<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; height:42px;">
+                            <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:0; padding-right:8px;">
+                                <span style="color:#777; font-weight:bold; font-size:11px; width:15px; text-align:right; flex-shrink:0;">${idx + 1}.</span>
+                                <img src="GIF/${sn.sigla.toLowerCase()}.jpg" style="width:20px; border-radius:2px; flex-shrink:0;" onerror="this.style.display='none'">
+                                <span style="color:#ccc; font-weight:bold; font-size:11px; line-height:1.2; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; text-overflow:ellipsis;">${sn.nome.toUpperCase()}</span>
                             </div>
-                            <span style="color:${color}; font-weight:bold; font-size:12px;">${sn.count}</span>
+                            <span style="color:${color}; font-weight:bold; font-size:12px; flex-shrink:0;">${sn.count}</span>
                           </div>`;
                 });
                 return h + `</div>`;
@@ -2948,14 +2953,14 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
 
             const buildMiniList = (arr, color) => {
                 if (arr.length === 0) return `<p style="font-size:13px; color:#888;">Nessun dato</p>`;
-                let h = `<div style="display:flex; flex-direction:column; gap:4px;">`;
+                let h = `<div style="display:flex; flex-direction:column;">`;
                 arr.forEach((sn, idx) => {
-                    h += `<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:3px;">
-                            <div style="display:flex; align-items:center; gap:6px;">
-                                <img src="GIF/${sn.sigla.toLowerCase()}.jpg" style="width:16px; border-radius:2px;" onerror="this.style.display='none'">
-                                <span style="color:#ccc; font-size:13px;">${sn.nome.toUpperCase()}</span>
+                    h += `<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; height:40px;">
+                            <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:0; padding-right:8px;">
+                                <img src="GIF/${sn.sigla.toLowerCase()}.jpg" style="width:16px; border-radius:2px; flex-shrink:0;" onerror="this.style.display='none'">
+                                <span style="color:#ccc; font-size:12px; line-height:1.2; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; text-overflow:ellipsis;">${sn.nome.toUpperCase()}</span>
                             </div>
-                            <span style="color:${color}; font-weight:bold; font-size:13px;">${sn.count}</span>
+                            <span style="color:${color}; font-weight:bold; font-size:13px; flex-shrink:0;">${sn.count}</span>
                           </div>`;
                 });
                 return h + `</div>`;
@@ -3001,12 +3006,22 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
         });
         
         // --- AVVIO SERVICE WORKER (PWA) ---
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js')
-            .then(reg => console.log('PWA Pronta!'))
-            .catch(err => console.log('Errore PWA:', err));
+        let newWorker;
 
-            // Ricarica la pagina in automatico quando c'è un aggiornamento
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').then(reg => {
+                reg.addEventListener('updatefound', () => {
+                    newWorker = reg.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        // Se c'è un aggiornamento scaricato e pronto, mostra il banner
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            document.getElementById('update-banner').style.display = 'block';
+                        }
+                    });
+                });
+            });
+
+            // Quando l'utente clicca il banner e il SW si aggiorna, ricarica la pagina
             let refreshing = false;
             navigator.serviceWorker.addEventListener('controllerchange', () => {
                 if (!refreshing) {
@@ -3014,6 +3029,14 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                     window.location.reload();
                 }
             });
+        }
+
+        // Funzione chiamata dal click sul banner
+        function applyUpdate() {
+            if (newWorker) {
+                newWorker.postMessage('SKIP_WAITING');
+            }
+            document.getElementById('update-banner').style.display = 'none';
         }
         
     </script>
