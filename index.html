@@ -497,11 +497,12 @@
             </div>
             
             <div class="action-btn-group">
-            <button id="surrender-btn" onclick="surrenderTurn()">🏳️ ARRENDITI</button>
-            <button id="submit-btn" onclick="processaRisposta()">INVIA</button>
-            <button id="next-btn" onclick="nextTurnMulti()">PROSSIMA DOMANDA ➔</button>
-            <button id="ritirati-btn" onclick="ritiratiLeggenda()" style="display:none; background-color: #ffd700; color: #121212; border: none; font-size: 16px; padding: 15px 20px; cursor: pointer; border-radius: 4px; font-weight: bold; flex-grow: 1;">🏆 RITIRATI DA LEGGENDA</button>
-            <button id="continua-btn" onclick="continuaSfida()" style="display:none; background-color: #4caf50; color: #fff; border: none; font-size: 16px; padding: 15px 20px; cursor: pointer; border-radius: 4px; font-weight: bold; flex-grow: 1;">⚔️ CONTINUA LA SFIDA</button>
+                <button id="surrender-btn" onclick="surrenderTurn()">🏳️ ARRENDITI</button>
+                <button id="submit-btn" onclick="processaRisposta()">INVIA</button>
+                <button id="next-btn" onclick="nextTurnMulti()">PROSSIMA DOMANDA ➔</button>
+                <button id="ritirati-btn" onclick="ritiratiLeggenda()" style="display:none; background-color: #ffd700; color: #121212; border: none; font-size: 16px; padding: 15px 20px; cursor: pointer; border-radius: 4px; font-weight: bold; flex-grow: 1;">🏆 RITIRATI DA LEGGENDA</button>
+                <button id="continua-btn" onclick="continuaSfida()" style="display:none; background-color: #4caf50; color: #fff; border: none; font-size: 16px; padding: 15px 20px; cursor: pointer; border-radius: 4px; font-weight: bold; flex-grow: 1;">⚔️ CONTINUA LA SFIDA</button>
+            </div>
         </div>
 
         <div id="game-over-screen">
@@ -527,7 +528,7 @@
         </div>
     </div>
     
-    <div id="version-badge">v1.9.2</div>
+    <div id="version-badge">v1.9.3</div>
 
     <div id="modal-overlay">
         <div id="modal-content">
@@ -981,7 +982,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
         let totalActiveTimeMs = 0;
         let totalAnswersSubmitted = 0;
     
-        let endlessVittoriaSbloccata = false; // NUOVA VARIABILE
+        let endlessVittoriaSbloccata = false;
 
         const capitalize = str => str ? str.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : "";
         
@@ -1120,24 +1121,30 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
         function openRules() {
             let html = `
     <p>Il tuo obiettivo è uno solo: dimostrare una conoscenza geografica assoluta e sopravvivere al motore logico.</p>
-    
+
     <h3 style="color:#ffd700; margin-bottom:5px;">❤️ VITE E SISTEMA DI PUNTEGGIO</h3>
     <ul style="margin-top:5px; padding-left:20px;">
-        <li><strong>Cuori:</strong> Inizi la partita con <strong>3 vite</strong>. Ottieni un cuore extra ogni <strong>750 punti</strong> (massimo 5). A zero vite, la partita termina.</li>
-        <li><strong>Bonus Audacia (x2):</strong> Premia il rischio. Se nei livelli bassi (1 e 2) rispondi utilizzando nazioni appartenenti a livelli superiori, i punti ottenuti in quel turno vengono raddoppiati.</li>
-        <li><strong>Malus Pigrizia (-50%):</strong> Scoraggia la ripetitività. Dal Livello 1 al 3, utilizzare una nazione già nominata nella partita in corso dimezza il punteggio. <em>Nota: il malus si attiva esclusivamente se il gioco ti offriva un margine logico di almeno 2 alternative valide.</em></li>
-        <li><strong>Grazia Ricevuta (Liv. 4-5):</strong> Se in una combo da 3+ risposte scade il timer, ma hai inserito almeno 2 risposte TUTTE esatte, non perdi la vita. Il punteggio viene però dimezzato per ogni risposta mancante.</li>
-        <li><strong>Condizioni di Esclusione (<span style="color:#f44336; text-decoration:underline;">NON</span>):</strong> A partire dal Livello 2, il motore introdurrà divieti specifici (es. divieto di usare un certo colore o confine). Ignorarli costa una vita.</li>
+        <li><strong>Cuori:</strong> Inizi la partita con <strong>3 vite</strong>. Ottieni un cuore extra ogni <strong>750 punti</strong>.</li>
+        <li><strong>Bonus Audacia (x2):</strong> Se nei livelli 1 e 2 usi nazioni di livelli superiori, i punti raddoppiano.</li>
+        <li><strong>Malus Pigrizia (-50%):</strong> Usare nazioni già nominate dimezza il punteggio (Livelli 1-3).</li>
+        <li><strong>Grazia Ricevuta (Liv. 4-5):</strong> Se scade il timer ma hai inserito almeno 2 risposte esatte, ti salvi! Punteggio dimezzato per ogni risposta mancante.</li>
     </ul>
 
-    <h3 style="color:#ffd700; margin-bottom:5px;">🌍 I LIVELLI DI SFIDA</h3>
+    <h3 style="color:#2196f3; margin-bottom:5px;">🗺️ DEFINIZIONI GEOGRAFICHE</h3>
     <ul style="margin-top:5px; padding-left:20px;">
-        <li><strong>1. Bestia Apolide:</strong> Il battesimo del fuoco. Interroga unicamente sulle Nazioni Indipendenti più note.</li>
-        <li><strong>2. Animale Accasato:</strong> Alza l'asticella. Sblocca i micro-stati, le nazioni di fascia media e attiva i Paletti Negativi.</li>
-        <li><strong>3. Creatura Cosmopolita:</strong> Nessuna restrizione. Sblocca il database completo, includendo le dipendenze e i territori d'oltremare. Margine pigrizia severo (+1).</li>
-        <li><strong>4. Divinità Geografa (Ghigliottina):</strong> Nessuna pietà. Richiede fino a <strong>5 risposte a raffica</strong> per singola domanda. Introduce il Timer Letale: se scade, perdi una vita. Malus Pigrizia disattivato.</li>
-        <li><strong>Regola della Combo:</strong> Se hai mandato una nazione nella griglia, te ne assumi la responsabilità fino alla fine del timer. Carta toccata, carta giocata. Non si torna indietro!</li>
-        <li><strong>5. Partita Personalizzata:</strong> La modalità Sandbox. Permette di configurare liberamente argomenti, presenza del timer e tetto massimo per le combo.</li>
+        <li><strong>Stato Insulare:</strong> Accetta SOLO isole (es. Giappone, Groenlandia).</li>
+        <li><strong>Stato Continentale Costiero:</strong> Esclude le isole! Valgono solo paesi sul continente bagnati dal mare (es. Italia, Brasile).</li>
+        <li><strong>Con Sbocco sul Mare:</strong> Inclusivo. Accetta ENTRAMBI i casi precedenti (Isole + Costieri).</li>
+        <li><strong>Stato Interno:</strong> Nessuno sbocco sul mare (es. Svizzera).</li>
+    </ul>
+
+    <h3 style="color:#ffd700; margin-bottom:5px;">🌍 I LIVELLI DI SFIDA E VITTORIA</h3>
+    <ul style="margin-top:5px; padding-left:20px;">
+        <li><strong>1. Bestia Apolide:</strong> Solo Nazioni Indipendenti note. (Vittoria: 2500 pt)</li>
+        <li><strong>2. Animale Accasato:</strong> Sblocca i micro-stati e attiva i Paletti Negativi. (Vittoria: 3500 pt)</li>
+        <li><strong>3. Creatura Cosmopolita:</strong> Sblocca il database completo (dipendenze, ecc.).</li>
+        <li><strong>4. Divinità Geografa:</strong> Fino a 5 risposte a raffica, Timer letale, Malus Pigrizia disattivato.</li>
+        <li><strong>Vittoria Leggendaria (L3 e L4):</strong> Raggiungere <strong>10.000 punti</strong> sblocca la Vittoria Infinita. Scegli se ritirarti da eroe o continuare per frantumare ogni record!</li>
     </ul>
 `;
             openModal("📜 REGOLAMENTO", html);
@@ -1487,6 +1494,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             
             if (format === 8) {
                 td.reqGeo = td.targetNode.tipoGeo; 
+                if (['isola', 'costiera'].includes(td.reqGeo) && Math.random() > 0.5) td.reqGeo = 'marittima';
                 if (lvlCheckNeg && td.targetNode.aree.length > 0) { td.reqArea = td.selectedArea; td.numVariables++; }
                 if (currentLevel >= 3 || currentLevel === 5) { td.reqInit = td.targetNode.nome.charAt(0).toUpperCase(); td.numVariables++; }
                 
@@ -1521,7 +1529,11 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
 
                 if (selectedConditions.includes('area')) { td.reqArea = td.selectedArea; td.numVariables++; }
                 if (selectedConditions.includes('colore')) { td.reqColor = td.targetNode.colori_base[0]; td.numVariables++; }
-                if (selectedConditions.includes('geo')) { td.reqGeo = td.targetNode.tipoGeo; td.numVariables++; }
+                if (selectedConditions.includes('geo')) { 
+                    td.reqGeo = td.targetNode.tipoGeo; 
+                    if (['isola', 'costiera'].includes(td.reqGeo) && Math.random() > 0.5) td.reqGeo = 'marittima';
+                    td.numVariables++; 
+                }
                 if (selectedConditions.includes('capitale')) { td.reqCapInit = td.targetNode.capitale.charAt(0).toUpperCase(); td.numVariables++; }
                 if (selectedConditions.includes('iniziale')) { td.reqInit = td.targetNode.nome.charAt(0).toUpperCase(); td.numVariables++; }
             }
@@ -1753,7 +1765,8 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                         let t8 = "";
                         if (num === 1) {
                             if (td.reqGeo === 'isola') t8 = `Nomina 1 ${sTI}`;
-                            else if (td.reqGeo === 'costiera') t8 = `Nomina 1 <span class=\"target-highlight\">STATO O TERRITORIO</span> <strong>COSTIERO</strong>`;
+                            else if (td.reqGeo === 'costiera') t8 = `Nomina 1 <span class=\"target-highlight\">STATO CONTINENTALE</span> CON <strong>SBOCCO SUL MARE</strong> (Non insulare)`;
+                            else if (td.reqGeo === 'marittima') t8 = `Nomina 1 <span class=\"target-highlight\">STATO O TERRITORIO</span> CON <strong>SBOCCO SUL MARE</strong>`;
                             else if (td.reqGeo === 'interna') t8 = `Nomina 1 <span class=\"target-highlight\">STATO O TERRITORIO</span> <strong>SENZA SBOCCHI SUL MARE</strong>`;
                             
                             if (td.reqArea) t8 += ` ${areaP}`;
@@ -1764,7 +1777,8 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                             }
                         } else {
                             if (td.reqGeo === 'isola') t8 = `Nomina ${sTI_p}`;
-                            else if (td.reqGeo === 'costiera') t8 = `Nomina <span class=\"target-highlight\">${num} STATI O TERRITORI</span> <strong>COSTIERI</strong>`;
+                            else if (td.reqGeo === 'costiera') t8 = `Nomina <span class=\"target-highlight\">${num} STATI CONTINENTALI</span> CON <strong>SBOCCO SUL MARE</strong> (Non insulari)`;
+                            else if (td.reqGeo === 'marittima') t8 = `Nomina <span class=\"target-highlight\">${num} STATI O TERRITORI</span> CON <strong>SBOCCO SUL MARE</strong>`;
                             else if (td.reqGeo === 'interna') t8 = `Nomina <span class=\"target-highlight\">${num} STATI O TERRITORI</span> <strong>SENZA SBOCCHI SUL MARE</strong>`;
                             
                             if (td.reqArea) t8 += ` ${areaP}`;
@@ -1805,7 +1819,8 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                         let t11 = "";
                         if (num === 1) {
                             if (td.reqGeo === 'isola') t11 = `Nomina 1 ${sTI}`;
-                            else if (td.reqGeo === 'costiera') t11 = `Nomina 1 <span class=\"target-highlight\">STATO O TERRITORIO</span> <strong>COSTIERO</strong>`;
+                            else if (td.reqGeo === 'costiera') t11 = `Nomina 1 <span class=\"target-highlight\">STATO CONTINENTALE</span> CON <strong>SBOCCO SUL MARE</strong> (Non insulare)`;
+                            else if (td.reqGeo === 'marittima') t11 = `Nomina 1 <span class=\"target-highlight\">STATO O TERRITORIO</span> CON <strong>SBOCCO SUL MARE</strong>`;
                             else if (td.reqGeo === 'interna') t11 = `Nomina 1 <span class=\"target-highlight\">STATO O TERRITORIO</span> <strong>SENZA SBOCCHI SUL MARE</strong>`;
                             else t11 = `Nomina 1 ${sT}`;
                             
@@ -1823,7 +1838,8 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                             if (td.negInit) t11 += ` e il cui nome <span class="negative-constraint">NON</span> inizia per la lettera <strong>${td.negInit.toUpperCase()}</strong>`;
                         } else {
                             if (td.reqGeo === 'isola') t11 = `Nomina ${sTI_p}`;
-                            else if (td.reqGeo === 'costiera') t11 = `Nomina <span class=\"target-highlight\">${num} STATI O TERRITORI</span> <strong>COSTIERI</strong>`;
+                            else if (td.reqGeo === 'costiera') t11 = `Nomina <span class=\"target-highlight\">${num} STATI CONTINENTALI</span> CON <strong>SBOCCO SUL MARE</strong> (Non insulari)`;
+                            else if (td.reqGeo === 'marittima') t11 = `Nomina <span class=\"target-highlight\">${num} STATI O TERRITORI</span> CON <strong>SBOCCO SUL MARE</strong>`;
                             else if (td.reqGeo === 'interna') t11 = `Nomina <span class=\"target-highlight\">${num} STATI O TERRITORI</span> <strong>SENZA SBOCCHI SUL MARE</strong>`;
                             else t11 = `Nomina ${sT_p}`;
                             
@@ -1882,7 +1898,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                     let extraNegs = [];
                     if (td.negGeo) {
                         if (td.negGeo === 'isola') extraNegs.push(num === 1 ? "che <span class=\"negative-constraint\">NON</span> sia insulare" : "che <span class=\"negative-constraint\">NON</span> siano insulari");
-                        else if (td.negGeo === 'costiera') extraNegs.push(num === 1 ? "che <span class=\"negative-constraint\">NON</span> sia costiera" : "che <span class=\"negative-constraint\">NON</span> siano costiere");
+                        else if (td.negGeo === 'costiera') extraNegs.push(num === 1 ? "che <span class=\"negative-constraint\">NON</span> sia continentale costiero" : "che <span class=\"negative-constraint\">NON</span> siano continentali costieri");
                         else if (td.negGeo === 'interna') extraNegs.push(num === 1 ? "che abbia sbocchi sul mare" : "che abbiano sbocchi sul mare");
                     }
                     if (td.negArea) {
@@ -1970,7 +1986,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                     let usedTypes = new Set();
                     
                     for (let opt of negOptions) {
-                        if (tempValid.length === 1) break; // BERSAGLIO ACQUISITO!
+                        if (tempValid.length === 1) break; 
                         if (appliedNegs >= maxNegs) break;
                         if (usedTypes.has(opt.type) && opt.type !== 'border') continue;
                         if (opt.type === 'border' && td.negBorders.length >= (currentLevel >= 3 ? 2 : 1)) continue;
@@ -1987,8 +2003,8 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                         
                         let rollback = false;
                         if (testValid.length === 0) rollback = true; 
-                        else if (testValid.length === tempValid.length) rollback = true; // SCARTO INUTILE!
-                        else if (isMitragliatrice && testValid.length < 6) rollback = true; // SCUDO SALVA-COMBO L4!
+                        else if (testValid.length === tempValid.length) rollback = true; 
+                        else if (isMitragliatrice && testValid.length < 6) rollback = true; 
                         
                         if (rollback) {
                             if (opt.type === 'color') td.negColor = backupVal;
@@ -2118,7 +2134,13 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                         if (country.confini.includes(td.targetNode.confini[0]) && country.indipendente) match = true;
                     }
                     else if (td.format === 8) {
-                        if (country.tipoGeo === td.reqGeo) {
+                        let geoMatch = false;
+                        if (td.reqGeo === 'marittima') {
+                            if (country.tipoGeo === 'isola' || country.tipoGeo === 'costiera') geoMatch = true;
+                        } else {
+                            if (country.tipoGeo === td.reqGeo) geoMatch = true;
+                        }
+                        if (geoMatch) {
                             let ok = true;
                             if (td.reqArea && !country.aree.includes(td.reqArea)) ok = false;
                             if (td.reqInit) {
@@ -2134,7 +2156,13 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                         if (country.formati_bandiera.includes(td.reqFormato)) {
                             let m = true;
                             if (td.reqArea && !country.aree.includes(td.reqArea)) m = false;
-                            if (td.reqGeo && country.tipoGeo !== td.reqGeo) m = false;
+                            if (td.reqGeo) {
+                                if (td.reqGeo === 'marittima') {
+                                    if (country.tipoGeo !== 'isola' && country.tipoGeo !== 'costiera') m = false;
+                                } else {
+                                    if (country.tipoGeo !== td.reqGeo) m = false;
+                                }
+                            }
                             
                             if (td.reqColor) {
                                 let hasColor = country.colori_base.includes(td.reqColor) || country.colori_emblema.includes(td.reqColor);
@@ -2333,7 +2361,13 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                         }
                     }
                     else if (td.format === 8) {
-                        if (country.tipoGeo === td.reqGeo && nameMatch) {
+                        let geoMatch = false;
+                        if (td.reqGeo === 'marittima') {
+                            if (country.tipoGeo === 'isola' || country.tipoGeo === 'costiera') geoMatch = true;
+                        } else {
+                            if (country.tipoGeo === td.reqGeo) geoMatch = true;
+                        }
+                        if (geoMatch && nameMatch) {
                             let ok = true;
                             if (td.reqArea && !country.aree.includes(td.reqArea)) ok = false;
                             if (td.reqInit) {
@@ -2352,7 +2386,13 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                         if (country.formati_bandiera.includes(td.reqFormato) && nameMatch) {
                             let m = true;
                             if (td.reqArea && !country.aree.includes(td.reqArea)) m = false;
-                            if (td.reqGeo && country.tipoGeo !== td.reqGeo) m = false;
+                            if (td.reqGeo) {
+                                if (td.reqGeo === 'marittima') {
+                                    if (country.tipoGeo !== 'isola' && country.tipoGeo !== 'costiera') m = false;
+                                } else {
+                                    if (country.tipoGeo !== td.reqGeo) m = false;
+                                }
+                            }
                             
                             if (td.reqColor) {
                                 let hasColor = country.colori_base.includes(td.reqColor) || country.colori_emblema.includes(td.reqColor);
@@ -2651,7 +2691,6 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                 let sigla = res.matchedCountry.sigla;
                 nazioniDigitateCount[sigla] = (nazioniDigitateCount[sigla] || 0) + 1;
 
-                // Modifica V1.7.10: Il calcolo delle ignorate avviene SOLO in caso di successo!
                 if (currentTurnData.validSiglas && currentTurnData.validSiglas.length <= 20) {
                     currentTurnData.validSiglas.forEach(s => {
                         if (s !== sigla) nazioniIgnorateCount[s] = (nazioniIgnorateCount[s] || 0) + 1;
@@ -2695,9 +2734,13 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                 punteggio += puntiGuadagnati;
 
                 let hasWon = false;
+                let isEndlessTrig = false;
                 if (currentLevel === 1 && punteggio >= 2500) hasWon = true;
-                if (currentLevel === 2 && punteggio >= 3500) hasWon = true;
-                if (currentLevel === 3 && punteggio >= 5000) hasWon = true;
+                else if (currentLevel === 2 && punteggio >= 3500) hasWon = true;
+                else if ((currentLevel === 3 || currentLevel === 4) && punteggio >= 10000 && !endlessVittoriaSbloccata) {
+                    isEndlessTrig = true;
+                    endlessVittoriaSbloccata = true;
+                }
 
                 if (!hasWon && punteggio >= prossimoCuore && vite < maxVite) {
                     vite++;
@@ -2752,10 +2795,8 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                     }, 1800);
                 } else {
                     let isCapitalReq = currentTurnData.format === 0 || currentTurnData.format === 6 || currentTurnData.format === 10 || (currentTurnData.format === 12 && currentTurnData.f12AskCapital);
-                    
                     let dName = getPrintedName(res.matchedCountry, res.matchedNameStr);
                     let nomeInserito = isCapitalReq ? `${getPrintedCapital(res.matchedCountry, res.matchedCapitalStr)} (${dName})` : dName;
-                    
                     let nomePrimario = isCapitalReq ? `${capitalize(res.matchedCountry.capitale)} (${capitalize(res.matchedCountry.nome)})` : capitalize(res.matchedCountry.nome);
                     
                     if (currentTurnData.maxPossible > 1) {
@@ -2766,23 +2807,28 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                         }
                     }
 
-                    inputEl.value = `Corretto! +${puntiGuadagnati}pt - ${nomeInserito}`; 
-                    
-                    if (badgeText !== "") {
-                        eventBadge.innerHTML = badgeText;
-                        eventBadge.style.borderColor = badgeBorder;
-                        eventBadge.style.display = "block";
+                    if (isEndlessTrig) {
+                        inputEl.value = `VITTORIA! Mi inchino alla tua immensa conoscenza 👑`;
+                        inputEl.style.color = "#ffd700";
+                        if (badgeText !== "") { eventBadge.innerHTML = badgeText; eventBadge.style.borderColor = badgeBorder; eventBadge.style.display = "block"; } 
+                        else { eventBadge.style.display = "none"; }
+                        
+                        submitBtn.style.display = "none";
+                        nextBtn.style.display = "none";
+                        document.getElementById("ritirati-btn").style.display = "block";
+                        document.getElementById("continua-btn").style.display = "block";
                     } else {
-                        eventBadge.style.display = "none";
+                        inputEl.value = `Corretto! +${puntiGuadagnati}pt - ${nomeInserito}`; 
+                        if (badgeText !== "") { eventBadge.innerHTML = badgeText; eventBadge.style.borderColor = badgeBorder; eventBadge.style.display = "block"; } 
+                        else { eventBadge.style.display = "none"; }
+                        actionTimeout = setTimeout(() => {
+                            inputEl.classList.remove("correct-flash", "warning-flash");
+                            inputEl.value = "";
+                            inputEl.disabled = false;
+                            submitBtn.disabled = false;
+                            playTurn();
+                        }, 2600); 
                     }
-
-                    actionTimeout = setTimeout(() => {
-                        inputEl.classList.remove("correct-flash", "warning-flash");
-                        inputEl.value = "";
-                        inputEl.disabled = false;
-                        submitBtn.disabled = false;
-                        playTurn();
-                    }, 2600); 
                 }
             } else {
                 if (useTimer) stopTimer();
@@ -2848,7 +2894,6 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
 
             if (allCorrect || isGrazia) {
                 
-                // Modifica V1.7.10: Il calcolo delle ignorate avviene SOLO in caso di successo!
                 if (currentTurnData.validSiglas && currentTurnData.validSiglas.length <= 20) {
                     currentTurnData.validSiglas.forEach(s => {
                         if (!matchedSiglas.includes(s)) nazioniIgnorateCount[s] = (nazioniIgnorateCount[s] || 0) + 1;
@@ -2973,6 +3018,12 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                     nomiTrovati = arrayNomiTrovati.join(", ");
                 }
 
+                let isEndlessTrig = false;
+                if ((currentLevel === 3 || currentLevel === 4) && punteggio >= 10000 && !endlessVittoriaSbloccata) {
+                    isEndlessTrig = true;
+                    endlessVittoriaSbloccata = true;
+                }
+
                 if (currentTurnData.maxPossible > comboInserted.length) {
                     let rimanenti = currentTurnData.validAnswersCache.filter(v => !arrayNomiPrimariTrovati.includes(v));
                     if (rimanenti.length > 0) {
@@ -2981,21 +3032,28 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                     } else comboTracker.style.display = "none";
                 } else comboTracker.style.display = "none";
 
-                inputEl.value = `Corretto! +${puntiRound}pt - ${nomiTrovati}`; 
-                
-                if (badgeText !== "") {
-                    eventBadge.innerHTML = badgeText;
-                    eventBadge.style.backgroundColor = badgeBg;
-                    eventBadge.style.color = badgeTxtColor;
-                    eventBadge.style.borderColor = badgeBorder;
-                    eventBadge.style.display = "block";
+                if (isEndlessTrig) {
+                    inputEl.value = `VITTORIA! Mi inchino alla tua immensa conoscenza 👑`;
+                    inputEl.style.color = "#ffd700";
+                    if (badgeText !== "") {
+                        eventBadge.innerHTML = badgeText; eventBadge.style.backgroundColor = badgeBg;
+                        eventBadge.style.color = badgeTxtColor; eventBadge.style.borderColor = badgeBorder;
+                        eventBadge.style.display = "block";
+                    } else { eventBadge.style.display = "none"; }
+                    submitBtn.style.display = "none";
+                    nextBtn.style.display = "none";
+                    document.getElementById("ritirati-btn").style.display = "block";
+                    document.getElementById("continua-btn").style.display = "block";
                 } else {
-                    eventBadge.style.display = "none";
+                    inputEl.value = `Corretto! +${puntiRound}pt - ${nomiTrovati}`; 
+                    if (badgeText !== "") {
+                        eventBadge.innerHTML = badgeText; eventBadge.style.backgroundColor = badgeBg;
+                        eventBadge.style.color = badgeTxtColor; eventBadge.style.borderColor = badgeBorder;
+                        eventBadge.style.display = "block";
+                    } else { eventBadge.style.display = "none"; }
+                    submitBtn.style.display = "none";
+                    nextBtn.style.display = "block";
                 }
-                
-                submitBtn.style.display = "none";
-                nextBtn.style.display = "block";
-
             }
         }
 
