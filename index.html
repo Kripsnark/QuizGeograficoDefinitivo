@@ -529,7 +529,7 @@
         </div>
     </div>
     
-    <div id="version-badge">v1.9.5</div>
+    <div id="version-badge">v1.9.6</div>
 
     <div id="modal-overlay">
         <div id="modal-content">
@@ -557,7 +557,7 @@ AW	Aruba		Oranjestad			Nord America, caraibi	azzurro, giallo, rosso		stella	x	st
 AH	Ascensione	Isola di Ascensione	Georgetown			Africa	blu		emblema nazionale, tartaruga, animale, union jack	x		3
 AU	Australia		Canberra			Oceania	blu	bianco	union jack,croce del sud, stella		stella bianca	1
 AT	Austria		Vienna		cechia, slovacchia, ungheria, slovenia, italia, liechtenstein, svizzera, germania	Europa	rosso, bianco				strisce orizzontali	1
-AZ	Azerbaigian		Baku		russia, georgia, armenia, iran, turchia	Asia	azzurro, rosso, verde, giallo	bianco	mezzaluna, stella		strisce orizzontali, mezzaluna bianca, stella bianca	2
+AZ	Azerbaigian		Baku		russia, georgia, armenia, iran, turchia	Asia	azzurro, rosso, verde	bianco	mezzaluna, stella		strisce orizzontali, mezzaluna bianca, stella bianca	2
 BS	Bahamas		Nassau			Nord America, caraibi	nero, azzurro, giallo				triangolo a sinistra nero	2
 BH	Bahrein	Barein, Bahrain	Manama		arabia saudita, mare	asia, Medio Oriente, Penisola Arabica	bianco, rosso					2
 JE	Baliato di Jersey		Saint Helier			Europa	bianco, rosso			x	croce di Sant'Andrea (X)	3
@@ -755,7 +755,7 @@ STE	Sint Eustatius	S eustatius	Oranjestad			Nord America, caraibi	rosso, blu, bi
 SX	Sint Maarten	S Maarten	Philipsburg		saint-martin, mare		bianco, rosso, blu		emblema nazionale	x	triangolo a sinistra bianco	3
 SY	Siria		Damasco		turchia, iraq, giordania, israele, libano, mare	asia, medio oriente	verde, bianco, nero	rosso	stella		strisce orizzontali, stella rossa	1
 SK	Slovacchia		Bratislava		cechia, polonia, ucraina, ungheria, austria	europa	bianco, blu, rosso		emblema nazionale		strisce orizzontali	1
-SI	Slovenia		Lubiana		italia, austria, ungheria, croazia, mare	europa, Mediterraneo, Balcani	bianco, blu, rosso		emblema nazionale		strisce orizzontali	1
+SI	Slovenia		Lubiana		italia, austria, ungheria, croazia, mare	europa, Mediterraneo, Balcani	bianco, blu, rosso		emblema nazionale		strisce verticali	1
 SO	Somalia		Mogadiscio		gibuti, etiopia, kenya, mare	africa, africa centrale	azzurro, bianco	bianco	stella		stella bianca	1
 ES	Spagna		Madrid		portogallo, francia, andorra, gibilterra, marocco, mare	Europa, Mediterraneo	rosso, giallo		emblema nazionale, corona		strisce orizzontali	1
 LK	Sri Lanka		Sri Jayawardenapura Kotte	Kotte		Asia, Subcontinente indiano	giallo, rosso, verde, arancione	giallo	emblema nazionale			2
@@ -877,6 +877,26 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             };
             reader.readAsText(file);
         }
+
+        window.clearAllData = function() {
+            if (confirm("⚠️ ATTENZIONE! Vuoi davvero eliminare TUTTI i record, le statistiche e la cronologia delle nazioni? L'azione è irreversibile!")) {
+                localStorage.removeItem('geoQuizStats');
+                allTimeBestScore = 0; allTimeBestStreak = 0;
+                allTimeFotofinish = 0; allTimeGrazie = 0;
+                allTimeNazioniCount = {}; allTimeNazioniIgnorate = {}; 
+                allTimeBestAvgTime = 0;
+                globalPlays = 0;
+                statsByLevel = {
+                    1: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 },
+                    2: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 },
+                    3: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 },
+                    4: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0, fotofinish: 0, grazie: 0 },
+                    5: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0, fotofinish: 0, grazie: 0 }
+                };
+                alert("✅ Dati eliminati con successo.");
+                closeModal(); 
+            }
+        };
 
         loadStats();
         // ----------------------------------------------------
@@ -1300,9 +1320,10 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                     
                     <!-- 4. TASTI IMPORT/EXPORT (Fissi in basso) -->
                     <div style="display:flex; gap:10px; justify-content:center; flex-shrink:0;">
-                        <button onclick="exportBackup()" style="flex:1; background:#2a2a2a; color:#fff; border:1px solid #444; padding:10px; border-radius:6px; font-weight:bold; font-size:12px; cursor:pointer;">💾 ESPORTA JSON</button>
+                        <button onclick="exportBackup()" style="flex:1; background:#2a2a2a; color:#fff; border:1px solid #444; padding:10px; border-radius:6px; font-weight:bold; font-size:12px; cursor:pointer;">💾 ESPORTA</button>
+                        <button onclick="clearAllData()" style="flex:1; background:#d32f2f; color:#fff; border:1px solid #444; padding:10px; border-radius:6px; font-weight:bold; font-size:12px; cursor:pointer;">🗑️ CANCELLA DATI</button>
                         <label style="flex:1; background:#2a2a2a; color:#fff; border:1px solid #444; padding:10px; border-radius:6px; font-weight:bold; font-size:12px; cursor:pointer; text-align:center; margin:0;">
-                            📂 IMPORTA JSON <input type="file" accept=".json" style="display:none;" onchange="importBackup(event)">
+                            📂 IMPORTA <input type="file" accept=".json" style="display:none;" onchange="importBackup(event)">
                         </label>
                     </div>
                 </div>
@@ -1350,15 +1371,12 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             });
         }
 
-       function startGame(lvl) {
+        function startGame(lvl) {
             document.body.style.overscrollBehavior = "none"; 
             currentLevel = lvl;
             levelDb = globalDb.filter(n => n.livello <= (lvl === 5 ? 3 : lvl)); 
             
-            // IL LOG PARTE QUI CON IL LIVELLO CORRETTO
             debugGameLog = "=== GEOQUIZ DEBUG LOG ===\nData: " + new Date().toLocaleString() + "\nLivello Giocato: " + currentLevel + "\n\n";
-
-            levelDb = globalDb.filter(n => n.livello <= (lvl === 5 ? 3 : lvl)); 
             
             document.getElementById("start-screen").style.display = "none";
             document.getElementById("custom-setup-screen").style.display = "none";
@@ -1380,7 +1398,6 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             currentLevel = 5;
             levelDb = globalDb;
             
-            // IL LOG PARTE QUI PER LA CUSTOM
             debugGameLog = "=== GEOQUIZ DEBUG LOG ===\nData: " + new Date().toLocaleString() + "\nLivello Giocato: 5 (Personalizzata)\n\n";
             
             document.getElementById("start-screen").style.display = "none";
@@ -1395,7 +1412,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
         }
 
         function resetGame() {
-            debugGameLog = "";
+            debugGameLog = ""; 
             clearTimeout(actionTimeout); 
             stopTimer();
             document.body.style.overscrollBehavior = "auto"; 
@@ -1915,7 +1932,6 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                         break;
                 }
                 
-                // SISTEMA DI AGGANCIO DELLE NUOVE NEGAZIONI GEOGRAFICHE
                 if (![0, 1, 9, 10].includes(format)) {
                     let punc = finalQ.slice(-1);
                     let base = finalQ.slice(0, -1);
@@ -2105,9 +2121,12 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                         if (targetConfini.includes(name)) { m = true; break; }
                     }
                     if (m && country.indipendente) {
-                        if (td.format === 0 || td.format === 10) {
-                            if (country.capitale) validList.push(capitalize(country.capitale) + " (" + capitalize(country.nome) + ")");
-                        } else validList.push(capitalize(country.nome));
+                        let hasCap = (td.format === 0 || td.format === 10);
+                        if (!hasCap || country.capitale) {
+                            match = true; 
+                            if (hasCap) validList.push(capitalize(country.capitale) + " (" + capitalize(country.nome) + ")");
+                            else validList.push(capitalize(country.nome));
+                        }
                     }
                 } else {
                     if (td.format === 0) { if (country.sigla === td.targetNode.sigla) match = true; }
@@ -2153,7 +2172,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                             if (td.varEnigmistica === 1 && cn.endsWith(td.reqCapFin.toLowerCase())) textMatch = true;
                             if (td.varEnigmistica === 2 && cn.startsWith(td.reqCapInit.toLowerCase()) && cn.endsWith(td.reqCapFin.toLowerCase())) textMatch = true;
                             
-                            if (textMatch) validList.push(capitalize(country.capitale) + " (" + capitalize(country.nome) + ")");
+                            if (textMatch) match = true;
                         }
                     }
                     else if (td.format === 7) {
@@ -2591,7 +2610,8 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
         function surrenderTurn() {
             if (inputEl.disabled && errPanel.style.display === "flex") return; 
             
-            debugGameLog += "-> ESITO: 🏳️ RESA\n\n";
+            let surrTime = ((Date.now() - turnStartTime) / 1000).toFixed(1);
+            debugGameLog += `-> ESITO [${surrTime}s]: 🏳️ RESA\n\n`;
             
             if (currentLevel === 4 || (currentLevel === 5 && customConfig.timer)) stopTimer();
             
@@ -2719,11 +2739,12 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             totalAnswersSubmitted++;
             totalActiveTimeMs += (Date.now() - turnStartTime);
             
+            let actionTime = ((Date.now() - turnStartTime) / 1000).toFixed(1);
             if (isMulti) {
-                if(res.isCorrect) debugGameLog += "-> INPUT COMBO PARZIALE: " + inputStr + " (Riconosciuto: " + res.matchedCountry.nome + ")\n";
-                else debugGameLog += "-> INPUT COMBO ERRATO: " + inputStr + "\n";
+                if(res.isCorrect) debugGameLog += `-> INPUT COMBO PARZIALE [${actionTime}s]: ` + inputStr + " (Riconosciuto: " + res.matchedCountry.nome + ")\n";
+                else debugGameLog += `-> INPUT COMBO ERRATO [${actionTime}s]: ` + inputStr + "\n";
             } else {
-                if(res.isCorrect) debugGameLog += "-> ESITO: ✅ CORRETTO (Input: " + inputStr + " -> Riconosciuto: " + res.matchedCountry.nome + ")\n\n";
+                if(res.isCorrect) debugGameLog += `-> ESITO [${actionTime}s]: ✅ CORRETTO (Input: ` + inputStr + " -> Riconosciuto: " + res.matchedCountry.nome + ")\n\n";
             }
 
             if (res.isCorrect) {
@@ -2935,7 +2956,8 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
 
             if (allCorrect || isGrazia) {
                 
-                debugGameLog += "-> ESITO COMBO: ✅ SUPERATA" + (isGrazia ? " CON GRAZIA" : "") + " (Trovate: " + comboInserted.join(", ") + ")\n\n";
+                let comboTime = ((Date.now() - turnStartTime) / 1000).toFixed(1);
+                debugGameLog += `-> ESITO COMBO [${comboTime}s]: ✅ SUPERATA` + (isGrazia ? " CON GRAZIA" : "") + " (Trovate: " + comboInserted.join(", ") + ")\n\n";
                 
                 if (currentTurnData.validSiglas && currentTurnData.validSiglas.length <= 20) {
                     currentTurnData.validSiglas.forEach(s => {
@@ -3101,7 +3123,8 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
         }
 
         function failStandard(wrongInput) {
-            debugGameLog += "-> ESITO: ❌ ERRORE (Input: " + (wrongInput || "Nessuno") + ")\n\n";
+            let failTime = ((Date.now() - turnStartTime) / 1000).toFixed(1);
+            debugGameLog += `-> ESITO [${failTime}s]: ❌ ERRORE (Input: ` + (wrongInput || "Nessuno") + ")\n\n";
             vite--;
             currentStreak = 0;
             aggiornaUI();
@@ -3138,7 +3161,8 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
         }
 
         function failMulti(reason, wrongInput) {
-            debugGameLog += "-> ESITO: ❌ FALLIMENTO COMBO (" + reason + ") (Input: " + (wrongInput || "Nessuno") + ")\n\n";
+            let failTime = ((Date.now() - turnStartTime) / 1000).toFixed(1);
+            debugGameLog += `-> ESITO [${failTime}s]: ❌ FALLIMENTO COMBO (` + reason + ") (Input: " + (wrongInput || "Nessuno") + ")\n\n";
             vite--;
             currentStreak = 0;
             aggiornaUI();
