@@ -525,7 +525,7 @@
             <div id="top5-nations" style="display:none; width: 100%; max-width: 700px; background-color: #1e1e1e; border-radius: 8px; padding: 20px; margin-top: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-align: left;"></div>
             
             <button id="submit-btn" style="display:block; margin-top:20px; width: 200px;" onclick="resetGame()">RITORNA ALLA HOME</button>
-            <button onclick="downloadDebugLog()" style="display:block; margin-top:10px; width: 200px; background-color: #ff9800; color: #121212; border: none; padding: 12px; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase;">🐞 SCARICA LOG DI TEST</button>
+            <button onclick="downloadDebugLog()" style="display:block; margin-top:10px; width: 200px; background-color: #2196f3; color: #fff; border: none; padding: 12px; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase;">🐞 SCARICA LOG DI TEST</button>
         </div>
     </div>
     
@@ -555,7 +555,7 @@ AR	Argentina		Buenos Aires		uruguay, brasile, paraguay, bolivia, cile, mare	Sud 
 AM	Armenia		Erevan		georgia, azerbaigian, iran, turchia	Asia	rosso blu, giallo				strisce orizzontali	2
 AW	Aruba		Oranjestad			Nord America, caraibi	azzurro, giallo, rosso		stella	x	stella rossa	3
 AH	Ascensione	Isola di Ascensione	Georgetown			Africa	blu		emblema nazionale, tartaruga, animale, union jack	x		3
-AU	Australia		Canberra			Oceania	blu	bianco	union jack,croce del sud, stella			1
+AU	Australia		Canberra			Oceania	blu	bianco	union jack,croce del sud, stella		stella bianca	1
 AT	Austria		Vienna		cechia, slovacchia, ungheria, slovenia, italia, liechtenstein, svizzera, germania	Europa	rosso, bianco				strisce orizzontali	1
 AZ	Azerbaigian		Baku		russia, georgia, armenia, iran, turchia	Asia	azzurro, rosso, verde, giallo	bianco	mezzaluna, stella		strisce orizzontali, mezzaluna bianca, stella bianca	2
 BS	Bahamas		Nassau			Nord America, caraibi	nero, azzurro, giallo				triangolo a sinistra nero	2
@@ -987,10 +987,14 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
 
         let debugGameLog = "";
         function downloadDebugLog() {
+            let now = new Date();
+            let pad = (num) => String(num).padStart(2, '0');
+            let dataOra = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+            
             let dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(debugGameLog);
             let node = document.createElement('a');
             node.setAttribute("href", dataStr);
-            node.setAttribute("download", "GeoQuiz_DebugLog.txt");
+            node.setAttribute("download", `QG_DebugLog_${dataOra}.txt`);
             document.body.appendChild(node);
             node.click();
             node.remove();
