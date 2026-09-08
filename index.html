@@ -529,7 +529,7 @@
         </div>
     </div>
     
-    <div id="version-badge">v1.9.5.2</div>
+    <div id="version-badge">v1.9.5</div>
 
     <div id="modal-overlay">
         <div id="modal-content">
@@ -3334,6 +3334,19 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             } else {
                 top5Container.style.display = "none";
             }
+
+            // --- AGGIUNTA DELLE STATISTICHE AL FILE DI LOG ---
+            debugGameLog += "========================================\n";
+            debugGameLog += "[STATISTICHE FINALI PARTITA]\n";
+            debugGameLog += "Esito: " + (isVictory ? "🏆 VITTORIA" : "💀 GAME OVER") + "\n";
+            debugGameLog += "Punteggio: " + punteggio + " | Esatte: " + esatte + " | Serie Max: " + bestStreak + "\n";
+            debugGameLog += "Tempo Medio di Risposta: " + avgTime + "s\n";
+            if (currentLevel >= 4 || currentLevel === 5) {
+                debugGameLog += "Salvataggi al Fotofinish: " + fotofinishCount + " | Grazie Ricevute: " + grazieRicevuteCount + "\n";
+            }
+            debugGameLog += "Top 5 Usate: " + (sortedUsate.length > 0 ? sortedUsate.map(u => u.nome + " (" + u.count + ")").join(", ") : "Nessuna") + "\n";
+            debugGameLog += "Top 5 Ignorate: " + (sortedIgnorate.length > 0 ? sortedIgnorate.map(i => i.nome + " (" + i.count + ")").join(", ") : "Nessuna") + "\n";
+            debugGameLog += "========================================\n";
         }
 
         document.addEventListener("keydown", function(event) {
@@ -3392,19 +3405,6 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                 newWorker.postMessage('SKIP_WAITING');
             }
             document.getElementById('update-banner').style.display = 'none';
-	
-	// --- AGGIUNTA DELLE STATISTICHE AL FILE DI LOG ---
-            debugGameLog += "========================================\n";
-            debugGameLog += "[STATISTICHE FINALI PARTITA]\n";
-            debugGameLog += "Esito: " + (isVictory ? "🏆 VITTORIA" : "💀 GAME OVER") + "\n";
-            debugGameLog += "Punteggio: " + punteggio + " | Esatte: " + esatte + " | Serie Max: " + bestStreak + "\n";
-            debugGameLog += "Tempo Medio di Risposta: " + avgTime + "s\n";
-            if (currentLevel >= 4 || currentLevel === 5) {
-                debugGameLog += "Salvataggi al Fotofinish: " + fotofinishCount + " | Grazie Ricevute: " + grazieRicevuteCount + "\n";
-            }
-            debugGameLog += "Top 5 Usate: " + (sortedUsate.length > 0 ? sortedUsate.map(u => u.nome + " (" + u.count + ")").join(", ") : "Nessuna") + "\n";
-            debugGameLog += "Top 5 Ignorate: " + (sortedIgnorate.length > 0 ? sortedIgnorate.map(i => i.nome + " (" + i.count + ")").join(", ") : "Nessuna") + "\n";
-            debugGameLog += "========================================\n";
         }
         
     </script>
