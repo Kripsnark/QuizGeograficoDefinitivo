@@ -497,10 +497,11 @@
             </div>
             
             <div class="action-btn-group">
-                <button id="surrender-btn" onclick="surrenderTurn()">🏳️ ARRENDITI</button>
-                <button id="submit-btn" onclick="processaRisposta()">INVIA</button>
-                <button id="next-btn" onclick="nextTurnMulti()">PROSSIMA DOMANDA ➔</button>
-            </div>
+            <button id="surrender-btn" onclick="surrenderTurn()">🏳️ ARRENDITI</button>
+            <button id="submit-btn" onclick="processaRisposta()">INVIA</button>
+            <button id="next-btn" onclick="nextTurnMulti()">PROSSIMA DOMANDA ➔</button>
+            <button id="ritirati-btn" onclick="ritiratiLeggenda()" style="display:none; background-color: #ffd700; color: #121212; border: none; font-size: 16px; padding: 15px 20px; cursor: pointer; border-radius: 4px; font-weight: bold; flex-grow: 1;">🏆 RITIRATI DA LEGGENDA</button>
+            <button id="continua-btn" onclick="continuaSfida()" style="display:none; background-color: #4caf50; color: #fff; border: none; font-size: 16px; padding: 15px 20px; cursor: pointer; border-radius: 4px; font-weight: bold; flex-grow: 1;">⚔️ CONTINUA LA SFIDA</button>
         </div>
 
         <div id="game-over-screen">
@@ -979,6 +980,8 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
         let turnStartTime = 0;
         let totalActiveTimeMs = 0;
         let totalAnswersSubmitted = 0;
+    
+        let endlessVittoriaSbloccata = false; // NUOVA VARIABILE
 
         const capitalize = str => str ? str.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : "";
         
@@ -1387,6 +1390,11 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             vite = 3; esatte = 0; punteggio = 0; prossimoCuore = 750;
             currentStreak = 0; bestStreak = 0; fotofinishCount = 0; grazieRicevuteCount = 0;
             errororiCommessi = []; comboInserted = []; nazioniUsate = [];
+        
+            endlessVittoriaSbloccata = false;
+            document.getElementById("ritirati-btn").style.display = "none";
+            document.getElementById("continua-btn").style.display = "none";
+            inputEl.style.color = "";
             
             nazioniDigitateCount = {}; nazioniIgnorateCount = {}; 
             totalActiveTimeMs = 0; totalAnswersSubmitted = 0;
@@ -3062,6 +3070,30 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             }
         }
 
+        function ritiratiLeggenda() {
+            inputEl.style.color = "";
+            document.getElementById("ritirati-btn").style.display = "none";
+            document.getElementById("continua-btn").style.display = "none";
+            popolaGameOver(true);
+        }
+
+        function continuaSfida() {
+            inputEl.style.color = "";
+            document.getElementById("ritirati-btn").style.display = "none";
+            document.getElementById("continua-btn").style.display = "none";
+            
+            let isMulti = (currentLevel === 4 || (currentLevel === 5 && (customConfig.maxCombo > 1 || customConfig.timer)));
+            if (isMulti) {
+                nextTurnMulti();
+            } else {
+                inputEl.classList.remove("correct-flash", "warning-flash");
+                inputEl.value = "";
+                inputEl.disabled = false;
+                submitBtn.disabled = false;
+                playTurn();
+            }
+        }
+        
         function aggiornaUI() {
             let cuoriStringa = "";
             for(let i=0; i<vite; i++) cuoriStringa += "❤️";
@@ -3205,15 +3237,18 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             if (document.getElementById("input-area").style.display !== "flex") return;
 
             if (event.key === "Enter") {
-                if (nextBtn.style.display === "block") {
-                    nextTurnMulti(); 
-                    event.preventDefault(); 
-                } else if (!inputEl.disabled && errPanel.style.display !== "flex") {
-                    processaRisposta(); 
-                    event.preventDefault();
-                }
-                return;
+            if (document.getElementById("continua-btn").style.display === "block") {
+                continuaSfida();
+                event.preventDefault();
+            } else if (nextBtn.style.display === "block") {
+                nextTurnMulti(); 
+                event.preventDefault(); 
+            } else if (!inputEl.disabled && errPanel.style.display !== "flex") {
+                processaRisposta(); 
+                event.preventDefault();
             }
+            return;
+        }
 
             if (event.key.length === 1 && !event.ctrlKey && !event.altKey && !event.metaKey && !inputEl.disabled) {
                 if (document.activeElement !== inputEl) {
