@@ -528,7 +528,7 @@
         </div>
     </div>
     
-    <div id="version-badge">v1.9.3</div>
+    <div id="version-badge">v1.9.4</div>
 
     <div id="modal-overlay">
         <div id="modal-content">
@@ -1335,6 +1335,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
         }
 
         function startGame(lvl) {
+            document.body.style.overscrollBehavior = "none"; // BLOCCO SCORRIMENTO ATTIVATO
             currentLevel = lvl;
             levelDb = globalDb.filter(n => n.livello <= (lvl === 5 ? 3 : lvl)); 
             
@@ -1354,6 +1355,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                 alert("Seleziona almeno un argomento!");
                 return;
             }
+            document.body.style.overscrollBehavior = "none"; // BLOCCO SCORRIMENTO ATTIVATO
             currentLevel = 5;
             levelDb = globalDb;
             
@@ -1369,8 +1371,11 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
         }
 
         function resetGame() {
+            function resetGame() {
             clearTimeout(actionTimeout); 
             stopTimer();
+            document.body.style.overscrollBehavior = "auto"; // SCORRIMENTO RIATTIVATO (Passaggio 2)
+            
             inputEl.disabled = false;    
             submitBtn.disabled = false;
             submitBtn.style.display = "block";
