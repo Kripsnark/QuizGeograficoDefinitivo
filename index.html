@@ -528,7 +528,7 @@
         </div>
     </div>
     
-    <div id="version-badge">v1.9.4</div>
+    <div id="version-badge">v1.9.5</div>
 
     <div id="modal-overlay">
         <div id="modal-content">
@@ -2032,6 +2032,8 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             }
 
             if (tempValid.length === 0) return generateQuestion(); 
+            
+            getValidAnswersArray(td, currentLevel);
             
             td.maxPossible = tempValid.length;
             td.validAnswersCache = tempValid;
