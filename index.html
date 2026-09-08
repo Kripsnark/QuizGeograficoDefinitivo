@@ -1350,9 +1350,14 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             });
         }
 
-        function startGame(lvl) {
+       function startGame(lvl) {
             document.body.style.overscrollBehavior = "none"; 
             currentLevel = lvl;
+            levelDb = globalDb.filter(n => n.livello <= (lvl === 5 ? 3 : lvl)); 
+            
+            // IL LOG PARTE QUI CON IL LIVELLO CORRETTO
+            debugGameLog = "=== GEOQUIZ DEBUG LOG ===\nData: " + new Date().toLocaleString() + "\nLivello Giocato: " + currentLevel + "\n\n";
+
             levelDb = globalDb.filter(n => n.livello <= (lvl === 5 ? 3 : lvl)); 
             
             document.getElementById("start-screen").style.display = "none";
@@ -1375,6 +1380,9 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             currentLevel = 5;
             levelDb = globalDb;
             
+            // IL LOG PARTE QUI PER LA CUSTOM
+            debugGameLog = "=== GEOQUIZ DEBUG LOG ===\nData: " + new Date().toLocaleString() + "\nLivello Giocato: 5 (Personalizzata)\n\n";
+            
             document.getElementById("start-screen").style.display = "none";
             document.getElementById("custom-setup-screen").style.display = "none";
             document.getElementById("header").style.display = "flex";
@@ -1387,7 +1395,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
         }
 
         function resetGame() {
-            debugGameLog = "=== GEOQUIZ DEBUG LOG ===\nData: " + new Date().toLocaleString() + "\nLivello: " + currentLevel + "\n\n";
+            debugGameLog = "";
             clearTimeout(actionTimeout); 
             stopTimer();
             document.body.style.overscrollBehavior = "auto"; 
@@ -3384,6 +3392,19 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                 newWorker.postMessage('SKIP_WAITING');
             }
             document.getElementById('update-banner').style.display = 'none';
+	
+	// --- AGGIUNTA DELLE STATISTICHE AL FILE DI LOG ---
+            debugGameLog += "========================================\n";
+            debugGameLog += "[STATISTICHE FINALI PARTITA]\n";
+            debugGameLog += "Esito: " + (isVictory ? "🏆 VITTORIA" : "💀 GAME OVER") + "\n";
+            debugGameLog += "Punteggio: " + punteggio + " | Esatte: " + esatte + " | Serie Max: " + bestStreak + "\n";
+            debugGameLog += "Tempo Medio di Risposta: " + avgTime + "s\n";
+            if (currentLevel >= 4 || currentLevel === 5) {
+                debugGameLog += "Salvataggi al Fotofinish: " + fotofinishCount + " | Grazie Ricevute: " + grazieRicevuteCount + "\n";
+            }
+            debugGameLog += "Top 5 Usate: " + (sortedUsate.length > 0 ? sortedUsate.map(u => u.nome + " (" + u.count + ")").join(", ") : "Nessuna") + "\n";
+            debugGameLog += "Top 5 Ignorate: " + (sortedIgnorate.length > 0 ? sortedIgnorate.map(i => i.nome + " (" + i.count + ")").join(", ") : "Nessuna") + "\n";
+            debugGameLog += "========================================\n";
         }
         
     </script>
