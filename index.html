@@ -1284,58 +1284,18 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             openModal("🏆 STORICO", html);
         }
 
-                const renderLvl = (name, s, isPro, vicThreshold) => {
-                let pStr = s.plays > 0 ? `${s.bestScore}` : `-`;
-                let vicStr = (vicThreshold && s.bestScore >= vicThreshold) ? " 🏆" : "";
-                
-                let h = `<div style="background:#2a2a2a; border:1px solid #444; border-radius:6px; padding:10px; text-align:left;">
-                    <div style="color:#ffd700; font-size:12px; font-weight:bold; margin-bottom:5px; border-bottom:1px solid #444; padding-bottom:3px;">${name} (Giocate: ${s.plays})</div>
-                    <div style="font-size:11px; color:#ccc; margin-bottom:2px;">Miglior Score: <strong style="color:#fff;">${pStr}${vicStr}</strong></div>
-                    <div style="font-size:11px; color:#ccc; margin-bottom:2px;">Miglior Serie: <strong style="color:#fff;">${s.bestStreak || 0}</strong></div>
-                    <div style="font-size:11px; color:#ccc;">Tempo Medio: <strong style="color:#fff;">${s.bestAvgTime > 0 ? s.bestAvgTime + "s" : "-"}</strong></div>`;
-                if (isPro) {
-                    h += `<div style="font-size:11px; color:#ccc; margin-top:2px;">Fotofinish: <strong style="color:#2196f3;">${s.fotofinish || 0}</strong></div>
-                          <div style="font-size:11px; color:#ccc; margin-top:2px;">Grazie: <strong style="color:#ffd700;">${s.grazie || 0}</strong></div>`;
+        window.switchRecordTab = function(lvl) {
+            for(let i=1; i<=5; i++) {
+                document.getElementById('rbox-' + i).style.display = (i === lvl) ? 'block' : 'none';
+                let btn = document.getElementById('rtab-' + i);
+                if(i === lvl) {
+                    btn.style.backgroundColor = '#ffd700';
+                    btn.style.color = '#121212';
+                } else {
+                    btn.style.backgroundColor = '#2a2a2a';
+                    btn.style.color = '#ccc';
                 }
-                h += `</div>`;
-                return h;
-            };
-
-            let html = `
-                <div style="padding:5px; text-align:center;">
-                    <div style="margin-bottom: 15px;">
-                        <p style="font-size:14px; margin:0 0 10px 0; color:#aaa; text-transform:uppercase; font-weight:bold;">Partite Globali Giocate: <span style="color:#fff;">${globalPlays}</span></p>
-                        <div style="display:flex; gap:10px; justify-content:center;">
-                            <button onclick="exportBackup()" style="flex:1; background:#2196f3; color:#fff; border:none; padding:8px; border-radius:4px; font-weight:bold; font-size:12px; cursor:pointer;">💾 ESPORTA JSON</button>
-                            <label style="flex:1; background:#ff9800; color:#fff; border:none; padding:8px; border-radius:4px; font-weight:bold; font-size:12px; cursor:pointer;">
-                                📂 IMPORTA JSON <input type="file" accept=".json" style="display:none;" onchange="importBackup(event)">
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom: 20px;">
-                        ${renderLvl("1. APOLIDE", statsByLevel[1], false, 2500)}
-                        ${renderLvl("2. ACCASATO", statsByLevel[2], false, 3500)}
-                        ${renderLvl("3. COSMOPOLITA", statsByLevel[3], false, 5000)}
-                        ${renderLvl("4. DIVINITÀ", statsByLevel[4], true, null)}
-                        ${renderLvl("5. CUSTOM", statsByLevel[5], true, null)}
-                    </div>
-                    
-                    <hr style="border:0; border-top:1px dashed #444; margin:20px 0;">
-                    
-                    <div style="display:flex; gap:15px; text-align:left;">
-                        <div style="flex:1;">
-                            <h3 style="color:#4caf50; margin:0 0 10px 0; font-size:13px; text-transform:uppercase; text-align:center;">Top 10 Usate</h3>
-                            ${buildList(sortedUsate, "Nessuna nazione", "#4caf50")}
-                        </div>
-                        <div style="flex:1;">
-                            <h3 style="color:#f44336; margin:0 0 10px 0; font-size:13px; text-transform:uppercase; text-align:center;">Top 10 Ignorate</h3>
-                            ${buildList(sortedIgnorate, "Nessuna ignorata", "#f44336")}
-                        </div>
-                    </div>
-                </div>
-            `;
-            openModal("🏆 RECORD E STATISTICHE", html);
+            }
         }
 
         function openCustomSetup() {
