@@ -1082,7 +1082,7 @@
         </div>
     </div>
     
-    <div id="version-badge">v2.0.3.2</div>
+    <div id="version-badge">v2.0.3.3</div>
 
     <div id="modal-overlay">
         <div id="modal-content">
@@ -1759,7 +1759,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
         }
 
         function openDB() {
-            let tableHTML = \`<div class="db-table-container"><table class="db-table">
+            let tableHTML = `<div class="db-table-container"><table class="db-table">
                 <thead><tr>
                     <th>Bandiera</th>
                     <th>Sigla</th>
@@ -1771,27 +1771,27 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                     <th>Simboli</th>
                     <th>Formato Bandiera</th>
                     <th>Livello Base</th>
-                </tr></thead><tbody>\`;
+                </tr></thead><tbody>`;
             
             globalDb.forEach(n => {
-                tableHTML += \`<tr>
+                tableHTML += `<tr>
                     <td style="text-align:center;">
-                        <img src="GIF/\${n.sigla.toLowerCase()}.jpg" 
+                        <img src="GIF/${n.sigla.toLowerCase()}.jpg" 
                              style="width:40px; border-radius:2px; border:1px solid #444;" 
                              onerror="this.onerror=null; this.alt='❌ ERR'; this.style.border='2px solid #f44336'; this.style.padding='2px';">
                     </td>
-                    <td>\${n.sigla.toUpperCase()}</td>
-                    <td class="sticky-col" style="font-weight:bold;">\${capitalize(n.nome)}</td>
-                    <td>\${capitalize(n.capitale)}</td>
-                    <td>\${n.confini.map(capitalize).join(', ')}</td>
-                    <td>\${n.aree.map(capitalize).join(', ')}</td>
-                    <td>\${n.colori_base.map(capitalize).join(', ')}</td>
-                    <td>\${n.simboli.map(capitalize).join(', ')}</td>
-                    <td>\${n.formati_bandiera.map(capitalize).join(', ')}</td>
-                    <td>\${n.livello}</td>
-                </tr>\`;
+                    <td>${n.sigla.toUpperCase()}</td>
+                    <td class="sticky-col" style="font-weight:bold;">${capitalize(n.nome)}</td>
+                    <td>${capitalize(n.capitale)}</td>
+                    <td>${n.confini.map(capitalize).join(', ')}</td>
+                    <td>${n.aree.map(capitalize).join(', ')}</td>
+                    <td>${n.colori_base.map(capitalize).join(', ')}</td>
+                    <td>${n.simboli.map(capitalize).join(', ')}</td>
+                    <td>${n.formati_bandiera.map(capitalize).join(', ')}</td>
+                    <td>${n.livello}</td>
+                </tr>`;
             });
-            tableHTML += \`</tbody></table></div>\`;
+            tableHTML += `</tbody></table></div>`;
             openModal("📚 ENCICLOPEDIA", tableHTML);
         }
 
@@ -1807,82 +1807,82 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             }).sort((a, b) => b.count - a.count).slice(0, 10);
 
             const buildList = (arr, emptyMsg, color) => {
-                if (arr.length === 0) return \`<p style="text-align:center; color:#888; font-size:12px;">\${emptyMsg}</p>\`;
-                let h = \`<div style="display:flex; flex-direction:column;">\`;
+                if (arr.length === 0) return `<p style="text-align:center; color:#888; font-size:12px;">${emptyMsg}</p>`;
+                let h = `<div style="display:flex; flex-direction:column;">`;
                 arr.forEach((sn, idx) => {
-                    h += \`<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding: 3px 0; height: 22px;">
+                    h += `<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding: 3px 0; height: 22px;">
                             <div style="display:flex; align-items:center; gap:5px; flex:1; min-width:0; padding-right:5px;">
-                                <span style="color:#777; font-weight:bold; font-size:10px; width:14px; text-align:right; flex-shrink:0;">\${idx + 1}.</span>
-                                <img src="GIF/\${sn.sigla.toLowerCase()}.jpg" style="width:16px; height:11px; border-radius:2px; flex-shrink:0; object-fit:cover;" onerror="this.style.display='none'">
-                                <span style="color:#ccc; font-weight:bold; font-size:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; flex:1;">\${sn.nome.toUpperCase()}</span>
+                                <span style="color:#777; font-weight:bold; font-size:10px; width:14px; text-align:right; flex-shrink:0;">${idx + 1}.</span>
+                                <img src="GIF/${sn.sigla.toLowerCase()}.jpg" style="width:16px; height:11px; border-radius:2px; flex-shrink:0; object-fit:cover;" onerror="this.style.display='none'">
+                                <span style="color:#ccc; font-weight:bold; font-size:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; flex:1;">${sn.nome.toUpperCase()}</span>
                             </div>
-                            <span style="color:\${color}; font-weight:bold; font-size:11px; flex-shrink:0; width:15px; text-align:right;">\${sn.count}</span>
-                          </div>\`;
+                            <span style="color:${color}; font-weight:bold; font-size:11px; flex-shrink:0; width:15px; text-align:right;">${sn.count}</span>
+                          </div>`;
                 });
-                return h + \`</div>\`;
+                return h + `</div>`;
             };
 
             const renderLvlBox = (lvl, s, isPro, vicThreshold) => {
                 let vicStr = (vicThreshold && s.bestScore >= vicThreshold) ? " 🏆" : "";
-                let h = \`<div class="rbox-lvl" id="rbox-\${lvl}" style="display:\${lvl === 1 ? 'block' : 'none'}; background:#2a2a2a; border:1px solid #444; border-radius:6px; padding:6px 10px; margin-bottom:8px;">
+                let h = `<div class="rbox-lvl" id="rbox-${lvl}" style="display:${lvl === 1 ? 'block' : 'none'}; background:#2a2a2a; border:1px solid #444; border-radius:6px; padding:6px 10px; margin-bottom:8px;">
                     <div style="display:flex; justify-content:space-around; font-size:10px; color:#aaa; text-align:center;">
-                        <div style="display:flex; flex-direction:column;"><span>Partite</span><strong style="font-size:14px; color:#fff;">\${s.plays}</strong></div>
-                        <div style="display:flex; flex-direction:column;"><span>Record</span><strong style="font-size:14px; color:#fff;">\${s.plays > 0 ? s.bestScore : '-'}\${vicStr}</strong></div>
-                        <div style="display:flex; flex-direction:column;"><span>Serie Max</span><strong style="font-size:14px; color:#fff;">\${s.bestStreak || 0}</strong></div>
-                        <div style="display:flex; flex-direction:column;"><span>Tempo Med</span><strong style="font-size:14px; color:#fff;">\${s.bestAvgTime > 0 ? s.bestAvgTime + 's' : '-'}</strong></div>
-                    </div>\`;
+                        <div style="display:flex; flex-direction:column;"><span>Partite</span><strong style="font-size:14px; color:#fff;">${s.plays}</strong></div>
+                        <div style="display:flex; flex-direction:column;"><span>Record</span><strong style="font-size:14px; color:#fff;">${s.plays > 0 ? s.bestScore : '-'}${vicStr}</strong></div>
+                        <div style="display:flex; flex-direction:column;"><span>Serie Max</span><strong style="font-size:14px; color:#fff;">${s.bestStreak || 0}</strong></div>
+                        <div style="display:flex; flex-direction:column;"><span>Tempo Med</span><strong style="font-size:14px; color:#fff;">${s.bestAvgTime > 0 ? s.bestAvgTime + 's' : '-'}</strong></div>
+                    </div>`;
                 if (isPro) {
-                    h += \`<div style="display:flex; justify-content:center; gap:20px; font-size:10px; color:#888; margin-top:5px; border-top:1px dashed #444; padding-top:4px;">
-                            <span>Fotofinish: <strong style="color:#2196f3;">\${s.fotofinish || 0}</strong></span>
-                            <span>Grazie: <strong style="color:#ffd700;">\${s.grazie || 0}</strong></span>
-                          </div>\`;
+                    h += `<div style="display:flex; justify-content:center; gap:20px; font-size:10px; color:#888; margin-top:5px; border-top:1px dashed #444; padding-top:4px;">
+                            <span>Fotofinish: <strong style="color:#2196f3;">${s.fotofinish || 0}</strong></span>
+                            <span>Grazie: <strong style="color:#ffd700;">${s.grazie || 0}</strong></span>
+                          </div>`;
                 }
-                h += \`</div>\`;
+                h += `</div>`;
                 return h;
             };
 
             let btnStyle = "flex:1; padding:6px 2px; font-size:11px; font-weight:bold; cursor:pointer; border-radius:4px; border:1px solid #444; text-align:center; transition:all 0.2s; ";
-            let tabsHtml = \`<div style="display:flex; gap:5px; margin-bottom:8px; width:100%;">
-                <button id="rtab-1" onclick="switchRecordTab(1)" style="\${btnStyle} background:#ffd700; color:#121212;">L1</button>
-                <button id="rtab-2" onclick="switchRecordTab(2)" style="\${btnStyle} background:#2a2a2a; color:#ccc;">L2</button>
-                <button id="rtab-3" onclick="switchRecordTab(3)" style="\${btnStyle} background:#2a2a2a; color:#ccc;">L3</button>
-                <button id="rtab-4" onclick="switchRecordTab(4)" style="\${btnStyle} background:#2a2a2a; color:#ccc;">L4</button>
-                <button id="rtab-5" onclick="switchRecordTab(5)" style="\${btnStyle} background:#2a2a2a; color:#ccc;">CUST</button>
-            </div>\`;
+            let tabsHtml = `<div style="display:flex; gap:5px; margin-bottom:8px; width:100%;">
+                <button id="rtab-1" onclick="switchRecordTab(1)" style="${btnStyle} background:#ffd700; color:#121212;">L1</button>
+                <button id="rtab-2" onclick="switchRecordTab(2)" style="${btnStyle} background:#2a2a2a; color:#ccc;">L2</button>
+                <button id="rtab-3" onclick="switchRecordTab(3)" style="${btnStyle} background:#2a2a2a; color:#ccc;">L3</button>
+                <button id="rtab-4" onclick="switchRecordTab(4)" style="${btnStyle} background:#2a2a2a; color:#ccc;">L4</button>
+                <button id="rtab-5" onclick="switchRecordTab(5)" style="${btnStyle} background:#2a2a2a; color:#ccc;">CUST</button>
+            </div>`;
 
-            let html = \`
+            let html = `
                 <div style="padding:0px; display:flex; flex-direction:column; max-height:82vh;">
                     <div style="background:#1e1e1e; border:1px solid #ffd700; border-radius:6px; padding:6px 10px; margin-bottom:10px; text-align:center; flex-shrink:0;">
                         <div style="font-size:12px; color:#ffd700; font-weight:bold; margin-bottom:6px; text-transform:uppercase; letter-spacing:1px;">Statistiche Globali</div>
                         <div style="display:flex; justify-content:space-around; font-size:10px; color:#aaa;">
-                            <div style="display:flex; flex-direction:column;"><span>Partite</span><strong style="font-size:14px; color:#fff;">\${globalPlays}</strong></div>
-                            <div style="display:flex; flex-direction:column;"><span>Record Assoluto</span><strong style="font-size:14px; color:#fff;">\${allTimeBestScore}</strong></div>
-                            <div style="display:flex; flex-direction:column;"><span>Serie Max</span><strong style="font-size:14px; color:#fff;">\${allTimeBestStreak}</strong></div>
-                            <div style="display:flex; flex-direction:column;"><span>Tempo Med</span><strong style="font-size:14px; color:#fff;">\${allTimeBestAvgTime > 0 ? allTimeBestAvgTime + 's' : '-'}</strong></div>
+                            <div style="display:flex; flex-direction:column;"><span>Partite</span><strong style="font-size:14px; color:#fff;">${globalPlays}</strong></div>
+                            <div style="display:flex; flex-direction:column;"><span>Record Assoluto</span><strong style="font-size:14px; color:#fff;">${allTimeBestScore}</strong></div>
+                            <div style="display:flex; flex-direction:column;"><span>Serie Max</span><strong style="font-size:14px; color:#fff;">${allTimeBestStreak}</strong></div>
+                            <div style="display:flex; flex-direction:column;"><span>Tempo Med</span><strong style="font-size:14px; color:#fff;">${allTimeBestAvgTime > 0 ? allTimeBestAvgTime + 's' : '-'}</strong></div>
                         </div>
                         <div style="display:flex; justify-content:center; gap:20px; font-size:10px; color:#888; margin-top:5px; border-top:1px dashed #444; padding-top:4px;">
-                            <span>Tot. Fotofinish: <strong style="color:#2196f3;">\${allTimeFotofinish}</strong></span>
-                            <span>Tot. Grazie: <strong style="color:#ffd700;">\${allTimeGrazie}</strong></span>
+                            <span>Tot. Fotofinish: <strong style="color:#2196f3;">${allTimeFotofinish}</strong></span>
+                            <span>Tot. Grazie: <strong style="color:#ffd700;">${allTimeGrazie}</strong></span>
                         </div>
                     </div>
                     
                     <div style="flex-shrink:0;">
-                        \${tabsHtml}
-                        \${renderLvlBox(1, statsByLevel[1], false, 2500)}
-                        \${renderLvlBox(2, statsByLevel[2], false, 3500)}
-                        \${renderLvlBox(3, statsByLevel[3], false, 5000)}
-                        \${renderLvlBox(4, statsByLevel[4], true, null)}
-                        \${renderLvlBox(5, statsByLevel[5], true, null)}
+                        ${tabsHtml}
+                        ${renderLvlBox(1, statsByLevel[1], false, 2500)}
+                        ${renderLvlBox(2, statsByLevel[2], false, 3500)}
+                        ${renderLvlBox(3, statsByLevel[3], false, 5000)}
+                        ${renderLvlBox(4, statsByLevel[4], true, null)}
+                        ${renderLvlBox(5, statsByLevel[5], true, null)}
                     </div>
 
                     <div style="display:flex; gap:10px; text-align:left; flex-grow:1; overflow:hidden; margin-bottom:10px;">
                         <div style="flex:1;">
                             <h3 style="color:#4caf50; margin:0 0 4px 0; font-size:11px; text-transform:uppercase; text-align:center;">Top 10 Usate</h3>
-                            \${buildList(sortedUsate, "Nessuna", "#4caf50")}
+                            ${buildList(sortedUsate, "Nessuna", "#4caf50")}
                         </div>
                         <div style="flex:1;">
                             <h3 style="color:#f44336; margin:0 0 4px 0; font-size:11px; text-transform:uppercase; text-align:center;">Top 10 Ignorate</h3>
-                            \${buildList(sortedIgnorate, "Nessuna", "#f44336")}
+                            ${buildList(sortedIgnorate, "Nessuna", "#f44336")}
                         </div>
                     </div>
                     
@@ -1894,7 +1894,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                         </label>
                     </div>
                 </div>
-            \`;
+            `;
             openModal("🏆 STORICO E RECORD", html);
         }
 
@@ -2096,12 +2096,12 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             const a = area.trim().toUpperCase();
             const verbo = num === 1 ? "si trovi" : "si trovino";
             
-            if (a === "ANDE") return "che <span class=\"negative-constraint\">NON</span> " + verbo + " sulle <strong>ANDE</strong>";
-            if (a === "MEDITERRANEO" || a === "GOLFO DI GUINEA") return "che <span class=\"negative-constraint\">NON</span> " + verbo + " sul <strong>" + a + "</strong>";
-            if (a === "CARAIBI" || a === "BALCANI" || a === "PAESI BALTICI") return "che <span class=\"negative-constraint\">NON</span> " + verbo + " nei <strong>" + a + "</strong>";
-            if (a === "SUBCONTINENTE INDIANO" || a === "SUD-EST ASIATICO" || a === "MEDIO ORIENTE") return "che <span class=\"negative-constraint\">NON</span> " + verbo + " nel <strong>" + a + "</strong>";
-            if (a === "PENISOLA ARABICA" || a === "PENISOLA INDOCINESE") return "che <span class=\"negative-constraint\">NON</span> " + verbo + " nella <strong>" + a + "</strong>";
-            return "che <span class=\"negative-constraint\">NON</span> " + verbo + " in <strong>" + a + "</strong>";
+            if (a === "ANDE") return "che <span class='negative-constraint'>NON</span> " + verbo + " sulle <strong>ANDE</strong>";
+            if (a === "MEDITERRANEO" || a === "GOLFO DI GUINEA") return "che <span class='negative-constraint'>NON</span> " + verbo + " sul <strong>" + a + "</strong>";
+            if (a === "CARAIBI" || a === "BALCANI" || a === "PAESI BALTICI") return "che <span class='negative-constraint'>NON</span> " + verbo + " nei <strong>" + a + "</strong>";
+            if (a === "SUBCONTINENTE INDIANO" || a === "SUD-EST ASIATICO" || a === "MEDIO ORIENTE") return "che <span class='negative-constraint'>NON</span> " + verbo + " nel <strong>" + a + "</strong>";
+            if (a === "PENISOLA ARABICA" || a === "PENISOLA INDOCINESE") return "che <span class='negative-constraint'>NON</span> " + verbo + " nella <strong>" + a + "</strong>";
+            return "che <span class='negative-constraint'>NON</span> " + verbo + " in <strong>" + a + "</strong>";
         }
         
         function calcolaPuntiDomandaL1_3(format, numSoluzioni) {
@@ -2303,14 +2303,14 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             td.buildQuestionText = (num) => {
                 let areaP = td.selectedArea ? getPreposizioneArea(td.selectedArea) : "";
                 
-                let nI = "<span class=\\"target-highlight\\">NAZIONE INDIPENDENTE</span>";
-                let nI_p = \`<span class=\\"target-highlight\\">\${num} NAZIONI INDIPENDENTI</span>\`;
-                let sT = "<span class=\\"target-highlight\\">STATO O TERRITORIO</span>";
-                let sT_p = \`<span class=\\"target-highlight\\">\${num} STATI O TERRITORI</span>\`;
-                let sTI = "<span class=\\"target-highlight\\">STATO O TERRITORIO</span> <strong>INSULARE</strong>";
-                let sTI_p = \`<span class=\\"target-highlight\\">\${num} STATI O TERRITORI</span> <strong>INSULARI</strong>\`;
-                let cS = "<span class=\\"target-highlight\\">CAPITALE</span>";
-                let cS_p = \`<span class=\\"target-highlight\\">\${num} CAPITALI</span>\`;
+                let nI = "<span class='target-highlight'>NAZIONE INDIPENDENTE</span>";
+                let nI_p = `<span class='target-highlight'>${num} NAZIONI INDIPENDENTI</span>`;
+                let sT = "<span class='target-highlight'>STATO O TERRITORIO</span>";
+                let sT_p = `<span class='target-highlight'>${num} STATI O TERRITORI</span>`;
+                let sTI = "<span class='target-highlight'>STATO O TERRITORIO</span> <strong>INSULARE</strong>";
+                let sTI_p = `<span class='target-highlight'>${num} STATI O TERRITORI</span> <strong>INSULARI</strong>`;
+                let cS = "<span class='target-highlight'>CAPITALE</span>";
+                let cS_p = `<span class='target-highlight'>${num} CAPITALI</span>`;
 
                 let cloneHint = "";
                 if (format === 9 || format === 10) {
@@ -2320,7 +2320,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                         let areaPrincipale = td.targetNode.aree[0] || "";
                         if (areaPrincipale) {
                             areaPrincipale = areaPrincipale.toLowerCase();
-                            cloneHint = \` (in \${areaPrincipale})\`;
+                            cloneHint = ` (in ${areaPrincipale})`;
                         }
                     }
                 }
@@ -2331,11 +2331,11 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                     case 0:
                         if (num === 1) {
                             finalQ = td.isComboInception 
-                                ? \`Nomina 1 \${cS} di uno <strong>STATO INDIPENDENTE</strong> che confina via terra con la nazione <strong>\${td.targetNode.nome.toUpperCase()}</strong>.\` 
-                                : \`Qual è la \${cS} della nazione <strong>\${td.targetNode.nome.toUpperCase()}</strong>?\`;
+                                ? `Nomina 1 ${cS} di uno <strong>STATO INDIPENDENTE</strong> che confina via terra con la nazione <strong>${td.targetNode.nome.toUpperCase()}</strong>.` 
+                                : `Qual è la ${cS} della nazione <strong>${td.targetNode.nome.toUpperCase()}</strong>?`;
                         } else {
                             finalQ = td.isComboInception 
-                                ? \`Nomina \${cS_p} di altrettanti <strong>STATI INDIPENDENTI</strong> che confinano via terra con la nazione <strong>\${td.targetNode.nome.toUpperCase()}</strong>.\` 
+                                ? `Nomina ${cS_p} di altrettanti <strong>STATI INDIPENDENTI</strong> che confinano via terra con la nazione <strong>${td.targetNode.nome.toUpperCase()}</strong>.` 
                                 : "";
                         }
                         break;
@@ -2343,11 +2343,11 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                     case 1:
                         if (num === 1) {
                             finalQ = td.isComboInception 
-                                ? \`Nomina 1 \${nI} che confina via terra con lo Stato la cui capitale è <strong>\${td.targetNode.capitale.toUpperCase()}</strong>.\` 
-                                : \`Di quale \${sT} è capitale la città di <strong>\${td.targetNode.capitale.toUpperCase()}</strong>?\`;
+                                ? `Nomina 1 ${nI} che confina via terra con lo Stato la cui capitale è <strong>${td.targetNode.capitale.toUpperCase()}</strong>.` 
+                                : `Di quale ${sT} è capitale la città di <strong>${td.targetNode.capitale.toUpperCase()}</strong>?`;
                         } else {
                             finalQ = td.isComboInception 
-                                ? \`Nomina \${nI_p} che confinano via terra con lo Stato la cui capitale è <strong>\${td.targetNode.capitale.toUpperCase()}</strong>.\` 
+                                ? `Nomina ${nI_p} che confinano via terra con lo Stato la cui capitale è <strong>${td.targetNode.capitale.toUpperCase()}</strong>.` 
                                 : "";
                         }
                         break;
@@ -2355,112 +2355,112 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                     case 2:
                         if (num === 1) {
                             if (td.f2RequiresSymbol) {
-                                finalQ = \`Nomina 1 \${sT} la cui bandiera include il <strong>\${td.targetNode.colori_base[0].toUpperCase()}</strong> tra i colori di base e raffigura l'elemento grafico <strong>\${td.f2RequiresSymbol.toUpperCase()}</strong>.\`;
+                                finalQ = `Nomina 1 ${sT} la cui bandiera include il <strong>${td.targetNode.colori_base[0].toUpperCase()}</strong> tra i colori di base e raffigura l'elemento grafico <strong>${td.f2RequiresSymbol.toUpperCase()}</strong>.`;
                             } else {
-                                finalQ = \`Nomina 1 \${sT} la cui bandiera ha come UNICI colori di base <strong>\${td.targetNode.colori_base.join(', ').toUpperCase()}</strong>.\`;
+                                finalQ = `Nomina 1 ${sT} la cui bandiera ha come UNICI colori di base <strong>${td.targetNode.colori_base.join(', ').toUpperCase()}</strong>.`;
                             }
                         } else {
                             if (td.f2RequiresSymbol) {
-                                finalQ = \`Nomina \${sT_p} le cui bandiere includono il <strong>\${td.targetNode.colori_base[0].toUpperCase()}</strong> tra i colori di base e raffigurano l'elemento grafico <strong>\${td.f2RequiresSymbol.toUpperCase()}</strong>.\`;
+                                finalQ = `Nomina ${sT_p} le cui bandiere includono il <strong>${td.targetNode.colori_base[0].toUpperCase()}</strong> tra i colori di base e raffigurano l'elemento grafico <strong>${td.f2RequiresSymbol.toUpperCase()}</strong>.`;
                             } else {
-                                finalQ = \`Nomina \${sT_p} le cui bandiere hanno come UNICI colori di base <strong>\${td.targetNode.colori_base.join(', ').toUpperCase()}</strong>.\`;
+                                finalQ = `Nomina ${sT_p} le cui bandiere hanno come UNICI colori di base <strong>${td.targetNode.colori_base.join(', ').toUpperCase()}</strong>.`;
                             }
                         }
                         break;
                     
                     case 3:
                         if (num === 1) {
-                            let bT = \`Nomina 1 \${sT}\`;
-                            if (td.reqArea) bT += \` \${areaP}\`;
-                            if (td.reqInit) bT += \` che inizia con la lettera <strong>\${td.reqInit.toUpperCase()}</strong>\`;
-                            bT += (td.reqInit) ? \`, la cui bandiera \` : \` la cui bandiera \`;
-                            if (td.reqColor) bT += \`include il <strong>\${td.reqColor.toUpperCase()}</strong> e \`;
-                            if (td.isColoreEmblema) bT += \`raffigura un elemento grafico di colore <strong>\${td.elemScelto.toUpperCase()}</strong>\`;
-                            else bT += \`raffigura l'elemento grafico <strong>\${td.elemScelto.toUpperCase()}</strong>\`;
-                            if (td.negColor) bT += \` ma <span class="negative-constraint">NON</span> contiene il colore <strong>\${td.negColor.toUpperCase()}</strong>\`;
+                            let bT = `Nomina 1 ${sT}`;
+                            if (td.reqArea) bT += ` ${areaP}`;
+                            if (td.reqInit) bT += ` che inizia con la lettera <strong>${td.reqInit.toUpperCase()}</strong>`;
+                            bT += (td.reqInit) ? `, la cui bandiera ` : ` la cui bandiera `;
+                            if (td.reqColor) bT += `include il <strong>${td.reqColor.toUpperCase()}</strong> e `;
+                            if (td.isColoreEmblema) bT += `raffigura un elemento grafico di colore <strong>${td.elemScelto.toUpperCase()}</strong>`;
+                            else bT += `raffigura l'elemento grafico <strong>${td.elemScelto.toUpperCase()}</strong>`;
+                            if (td.negColor) bT += ` ma <span class='negative-constraint'>NON</span> contiene il colore <strong>${td.negColor.toUpperCase()}</strong>`;
                             finalQ = bT + ".";
                         } else {
-                            let bT = \`Nomina \${sT_p}\`;
-                            if (td.reqArea) bT += \` \${areaP}\`;
-                            if (td.reqInit) bT += \` che iniziano con la lettera <strong>\${td.reqInit.toUpperCase()}</strong>\`;
-                            bT += (td.reqInit) ? \`, le cui bandiere \` : \` le cui bandiere \`;
-                            if (td.reqColor) bT += \`includono il <strong>\${td.reqColor.toUpperCase()}</strong> e \`;
-                            if (td.isColoreEmblema) bT += \`raffigurano un elemento grafico di colore <strong>\${td.elemScelto.toUpperCase()}</strong>\`;
-                            else bT += \`raffigurano l'elemento grafico <strong>\${td.elemScelto.toUpperCase()}</strong>\`;
-                            if (td.negColor) bT += \` ma <span class="negative-constraint">NON</span> contengono il colore <strong>\${td.negColor.toUpperCase()}</strong>\`;
+                            let bT = `Nomina ${sT_p}`;
+                            if (td.reqArea) bT += ` ${areaP}`;
+                            if (td.reqInit) bT += ` che iniziano con la lettera <strong>${td.reqInit.toUpperCase()}</strong>`;
+                            bT += (td.reqInit) ? `, le cui bandiere ` : ` le cui bandiere `;
+                            if (td.reqColor) bT += `includono il <strong>${td.reqColor.toUpperCase()}</strong> e `;
+                            if (td.isColoreEmblema) bT += `raffigurano un elemento grafico di colore <strong>${td.elemScelto.toUpperCase()}</strong>`;
+                            else bT += `raffigurano l'elemento grafico <strong>${td.elemScelto.toUpperCase()}</strong>`;
+                            if (td.negColor) bT += ` ma <span class='negative-constraint'>NON</span> contengono il colore <strong>${td.negColor.toUpperCase()}</strong>`;
                             finalQ = bT + ".";
                         }
                         break;
                     
                     case 4:
-                        let f4t = (num === 1) ? \`Nomina 1 \${nI} che confina via terra SIA con <strong>\${td.reqConf1.toUpperCase()}</strong> SIA con <strong>\${td.reqConf2.toUpperCase()}</strong>\` : \`Nomina \${nI_p} che confinano via terra SIA con <strong>\${td.reqConf1.toUpperCase()}</strong> SIA con <strong>\${td.reqConf2.toUpperCase()}</strong>\`;
+                        let f4t = (num === 1) ? `Nomina 1 ${nI} che confina via terra SIA con <strong>${td.reqConf1.toUpperCase()}</strong> SIA con <strong>${td.reqConf2.toUpperCase()}</strong>` : `Nomina ${nI_p} che confinano via terra SIA con <strong>${td.reqConf1.toUpperCase()}</strong> SIA con <strong>${td.reqConf2.toUpperCase()}</strong>`;
                         if (td.negBorders && td.negBorders.length > 0) {
-                            let negB = td.negBorders.map(b => \`<strong>\${b.toUpperCase()}</strong>\`);
-                            if (negB.length === 1) f4t += \` ma <span class="negative-constraint">NON</span> con \${negB[0]}\`;
-                            else f4t += \` ma <span class="negative-constraint">NON</span> con \${negB.join(" e <span class=\\"negative-constraint\\">NON</span> con ")}\`;
+                            let negB = td.negBorders.map(b => `<strong>${b.toUpperCase()}</strong>`);
+                            if (negB.length === 1) f4t += ` ma <span class='negative-constraint'>NON</span> con ${negB[0]}`;
+                            else f4t += ` ma <span class='negative-constraint'>NON</span> con ${negB.join(" e <span class='negative-constraint'>NON</span> con ")}`;
                         }
                         finalQ = f4t + ".";
                         break;
                     
                     case 5:
                         if (num === 1) {
-                            let t5 = \`Nomina 1 \${nI}\`;
-                            if (td.reqArea) t5 += \` \${areaP}\`;
-                            t5 += \` che confina via terra con ESATTAMENTE <strong>\${td.targetNode.confini.length}</strong> stati.\`;
+                            let t5 = `Nomina 1 ${nI}`;
+                            if (td.reqArea) t5 += ` ${areaP}`;
+                            t5 += ` che confina via terra con ESATTAMENTE <strong>${td.targetNode.confini.length}</strong> stati.`;
                             finalQ = t5;
                         } else {
-                            let t5 = \`Nomina \${nI_p}\`;
-                            if (td.reqArea) t5 += \` \${areaP}\`;
-                            t5 += \` che confinano via terra con ESATTAMENTE <strong>\${td.targetNode.confini.length}</strong> stati.\`;
+                            let t5 = `Nomina ${nI_p}`;
+                            if (td.reqArea) t5 += ` ${areaP}`;
+                            t5 += ` che confinano via terra con ESATTAMENTE <strong>${td.targetNode.confini.length}</strong> stati.`;
                             finalQ = t5;
                         }
                         break;
                     
                     case 6:
                         if (num === 1) {
-                            if (td.varEnigmistica === 0) finalQ = \`Nomina 1 \${cS} \${areaP} che inizia con la lettera <strong>\${td.reqCapInit.toUpperCase()}</strong>.\`;
-                            if (td.varEnigmistica === 1) finalQ = \`Nomina 1 \${cS} \${areaP} che finisce con la lettera <strong>\${td.reqCapFin.toUpperCase()}</strong>.\`;
-                            if (td.varEnigmistica === 2) finalQ = \`Nomina 1 \${cS} \${areaP} che inizia per <strong>\${td.reqCapInit.toUpperCase()}</strong> e finisce per <strong>\${td.reqCapFin.toUpperCase()}</strong>.\`;
+                            if (td.varEnigmistica === 0) finalQ = `Nomina 1 ${cS} ${areaP} che inizia con la lettera <strong>${td.reqCapInit.toUpperCase()}</strong>.`;
+                            if (td.varEnigmistica === 1) finalQ = `Nomina 1 ${cS} ${areaP} che finisce con la lettera <strong>${td.reqCapFin.toUpperCase()}</strong>.`;
+                            if (td.varEnigmistica === 2) finalQ = `Nomina 1 ${cS} ${areaP} che inizia per <strong>${td.reqCapInit.toUpperCase()}</strong> e finisce per <strong>${td.reqCapFin.toUpperCase()}</strong>.`;
                         } else {
-                            if (td.varEnigmistica === 0) finalQ = \`Nomina \${cS_p} \${areaP} che iniziano con la lettera <strong>\${td.reqCapInit.toUpperCase()}</strong>.\`;
-                            if (td.varEnigmistica === 1) finalQ = \`Nomina \${cS_p} \${areaP} che finiscono con la lettera <strong>\${td.reqCapFin.toUpperCase()}</strong>.\`;
-                            if (td.varEnigmistica === 2) finalQ = \`Nomina \${cS_p} \${areaP} che iniziano per <strong>\${td.reqCapInit.toUpperCase()}</strong> e finiscono per <strong>\${td.reqCapFin.toUpperCase()}</strong>.\`;
+                            if (td.varEnigmistica === 0) finalQ = `Nomina ${cS_p} ${areaP} che iniziano con la lettera <strong>${td.reqCapInit.toUpperCase()}</strong>.`;
+                            if (td.varEnigmistica === 1) finalQ = `Nomina ${cS_p} ${areaP} che finiscono con la lettera <strong>${td.reqCapFin.toUpperCase()}</strong>.`;
+                            if (td.varEnigmistica === 2) finalQ = `Nomina ${cS_p} ${areaP} che iniziano per <strong>${td.reqCapInit.toUpperCase()}</strong> e finiscono per <strong>${td.reqCapFin.toUpperCase()}</strong>.`;
                         }
                         break;
                     
                    case 7:
                         if (num === 1) {
-                            finalQ = \`Nomina 1 \${nI} che confina via terra con <strong>\${td.targetNode.confini[0].toUpperCase()}</strong>.\`;
+                            finalQ = `Nomina 1 ${nI} che confina via terra con <strong>${td.targetNode.confini[0].toUpperCase()}</strong>.`;
                         } else {
-                            finalQ = \`Nomina \${nI_p} che confinano via terra con <strong>\${td.targetNode.confini[0].toUpperCase()}</strong>.\`;
+                            finalQ = `Nomina ${nI_p} che confinano via terra con <strong>${td.targetNode.confini[0].toUpperCase()}</strong>.`;
                         }
                         break;
                     
                     case 8:
                         let t8 = "";
                         if (num === 1) {
-                            if (td.reqGeo === 'isola') t8 = \`Nomina 1 \${sTI}\`;
-                            else if (td.reqGeo === 'costiera') t8 = \`Nomina 1 <span class=\\"target-highlight\\">STATO CONTINENTALE</span> CON <strong>SBOCCO SUL MARE</strong> (non insulare)\`;
-                            else if (td.reqGeo === 'marittima') t8 = \`Nomina 1 <span class=\\"target-highlight\\">STATO O TERRITORIO</span> CON <strong>SBOCCO SUL MARE</strong>\`;
-                            else if (td.reqGeo === 'interna') t8 = \`Nomina 1 <span class=\\"target-highlight\\">STATO O TERRITORIO</span> <strong>SENZA SBOCCHI SUL MARE</strong>\`;
+                            if (td.reqGeo === 'isola') t8 = `Nomina 1 ${sTI}`;
+                            else if (td.reqGeo === 'costiera') t8 = `Nomina 1 <span class='target-highlight'>STATO CONTINENTALE</span> CON <strong>SBOCCO SUL MARE</strong> (non insulare)`;
+                            else if (td.reqGeo === 'marittima') t8 = `Nomina 1 <span class='target-highlight'>STATO O TERRITORIO</span> CON <strong>SBOCCO SUL MARE</strong>`;
+                            else if (td.reqGeo === 'interna') t8 = `Nomina 1 <span class='target-highlight'>STATO O TERRITORIO</span> <strong>SENZA SBOCCHI SUL MARE</strong>`;
                             
-                            if (td.reqArea) t8 += \` \${areaP}\`;
-                            if (td.reqInit) t8 += \` che inizia con la lettera <strong>\${td.reqInit.toUpperCase()}</strong>\`;
+                            if (td.reqArea) t8 += ` ${areaP}`;
+                            if (td.reqInit) t8 += ` che inizia con la lettera <strong>${td.reqInit.toUpperCase()}</strong>`;
                             if (td.negColor) {
-                                t8 += (td.reqInit) ? \` e la cui bandiera \` : \` la cui bandiera \`;
-                                t8 += \`<span class="negative-constraint">NON</span> contiene il colore <strong>\${td.negColor.toUpperCase()}</strong>\`;
+                                t8 += (td.reqInit) ? ` e la cui bandiera ` : ` la cui bandiera `;
+                                t8 += `<span class='negative-constraint'>NON</span> contiene il colore <strong>${td.negColor.toUpperCase()}</strong>`;
                             }
                         } else {
-                            if (td.reqGeo === 'isola') t8 = \`Nomina \${sTI_p}\`;
-                            else if (td.reqGeo === 'costiera') t8 = \`Nomina <span class=\\"target-highlight\\">\${num} STATI CONTINENTALI</span> CON <strong>SBOCCO SUL MARE</strong> (Non insulari)\`;
-                            else if (td.reqGeo === 'marittima') t8 = \`Nomina <span class=\\"target-highlight\\">\${num} STATI O TERRITORI</span> CON <strong>SBOCCO SUL MARE</strong>\`;
-                            else if (td.reqGeo === 'interna') t8 = \`Nomina <span class=\\"target-highlight\\">\${num} STATI O TERRITORI</span> <strong>SENZA SBOCCHI SUL MARE</strong>\`;
+                            if (td.reqGeo === 'isola') t8 = `Nomina ${sTI_p}`;
+                            else if (td.reqGeo === 'costiera') t8 = `Nomina <span class='target-highlight'>${num} STATI CONTINENTALI</span> CON <strong>SBOCCO SUL MARE</strong> (Non insulari)`;
+                            else if (td.reqGeo === 'marittima') t8 = `Nomina <span class='target-highlight'>${num} STATI O TERRITORI</span> CON <strong>SBOCCO SUL MARE</strong>`;
+                            else if (td.reqGeo === 'interna') t8 = `Nomina <span class='target-highlight'>${num} STATI O TERRITORI</span> <strong>SENZA SBOCCHI SUL MARE</strong>`;
                             
-                            if (td.reqArea) t8 += \` \${areaP}\`;
-                            if (td.reqInit) t8 += \` che iniziano con la lettera <strong>\${td.reqInit.toUpperCase()}</strong>\`;
+                            if (td.reqArea) t8 += ` ${areaP}`;
+                            if (td.reqInit) t8 += ` che iniziano con la lettera <strong>${td.reqInit.toUpperCase()}</strong>`;
                             if (td.negColor) {
-                                t8 += (td.reqInit) ? \` e le cui bandiere \` : \` le cui bandiere \`;
-                                t8 += \`<span class="negative-constraint">NON</span> contengono il colore <strong>\${td.negColor.toUpperCase()}</strong>\`;
+                                t8 += (td.reqInit) ? ` e le cui bandiere ` : ` le cui bandiere `;
+                                t8 += `<span class='negative-constraint'>NON</span> contengono il colore <strong>${td.negColor.toUpperCase()}</strong>`;
                             }
                         }
                         finalQ = t8 + ".";
@@ -2469,11 +2469,11 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                     case 9:
                         if (num === 1) {
                             finalQ = td.isComboInception 
-                                ? \`Nomina 1 \${nI} che confina via terra con il Paese\${cloneHint} di <strong>QUESTA BANDIERA</strong>.\` 
-                                : \`Di quale \${sT}\${cloneHint} è questa bandiera?\`;
+                                ? `Nomina 1 ${nI} che confina via terra con il Paese${cloneHint} di <strong>QUESTA BANDIERA</strong>.` 
+                                : `Di quale ${sT}${cloneHint} è questa bandiera?`;
                         } else {
                             finalQ = td.isComboInception 
-                                ? \`Nomina \${nI_p} che confinano via terra con il Paese\${cloneHint} di <strong>QUESTA BANDIERA</strong>.\` 
+                                ? `Nomina ${nI_p} che confinano via terra con il Paese${cloneHint} di <strong>QUESTA BANDIERA</strong>.` 
                                 : "";
                         }
                         break;
@@ -2481,11 +2481,11 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                     case 10:
                         if (num === 1) {
                             finalQ = td.isComboInception 
-                                ? \`Nomina 1 \${cS} di uno <strong>STATO INDIPENDENTE</strong> che confina via terra con il Paese\${cloneHint} di <strong>QUESTA BANDIERA</strong>.\` 
-                                : \`Qual è la \${cS} di questo <strong>STATO O TERRITORIO</strong>\${cloneHint}?\`;
+                                ? `Nomina 1 ${cS} di uno <strong>STATO INDIPENDENTE</strong> che confina via terra con il Paese${cloneHint} di <strong>QUESTA BANDIERA</strong>.` 
+                                : `Qual è la ${cS} di questo <strong>STATO O TERRITORIO</strong>${cloneHint}?`;
                         } else {
                             finalQ = td.isComboInception 
-                                ? \`Nomina \${cS_p} di altrettanti <strong>STATI INDIPENDENTI</strong> che confinano via terra con il Paese\${cloneHint} di <strong>QUESTA BANDIERA</strong>.\` 
+                                ? `Nomina ${cS_p} di altrettanti <strong>STATI INDIPENDENTI</strong> che confinano via terra con il Paese${cloneHint} di <strong>QUESTA BANDIERA</strong>.` 
                                 : "";
                         }
                         break;
@@ -2493,43 +2493,43 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                     case 11:
                         let t11 = "";
                         if (num === 1) {
-                            if (td.reqGeo === 'isola') t11 = \`Nomina 1 \${sTI}\`;
-                            else if (td.reqGeo === 'costiera') t11 = \`Nomina 1 <span class=\\"target-highlight\\">STATO CONTINENTALE</span> CON <strong>SBOCCO SUL MARE</strong> (non insulare)\`;
-                            else if (td.reqGeo === 'marittima') t11 = \`Nomina 1 <span class=\\"target-highlight\\">STATO O TERRITORIO</span> CON <strong>SBOCCO SUL MARE</strong>\`;
-                            else if (td.reqGeo === 'interna') t11 = \`Nomina 1 <span class=\\"target-highlight\\">STATO O TERRITORIO</span> <strong>SENZA SBOCCHI SUL MARE</strong>\`;
-                            else t11 = \`Nomina 1 \${sT}\`;
+                            if (td.reqGeo === 'isola') t11 = `Nomina 1 ${sTI}`;
+                            else if (td.reqGeo === 'costiera') t11 = `Nomina 1 <span class='target-highlight'>STATO CONTINENTALE</span> CON <strong>SBOCCO SUL MARE</strong> (non insulare)`;
+                            else if (td.reqGeo === 'marittima') t11 = `Nomina 1 <span class='target-highlight'>STATO O TERRITORIO</span> CON <strong>SBOCCO SUL MARE</strong>`;
+                            else if (td.reqGeo === 'interna') t11 = `Nomina 1 <span class='target-highlight'>STATO O TERRITORIO</span> <strong>SENZA SBOCCHI SUL MARE</strong>`;
+                            else t11 = `Nomina 1 ${sT}`;
                             
-                            if (td.reqArea) t11 += \` \${areaP}\`;
-                            if (td.reqInit) t11 += \` che inizia per <strong>\${td.reqInit.toUpperCase()}</strong>\`;
+                            if (td.reqArea) t11 += ` ${areaP}`;
+                            if (td.reqInit) t11 += ` che inizia per <strong>${td.reqInit.toUpperCase()}</strong>`;
                             if (td.reqCapInit) {
-                                t11 += (td.reqInit) ? \` e la cui capitale inizia per <strong>\${td.reqCapInit.toUpperCase()}</strong>\` : \` la cui capitale inizia per <strong>\${td.reqCapInit.toUpperCase()}</strong>\`;
+                                t11 += (td.reqInit) ? ` e la cui capitale inizia per <strong>${td.reqCapInit.toUpperCase()}</strong>` : ` la cui capitale inizia per <strong>${td.reqCapInit.toUpperCase()}</strong>`;
                             }
                             
-                            t11 += (td.reqInit || td.reqCapInit) ? \`, la cui bandiera presenta la caratteristica: \` : \` la cui bandiera è caratterizzata da: \`;
-                            t11 += \`<strong>\${td.reqFormato.toUpperCase()}</strong>\`;
+                            t11 += (td.reqInit || td.reqCapInit) ? `, la cui bandiera presenta la caratteristica: ` : ` la cui bandiera è caratterizzata da: `;
+                            t11 += `<strong>${td.reqFormato.toUpperCase()}</strong>`;
                             
-                            if (td.reqColor) t11 += \` e contiene il colore <strong>\${td.reqColor.toUpperCase()}</strong>\`;
-                            if (td.negColor) t11 += \` ma <span class="negative-constraint">NON</span> contiene il <strong>\${td.negColor.toUpperCase()}</strong>\`;
-                            if (td.negInit) t11 += \` e il cui nome <span class="negative-constraint">NON</span> inizia per la lettera <strong>\${td.negInit.toUpperCase()}</strong>\`;
+                            if (td.reqColor) t11 += ` e contiene il colore <strong>${td.reqColor.toUpperCase()}</strong>`;
+                            if (td.negColor) t11 += ` ma <span class='negative-constraint'>NON</span> contiene il <strong>${td.negColor.toUpperCase()}</strong>`;
+                            if (td.negInit) t11 += ` e il cui nome <span class='negative-constraint'>NON</span> inizia per la lettera <strong>${td.negInit.toUpperCase()}</strong>`;
                         } else {
-                            if (td.reqGeo === 'isola') t11 = \`Nomina \${sTI_p}\`;
-                            else if (td.reqGeo === 'costiera') t11 = \`Nomina <span class=\\"target-highlight\\">\${num} STATI CONTINENTALI</span> CON <strong>SBOCCO SUL MARE</strong> (Non insulari)\`;
-                            else if (td.reqGeo === 'marittima') t11 = \`Nomina <span class=\\"target-highlight\\">\${num} STATI O TERRITORI</span> CON <strong>SBOCCO SUL MARE</strong>\`;
-                            else if (td.reqGeo === 'interna') t11 = \`Nomina <span class=\\"target-highlight\\">\${num} STATI O TERRITORI</span> <strong>SENZA SBOCCHI SUL MARE</strong>\`;
-                            else t11 = \`Nomina \${sT_p}\`;
+                            if (td.reqGeo === 'isola') t11 = `Nomina ${sTI_p}`;
+                            else if (td.reqGeo === 'costiera') t11 = `Nomina <span class='target-highlight'>${num} STATI CONTINENTALI</span> CON <strong>SBOCCO SUL MARE</strong> (Non insulari)`;
+                            else if (td.reqGeo === 'marittima') t11 = `Nomina <span class='target-highlight'>${num} STATI O TERRITORI</span> CON <strong>SBOCCO SUL MARE</strong>`;
+                            else if (td.reqGeo === 'interna') t11 = `Nomina <span class='target-highlight'>${num} STATI O TERRITORI</span> <strong>SENZA SBOCCHI SUL MARE</strong>`;
+                            else t11 = `Nomina ${sT_p}`;
                             
-                            if (td.reqArea) t11 += \` \${areaP}\`;
-                            if (td.reqInit) t11 += \` che iniziano per <strong>\${td.reqInit.toUpperCase()}</strong>\`;
+                            if (td.reqArea) t11 += ` ${areaP}`;
+                            if (td.reqInit) t11 += ` che iniziano per <strong>${td.reqInit.toUpperCase()}</strong>`;
                             if (td.reqCapInit) {
-                                t11 += (td.reqInit) ? \` e le cui capitali iniziano per <strong>\${td.reqCapInit.toUpperCase()}</strong>\` : \` le cui capitali iniziano per <strong>\${td.reqCapInit.toUpperCase()}</strong>\`;
+                                t11 += (td.reqInit) ? ` e le cui capitali iniziano per <strong>${td.reqCapInit.toUpperCase()}</strong>` : ` le cui capitali iniziano per <strong>${td.reqCapInit.toUpperCase()}</strong>`;
                             }
                             
-                            t11 += (td.reqInit || td.reqCapInit) ? \`, le cui bandiere presentano la caratteristica: \` : \` le cui bandiere sono caratterizzate da: \`;
-                            t11 += \`<strong>\${td.reqFormato.toUpperCase()}</strong>\`;
+                            t11 += (td.reqInit || td.reqCapInit) ? `, le cui bandiere presentano la caratteristica: ` : ` le cui bandiere sono caratterizzate da: `;
+                            t11 += `<strong>${td.reqFormato.toUpperCase()}</strong>`;
                             
-                            if (td.reqColor) t11 += \` e contengono il colore <strong>\${td.reqColor.toUpperCase()}</strong>\`;
-                            if (td.negColor) t11 += \` ma <span class="negative-constraint">NON</span> contengono il <strong>\${td.negColor.toUpperCase()}</strong>\`;
-                            if (td.negInit) t11 += \` e i cui nomi <span class="negative-constraint">NON</span> iniziano per la lettera <strong>\${td.negInit.toUpperCase()}</strong>\`;
+                            if (td.reqColor) t11 += ` e contengono il colore <strong>${td.reqColor.toUpperCase()}</strong>`;
+                            if (td.negColor) t11 += ` ma <span class='negative-constraint'>NON</span> contengono il <strong>${td.negColor.toUpperCase()}</strong>`;
+                            if (td.negInit) t11 += ` e i cui nomi <span class='negative-constraint'>NON</span> iniziano per la lettera <strong>${td.negInit.toUpperCase()}</strong>`;
                         }
                         finalQ = t11 + ".";
                         break;
@@ -2537,29 +2537,29 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                     case 12:
                         let t12 = "";
                         if (num === 1) {
-                            t12 = td.f12AskCapital ? \`Nomina 1 \${cS} di uno <strong>STATO</strong>\` : \`Nomina 1 \${sT}\`;
-                            if (td.reqArea) t12 += \` \${areaP}\`;
-                            if (td.reqInit) t12 += (td.f12AskCapital) ? \` il cui nome inizia per <strong>\${td.reqInit.toUpperCase()}</strong>\` : \` che inizia per <strong>\${td.reqInit.toUpperCase()}</strong>\`;
+                            t12 = td.f12AskCapital ? `Nomina 1 ${cS} di uno <strong>STATO</strong>` : `Nomina 1 ${sT}`;
+                            if (td.reqArea) t12 += ` ${areaP}`;
+                            if (td.reqInit) t12 += (td.f12AskCapital) ? ` il cui nome inizia per <strong>${td.reqInit.toUpperCase()}</strong>` : ` che inizia per <strong>${td.reqInit.toUpperCase()}</strong>`;
                             
-                            t12 += \`, la cui bandiera INCLUDE i colori \`;
-                            if (td.f12Colors.length === 3) t12 += \`<strong>\${td.f12Colors[0].toUpperCase()}, \${td.f12Colors[1].toUpperCase()}</strong> e <strong>\${td.f12Colors[2].toUpperCase()}</strong>\`;
-                            else t12 += \`<strong>\${td.f12Colors[0].toUpperCase()}</strong> e <strong>\${td.f12Colors[1].toUpperCase()}</strong>\`;
+                            t12 += `, la cui bandiera INCLUDE i colori `;
+                            if (td.f12Colors.length === 3) t12 += `<strong>${td.f12Colors[0].toUpperCase()}, ${td.f12Colors[1].toUpperCase()}</strong> e <strong>${td.f12Colors[2].toUpperCase()}</strong>`;
+                            else t12 += `<strong>${td.f12Colors[0].toUpperCase()}</strong> e <strong>${td.f12Colors[1].toUpperCase()}</strong>`;
                             
-                            if (td.f12RequiresSymbol) t12 += \` e raffigura l'elemento grafico <strong>\${td.f12RequiresSymbol.toUpperCase()}</strong>\`;
-                            if (td.negColor) t12 += \` ma <span class="negative-constraint">NON</span> contiene il colore <strong>\${td.negColor.toUpperCase()}</strong>\`;
-                            if (td.negInit) t12 += (td.f12AskCapital) ? \` e il cui nome <span class="negative-constraint">NON</span> inizia per <strong>\${td.negInit.toUpperCase()}</strong>\` : \` e il cui nome <span class="negative-constraint">NON</span> inizia per <strong>\${td.negInit.toUpperCase()}</strong>\`;
+                            if (td.f12RequiresSymbol) t12 += ` e raffigura l'elemento grafico <strong>${td.f12RequiresSymbol.toUpperCase()}</strong>`;
+                            if (td.negColor) t12 += ` ma <span class='negative-constraint'>NON</span> contiene il colore <strong>${td.negColor.toUpperCase()}</strong>`;
+                            if (td.negInit) t12 += (td.f12AskCapital) ? ` e il cui nome <span class='negative-constraint'>NON</span> inizia per <strong>${td.negInit.toUpperCase()}</strong>` : ` e il cui nome <span class='negative-constraint'>NON</span> inizia per <strong>${td.negInit.toUpperCase()}</strong>`;
                         } else {
-                            t12 = td.f12AskCapital ? \`Nomina \${cS_p} di altrettanti <strong>STATI</strong>\` : \`Nomina \${sT_p}\`;
-                            if (td.reqArea) t12 += \` \${areaP}\`;
-                            if (td.reqInit) t12 += (td.f12AskCapital) ? \` i cui nomi iniziano per <strong>\${td.reqInit.toUpperCase()}</strong>\` : \` che iniziano per <strong>\${td.reqInit.toUpperCase()}</strong>\`;
+                            t12 = td.f12AskCapital ? `Nomina ${cS_p} di altrettanti <strong>STATI</strong>` : `Nomina ${sT_p}`;
+                            if (td.reqArea) t12 += ` ${areaP}`;
+                            if (td.reqInit) t12 += (td.f12AskCapital) ? ` i cui nomi iniziano per <strong>${td.reqInit.toUpperCase()}</strong>` : ` che iniziano per <strong>${td.reqInit.toUpperCase()}</strong>`;
                             
-                            t12 += \`, le cui bandiere INCLUDONO i colori \`;
-                            if (td.f12Colors.length === 3) t12 += \`<strong>\${td.f12Colors[0].toUpperCase()}, \${td.f12Colors[1].toUpperCase()}</strong> e <strong>\${td.f12Colors[2].toUpperCase()}</strong>\`;
-                            else t12 += \`<strong>\${td.f12Colors[0].toUpperCase()}</strong> e <strong>\${td.f12Colors[1].toUpperCase()}</strong>\`;
+                            t12 += `, le cui bandiere INCLUDONO i colori `;
+                            if (td.f12Colors.length === 3) t12 += `<strong>${td.f12Colors[0].toUpperCase()}, ${td.f12Colors[1].toUpperCase()}</strong> e <strong>${td.f12Colors[2].toUpperCase()}</strong>`;
+                            else t12 += `<strong>${td.f12Colors[0].toUpperCase()}</strong> e <strong>${td.f12Colors[1].toUpperCase()}</strong>`;
                             
-                            if (td.f12RequiresSymbol) t12 += \` e raffigurano l'elemento grafico <strong>\${td.f12RequiresSymbol.toUpperCase()}</strong>\`;
-                            if (td.negColor) t12 += \` ma <span class="negative-constraint">NON</span> contengono il colore <strong>\${td.negColor.toUpperCase()}</strong>\`;
-                            if (td.negInit) t12 += (td.f12AskCapital) ? \` e i cui nomi <span class="negative-constraint">NON</span> iniziano per <strong>\${td.negInit.toUpperCase()}</strong>\` : \` e i cui nomi <span class="negative-constraint">NON</span> iniziano per <strong>\${td.negInit.toUpperCase()}</strong>\`;
+                            if (td.f12RequiresSymbol) t12 += ` e raffigurano l'elemento grafico <strong>${td.f12RequiresSymbol.toUpperCase()}</strong>`;
+                            if (td.negColor) t12 += ` ma <span class='negative-constraint'>NON</span> contengono il colore <strong>${td.negColor.toUpperCase()}</strong>`;
+                            if (td.negInit) t12 += (td.f12AskCapital) ? ` e i cui nomi <span class='negative-constraint'>NON</span> iniziano per <strong>${td.negInit.toUpperCase()}</strong>` : ` e i cui nomi <span class='negative-constraint'>NON</span> iniziano per <strong>${td.negInit.toUpperCase()}</strong>`;
                         }
                         finalQ = t12 + ".";
                         break;
@@ -2571,8 +2571,8 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                     
                     let extraNegs = [];
                     if (td.negGeo) {
-                        if (td.negGeo === 'isola') extraNegs.push(num === 1 ? "che <span class=\\"negative-constraint\\">NON</span> sia insulare" : "che <span class=\\"negative-constraint\\">NON</span> siano insulari");
-                        else if (td.negGeo === 'costiera') extraNegs.push(num === 1 ? "che <span class=\\"negative-constraint\\">NON</span> sia continentale costiero" : "che <span class=\\"negative-constraint\\">NON</span> siano continentali costieri");
+                        if (td.negGeo === 'isola') extraNegs.push(num === 1 ? "che <span class='negative-constraint'>NON</span> sia insulare" : "che <span class='negative-constraint'>NON</span> siano insulari");
+                        else if (td.negGeo === 'costiera') extraNegs.push(num === 1 ? "che <span class='negative-constraint'>NON</span> sia continentale costiero" : "che <span class='negative-constraint'>NON</span> siano continentali costieri");
                         else if (td.negGeo === 'interna') extraNegs.push(num === 1 ? "che abbia sbocchi sul mare" : "che abbiano sbocchi sul mare");
                     }
                     if (td.negArea) {
