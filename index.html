@@ -826,7 +826,7 @@ YE|Yemen||Sana'a|Sanaa|arabia saudita, oman, mare|asia, Medio Oriente, Penisola 
 ZM|Zambia||Lusaka||angola, repubblica democratica del congo, tanzania, malawi, mozambico, zimbabwe, botswana, namibia|africa, africa meridionale|verde, rosso, nero, arancione|arancione|uccello, animale|||2
 ZW|Zimbabwe||Harare||zambia, mozambico, sudafrica, botswana|africa, africa meridionale|verde, giallo, rosso, nero, bianco|rosso, giallo|stella||triangolo a sinistra bianco, stella rossa|1`;
 
-        const globalDb = [];
+                const globalDb = [];
         let levelDb = []; 
         let currentLevel = 1;
         let actionTimeout = null; 
@@ -937,7 +937,6 @@ ZW|Zimbabwe||Harare||zambia, mozambico, sudafrica, botswana|africa, africa merid
         righe.forEach((riga, index) => {
             if (index === 0 && riga.toLowerCase().startsWith("sigla")) return; 
             
-            // IL PARSER UNIVERSALE: Legge sia i divisori '|' usati nel codice, sia i 'Tab' se l'utente incollerà da Excel
             let separatore = riga.includes("\t") ? "\t" : "|";
             let colonne = riga.split(separatore);
             
@@ -1101,7 +1100,6 @@ ZW|Zimbabwe||Harare||zambia, mozambico, sudafrica, botswana|africa, africa merid
         // --- GESTIONE PWA BACK BUTTON ---
         window.addEventListener('popstate', function(event) {
             if (document.getElementById("game-over-screen").style.display === "flex") {
-                 // Lascia scorrere
             } else if (document.getElementById("input-area").style.display === "flex") {
                 let conf = confirm("Partita in corso! Vuoi davvero uscire? I progressi andranno persi.");
                 if (conf) {
@@ -1441,7 +1439,7 @@ ZW|Zimbabwe||Harare||zambia, mozambico, sudafrica, botswana|africa, africa merid
             currentLevel = lvl;
             levelDb = globalDb.filter(n => n.livello <= (lvl === 5 ? 3 : lvl)); 
             
-            vite = 3; // Reset per livelli base
+            vite = 3; 
             
             debugGameLog = "=== GEOQUIZ DEBUG LOG ===\nData: " + new Date().toLocaleString() + "\nLivello Giocato: " + currentLevel + "\n\n";
             
@@ -1856,4 +1854,1697 @@ ZW|Zimbabwe||Harare||zambia, mozambico, sudafrica, botswana|africa, africa merid
                             if (td.negColor) bT += ` ma <span class="negative-constraint">NON</span> contiene il colore <strong>${td.negColor.toUpperCase()}</strong>`;
                             finalQ = bT + ".";
                         } else {
-                            let bT = `Nomina ${sT_Sono solo un modello linguistico. Non posso aiutarti con questa richiesta.
+                            let bT = `Nomina ${sT_p}`;
+                            if (td.reqArea) bT += ` ${areaP}`;
+                            if (td.reqInit) bT += ` che iniziano con la lettera <strong>${td.reqInit.toUpperCase()}</strong>`;
+                            bT += (td.reqInit) ? `, le cui bandiere ` : ` le cui bandiere `;
+                            if (td.reqColor) bT += `includono il <strong>${td.reqColor.toUpperCase()}</strong> e `;
+                            if (td.isColoreEmblema) bT += `raffigurano un elemento grafico di colore <strong>${td.elemScelto.toUpperCase()}</strong>`;
+                            else bT += `raffigurano l'elemento grafico <strong>${td.elemScelto.toUpperCase()}</strong>`;
+                            if (td.negColor) bT += ` ma <span class="negative-constraint">NON</span> contengono il colore <strong>${td.negColor.toUpperCase()}</strong>`;
+                            finalQ = bT + ".";
+                        }
+                        break;
+                    
+                    case 4:
+                        let f4t = (num === 1) ? `Nomina 1 ${nI} che confina via terra SIA con <strong>${td.reqConf1.toUpperCase()}</strong> SIA con <strong>${td.reqConf2.toUpperCase()}</strong>` : `Nomina ${nI_p} che confinano via terra SIA con <strong>${td.reqConf1.toUpperCase()}</strong> SIA con <strong>${td.reqConf2.toUpperCase()}</strong>`;
+                        if (td.negBorders && td.negBorders.length > 0) {
+                            let negB = td.negBorders.map(b => `<strong>${b.toUpperCase()}</strong>`);
+                            if (negB.length === 1) f4t += ` ma <span class="negative-constraint">NON</span> con ${negB[0]}`;
+                            else f4t += ` ma <span class="negative-constraint">NON</span> con ${negB.join(" e <span class=\"negative-constraint\">NON</span> con ")}`;
+                        }
+                        finalQ = f4t + ".";
+                        break;
+                    
+                    case 5:
+                        if (num === 1) {
+                            let t5 = `Nomina 1 ${nI}`;
+                            if (td.reqArea) t5 += ` ${areaP}`;
+                            t5 += ` che confina via terra con ESATTAMENTE <strong>${td.targetNode.confini.length}</strong> stati.`;
+                            finalQ = t5;
+                        } else {
+                            let t5 = `Nomina ${nI_p}`;
+                            if (td.reqArea) t5 += ` ${areaP}`;
+                            t5 += ` che confinano via terra con ESATTAMENTE <strong>${td.targetNode.confini.length}</strong> stati.`;
+                            finalQ = t5;
+                        }
+                        break;
+                    
+                    case 6:
+                        if (num === 1) {
+                            if (td.varEnigmistica === 0) finalQ = `Nomina 1 ${cS} ${areaP} che inizia con la lettera <strong>${td.reqCapInit.toUpperCase()}</strong>.`;
+                            if (td.varEnigmistica === 1) finalQ = `Nomina 1 ${cS} ${areaP} che finisce con la lettera <strong>${td.reqCapFin.toUpperCase()}</strong>.`;
+                            if (td.varEnigmistica === 2) finalQ = `Nomina 1 ${cS} ${areaP} che inizia per <strong>${td.reqCapInit.toUpperCase()}</strong> e finisce per <strong>${td.reqCapFin.toUpperCase()}</strong>.`;
+                        } else {
+                            if (td.varEnigmistica === 0) finalQ = `Nomina ${cS_p} ${areaP} che iniziano con la lettera <strong>${td.reqCapInit.toUpperCase()}</strong>.`;
+                            if (td.varEnigmistica === 1) finalQ = `Nomina ${cS_p} ${areaP} che finiscono con la lettera <strong>${td.reqCapFin.toUpperCase()}</strong>.`;
+                            if (td.varEnigmistica === 2) finalQ = `Nomina ${cS_p} ${areaP} che iniziano per <strong>${td.reqCapInit.toUpperCase()}</strong> e finiscono per <strong>${td.reqCapFin.toUpperCase()}</strong>.`;
+                        }
+                        break;
+                    
+                   case 7:
+                        if (num === 1) {
+                            finalQ = `Nomina 1 ${nI} che confina via terra con <strong>${td.targetNode.confini[0].toUpperCase()}</strong>.`;
+                        } else {
+                            finalQ = `Nomina ${nI_p} che confinano via terra con <strong>${td.targetNode.confini[0].toUpperCase()}</strong>.`;
+                        }
+                        break;
+                    
+                    case 8:
+                        let t8 = "";
+                        if (num === 1) {
+                            if (td.reqGeo === 'isola') t8 = `Nomina 1 ${sTI}`;
+                            else if (td.reqGeo === 'costiera') t8 = `Nomina 1 <span class=\"target-highlight\">STATO CONTINENTALE</span> CON <strong>SBOCCO SUL MARE</strong> (non insulare)`;
+                            else if (td.reqGeo === 'marittima') t8 = `Nomina 1 <span class=\"target-highlight\">STATO O TERRITORIO</span> CON <strong>SBOCCO SUL MARE</strong>`;
+                            else if (td.reqGeo === 'interna') t8 = `Nomina 1 <span class=\"target-highlight\">STATO O TERRITORIO</span> <strong>SENZA SBOCCHI SUL MARE</strong>`;
+                            
+                            if (td.reqArea) t8 += ` ${areaP}`;
+                            if (td.reqInit) t8 += ` che inizia con la lettera <strong>${td.reqInit.toUpperCase()}</strong>`;
+                            if (td.negColor) {
+                                t8 += (td.reqInit) ? ` e la cui bandiera ` : ` la cui bandiera `;
+                                t8 += `<span class="negative-constraint">NON</span> contiene il colore <strong>${td.negColor.toUpperCase()}</strong>`;
+                            }
+                        } else {
+                            if (td.reqGeo === 'isola') t8 = `Nomina ${sTI_p}`;
+                            else if (td.reqGeo === 'costiera') t8 = `Nomina <span class=\"target-highlight\">${num} STATI CONTINENTALI</span> CON <strong>SBOCCO SUL MARE</strong> (Non insulari)`;
+                            else if (td.reqGeo === 'marittima') t8 = `Nomina <span class=\"target-highlight\">${num} STATI O TERRITORI</span> CON <strong>SBOCCO SUL MARE</strong>`;
+                            else if (td.reqGeo === 'interna') t8 = `Nomina <span class=\"target-highlight\">${num} STATI O TERRITORI</span> <strong>SENZA SBOCCHI SUL MARE</strong>`;
+                            
+                            if (td.reqArea) t8 += ` ${areaP}`;
+                            if (td.reqInit) t8 += ` che iniziano con la lettera <strong>${td.reqInit.toUpperCase()}</strong>`;
+                            if (td.negColor) {
+                                t8 += (td.reqInit) ? ` e le cui bandiere ` : ` le cui bandiere `;
+                                t8 += `<span class="negative-constraint">NON</span> contengono il colore <strong>${td.negColor.toUpperCase()}</strong>`;
+                            }
+                        }
+                        finalQ = t8 + ".";
+                        break;
+                    
+                    case 9:
+                        if (num === 1) {
+                            finalQ = td.isComboInception 
+                                ? `Nomina 1 ${nI} che confina via terra con il Paese${cloneHint} di <strong>QUESTA BANDIERA</strong>.` 
+                                : `Di quale ${sT}${cloneHint} è questa bandiera?`;
+                        } else {
+                            finalQ = td.isComboInception 
+                                ? `Nomina ${nI_p} che confinano via terra con il Paese${cloneHint} di <strong>QUESTA BANDIERA</strong>.` 
+                                : "";
+                        }
+                        break;
+                    
+                    case 10:
+                        if (num === 1) {
+                            finalQ = td.isComboInception 
+                                ? `Nomina 1 ${cS} di uno <strong>STATO INDIPENDENTE</strong> che confina via terra con il Paese${cloneHint} di <strong>QUESTA BANDIERA</strong>.` 
+                                : `Qual è la ${cS} di questo <strong>STATO O TERRITORIO</strong>${cloneHint}?`;
+                        } else {
+                            finalQ = td.isComboInception 
+                                ? `Nomina ${cS_p} di altrettanti <strong>STATI INDIPENDENTI</strong> che confinano via terra con il Paese${cloneHint} di <strong>QUESTA BANDIERA</strong>.` 
+                                : "";
+                        }
+                        break;
+                    
+                    case 11:
+                        let t11 = "";
+                        if (num === 1) {
+                            if (td.reqGeo === 'isola') t11 = `Nomina 1 ${sTI}`;
+                            else if (td.reqGeo === 'costiera') t11 = `Nomina 1 <span class=\"target-highlight\">STATO CONTINENTALE</span> CON <strong>SBOCCO SUL MARE</strong> (non insulare)`;
+                            else if (td.reqGeo === 'marittima') t11 = `Nomina 1 <span class=\"target-highlight\">STATO O TERRITORIO</span> CON <strong>SBOCCO SUL MARE</strong>`;
+                            else if (td.reqGeo === 'interna') t11 = `Nomina 1 <span class=\"target-highlight\">STATO O TERRITORIO</span> <strong>SENZA SBOCCHI SUL MARE</strong>`;
+                            else t11 = `Nomina 1 ${sT}`;
+                            
+                            if (td.reqArea) t11 += ` ${areaP}`;
+                            if (td.reqInit) t11 += ` che inizia per <strong>${td.reqInit.toUpperCase()}</strong>`;
+                            if (td.reqCapInit) {
+                                t11 += (td.reqInit) ? ` e la cui capitale inizia per <strong>${td.reqCapInit.toUpperCase()}</strong>` : ` la cui capitale inizia per <strong>${td.reqCapInit.toUpperCase()}</strong>`;
+                            }
+                            
+                            t11 += (td.reqInit || td.reqCapInit) ? `, la cui bandiera presenta la caratteristica: ` : ` la cui bandiera è caratterizzata da: `;
+                            t11 += `<strong>${td.reqFormato.toUpperCase()}</strong>`;
+                            
+                            if (td.reqColor) t11 += ` e contiene il colore <strong>${td.reqColor.toUpperCase()}</strong>`;
+                            if (td.negColor) t11 += ` ma <span class="negative-constraint">NON</span> contiene il <strong>${td.negColor.toUpperCase()}</strong>`;
+                            if (td.negInit) t11 += ` e il cui nome <span class="negative-constraint">NON</span> inizia per la lettera <strong>${td.negInit.toUpperCase()}</strong>`;
+                        } else {
+                            if (td.reqGeo === 'isola') t11 = `Nomina ${sTI_p}`;
+                            else if (td.reqGeo === 'costiera') t11 = `Nomina <span class=\"target-highlight\">${num} STATI CONTINENTALI</span> CON <strong>SBOCCO SUL MARE</strong> (Non insulari)`;
+                            else if (td.reqGeo === 'marittima') t11 = `Nomina <span class=\"target-highlight\">${num} STATI O TERRITORI</span> CON <strong>SBOCCO SUL MARE</strong>`;
+                            else if (td.reqGeo === 'interna') t11 = `Nomina <span class=\"target-highlight\">${num} STATI O TERRITORI</span> <strong>SENZA SBOCCHI SUL MARE</strong>`;
+                            else t11 = `Nomina ${sT_p}`;
+                            
+                            if (td.reqArea) t11 += ` ${areaP}`;
+                            if (td.reqInit) t11 += ` che iniziano per <strong>${td.reqInit.toUpperCase()}</strong>`;
+                            if (td.reqCapInit) {
+                                t11 += (td.reqInit) ? ` e le cui capitali iniziano per <strong>${td.reqCapInit.toUpperCase()}</strong>` : ` le cui capitali iniziano per <strong>${td.reqCapInit.toUpperCase()}</strong>`;
+                            }
+                            
+                            t11 += (td.reqInit || td.reqCapInit) ? `, le cui bandiere presentano la caratteristica: ` : ` le cui bandiere sono caratterizzate da: `;
+                            t11 += `<strong>${td.reqFormato.toUpperCase()}</strong>`;
+                            
+                            if (td.reqColor) t11 += ` e contengono il colore <strong>${td.reqColor.toUpperCase()}</strong>`;
+                            if (td.negColor) t11 += ` ma <span class="negative-constraint">NON</span> contengono il <strong>${td.negColor.toUpperCase()}</strong>`;
+                            if (td.negInit) t11 += ` e i cui nomi <span class="negative-constraint">NON</span> iniziano per la lettera <strong>${td.negInit.toUpperCase()}</strong>`;
+                        }
+                        finalQ = t11 + ".";
+                        break;
+
+                    case 12:
+                        let t12 = "";
+                        if (num === 1) {
+                            t12 = td.f12AskCapital ? `Nomina 1 ${cS} di uno <strong>STATO</strong>` : `Nomina 1 ${sT}`;
+                            if (td.reqArea) t12 += ` ${areaP}`;
+                            if (td.reqInit) t12 += (td.f12AskCapital) ? ` il cui nome inizia per <strong>${td.reqInit.toUpperCase()}</strong>` : ` che inizia per <strong>${td.reqInit.toUpperCase()}</strong>`;
+                            
+                            t12 += `, la cui bandiera INCLUDE i colori `;
+                            if (td.f12Colors.length === 3) t12 += `<strong>${td.f12Colors[0].toUpperCase()}, ${td.f12Colors[1].toUpperCase()}</strong> e <strong>${td.f12Colors[2].toUpperCase()}</strong>`;
+                            else t12 += `<strong>${td.f12Colors[0].toUpperCase()}</strong> e <strong>${td.f12Colors[1].toUpperCase()}</strong>`;
+                            
+                            if (td.f12RequiresSymbol) t12 += ` e raffigura l'elemento grafico <strong>${td.f12RequiresSymbol.toUpperCase()}</strong>`;
+                            if (td.negColor) t12 += ` ma <span class="negative-constraint">NON</span> contiene il colore <strong>${td.negColor.toUpperCase()}</strong>`;
+                            if (td.negInit) t12 += (td.f12AskCapital) ? ` e il cui nome <span class="negative-constraint">NON</span> inizia per <strong>${td.negInit.toUpperCase()}</strong>` : ` e il cui nome <span class="negative-constraint">NON</span> inizia per <strong>${td.negInit.toUpperCase()}</strong>`;
+                        } else {
+                            t12 = td.f12AskCapital ? `Nomina ${cS_p} di altrettanti <strong>STATI</strong>` : `Nomina ${sT_p}`;
+                            if (td.reqArea) t12 += ` ${areaP}`;
+                            if (td.reqInit) t12 += (td.f12AskCapital) ? ` i cui nomi iniziano per <strong>${td.reqInit.toUpperCase()}</strong>` : ` che iniziano per <strong>${td.reqInit.toUpperCase()}</strong>`;
+                            
+                            t12 += `, le cui bandiere INCLUDONO i colori `;
+                            if (td.f12Colors.length === 3) t12 += `<strong>${td.f12Colors[0].toUpperCase()}, ${td.f12Colors[1].toUpperCase()}</strong> e <strong>${td.f12Colors[2].toUpperCase()}</strong>`;
+                            else t12 += `<strong>${td.f12Colors[0].toUpperCase()}</strong> e <strong>${td.f12Colors[1].toUpperCase()}</strong>`;
+                            
+                            if (td.f12RequiresSymbol) t12 += ` e raffigurano l'elemento grafico <strong>${td.f12RequiresSymbol.toUpperCase()}</strong>`;
+                            if (td.negColor) t12 += ` ma <span class="negative-constraint">NON</span> contengono il colore <strong>${td.negColor.toUpperCase()}</strong>`;
+                            if (td.negInit) t12 += (td.f12AskCapital) ? ` e i cui nomi <span class="negative-constraint">NON</span> iniziano per <strong>${td.negInit.toUpperCase()}</strong>` : ` e i cui nomi <span class="negative-constraint">NON</span> iniziano per <strong>${td.negInit.toUpperCase()}</strong>`;
+                        }
+                        finalQ = t12 + ".";
+                        break;
+                }
+                
+                if (![0, 1, 9, 10].includes(format)) {
+                    let punc = finalQ.slice(-1);
+                    let base = finalQ.slice(0, -1);
+                    
+                    let extraNegs = [];
+                    if (td.negGeo) {
+                        if (td.negGeo === 'isola') extraNegs.push(num === 1 ? "che <span class=\"negative-constraint\">NON</span> sia insulare" : "che <span class=\"negative-constraint\">NON</span> siano insulari");
+                        else if (td.negGeo === 'costiera') extraNegs.push(num === 1 ? "che <span class=\"negative-constraint\">NON</span> sia continentale costiero" : "che <span class=\"negative-constraint\">NON</span> siano continentali costieri");
+                        else if (td.negGeo === 'interna') extraNegs.push(num === 1 ? "che abbia sbocchi sul mare" : "che abbiano sbocchi sul mare");
+                    }
+                    if (td.negArea) {
+                        extraNegs.push(getPreposizioneAreaNegativa(td.negArea, num));
+                    }
+                    
+                    if (extraNegs.length > 0) {
+                        base += ", " + extraNegs.join(" e ");
+                    }
+                    return base + punc;
+                }
+                return finalQ;
+            };
+
+            let tempValid = getValidAnswersArray(td, currentLevel);
+            
+            let isMitragliatrice = (currentLevel === 4) || (currentLevel === 5 && customConfig.maxCombo > 2);
+            let isCecchino = (currentLevel === 3) || (currentLevel === 5 && customConfig.maxCombo <= 2);
+            
+            let maxNegs = 0;
+            let negProb = 0;
+            if (currentLevel === 2) { maxNegs = 1; negProb = 0.40; } 
+            else if (isCecchino || isMitragliatrice) { maxNegs = 2; negProb = 0.85; }
+            
+            td.negBorders = []; 
+            
+            let allowSmartNeg = lvlCheckNeg;
+            
+            if (tempValid.length > 1 && allowSmartNeg && !td.disableSmartNeg && Math.random() < negProb) {
+                let possibleNegColors = new Set();
+                let possibleNegInits = new Set();
+                let possibleNegBorders = new Set();
+                let possibleNegAreas = new Set();
+                let possibleNegGeos = new Set();
+
+                let targetColors = [...td.targetNode.colori_base, ...td.targetNode.colori_emblema];
+                let targetInit = td.targetNode.nome.charAt(0).toUpperCase();
+                let targetBorders = td.targetNode.confini;
+                let targetNameLower = td.targetNode.nome.toLowerCase();
+
+                let otherCountries = globalDb.filter(c => {
+                    let isMatch = false;
+                    let capStr = c.capitale ? capitalize(c.capitale) + " (" + capitalize(c.nome) + ")" : "";
+                    let nomStr = capitalize(c.nome);
+                    if (tempValid.includes(nomStr) || tempValid.includes(capStr)) {
+                        if (c.sigla !== td.targetNode.sigla) isMatch = true;
+                    }
+                    return isMatch;
+                });
+
+                otherCountries.forEach(c => {
+                    if (td.format === 3 || td.format === 8 || td.format === 11 || td.format === 12) {
+                        let colsToCheck = [...c.colori_base, ...c.colori_emblema];
+                        colsToCheck.forEach(col => { if (!targetColors.includes(col)) possibleNegColors.add(col); });
+                    }
+                    if (td.format === 11 || td.format === 12) {
+                        let cInit = c.nome.charAt(0).toUpperCase();
+                        if (cInit !== targetInit) possibleNegInits.add(cInit);
+                    }
+                    if (td.format === 4) {
+                        c.confini.forEach(b => {
+                            if (b !== 'mare' && !targetBorders.includes(b) && b !== targetNameLower) possibleNegBorders.add(b);
+                        });
+                    }
+                    
+                    let diffAreas = c.aree.filter(a => !td.targetNode.aree.includes(a));
+                    if (diffAreas.length > 0) possibleNegAreas.add(diffAreas[Math.floor(Math.random() * diffAreas.length)]);
+                    
+                    if (!td.reqGeo && c.tipoGeo !== td.targetNode.tipoGeo) {
+                        possibleNegGeos.add(c.tipoGeo);
+                    }
+                });
+
+                let negOptions = [];
+                possibleNegColors.forEach(c => negOptions.push({type: 'color', val: c}));
+                possibleNegInits.forEach(i => negOptions.push({type: 'init', val: i}));
+                possibleNegBorders.forEach(b => negOptions.push({type: 'border', val: b}));
+                possibleNegAreas.forEach(a => negOptions.push({type: 'area', val: a}));
+                possibleNegGeos.forEach(g => negOptions.push({type: 'geo', val: g}));
+
+                if (negOptions.length > 0) {
+                    negOptions.sort(() => 0.5 - Math.random());
+                    
+                    let appliedNegs = 0;
+                    let usedTypes = new Set();
+                    
+                    for (let opt of negOptions) {
+                        if (tempValid.length === 1) break; 
+                        if (appliedNegs >= maxNegs) break;
+                        if (usedTypes.has(opt.type) && opt.type !== 'border') continue;
+                        if (opt.type === 'border' && td.negBorders.length >= (currentLevel >= 3 ? 2 : 1)) continue;
+
+                        let backupVal = null;
+                        if (opt.type === 'color') { backupVal = td.negColor; td.negColor = opt.val; }
+                        else if (opt.type === 'init') { backupVal = td.negInit; td.negInit = opt.val; }
+                        else if (opt.type === 'area') { backupVal = td.negArea; td.negArea = opt.val; }
+                        else if (opt.type === 'geo') { backupVal = td.negGeo; td.negGeo = opt.val; }
+                        else if (opt.type === 'border') td.negBorders.push(opt.val);
+
+                        td.numVariables++;
+                        let testValid = getValidAnswersArray(td, currentLevel);
+                        
+                        let rollback = false;
+                        if (testValid.length === 0) rollback = true; 
+                        else if (testValid.length === tempValid.length) rollback = true; 
+                        else if (isMitragliatrice && testValid.length < 6) rollback = true; 
+                        
+                        if (rollback) {
+                            if (opt.type === 'color') td.negColor = backupVal;
+                            else if (opt.type === 'init') td.negInit = backupVal;
+                            else if (opt.type === 'area') td.negArea = backupVal;
+                            else if (opt.type === 'geo') td.negGeo = backupVal;
+                            else if (opt.type === 'border') td.negBorders.pop();
+                            td.numVariables--;
+                        } else {
+                            appliedNegs++;
+                            usedTypes.add(opt.type);
+                            tempValid = testValid;
+                        }
+                    }
+                }
+            }
+
+            if (currentLevel >= 3 && ![0, 1, 9, 10].includes(td.format) && td.numVariables < 2) {
+                return generateQuestion(); 
+            }
+
+            if (tempValid.length === 0) return generateQuestion(); 
+            
+            getValidAnswersArray(td, currentLevel);
+
+            td.maxPossible = tempValid.length;
+            td.validAnswersCache = tempValid;
+            td.numReq = 1;
+
+            if (currentLevel === 4 || currentLevel === 5) {
+                let limitCombo = (currentLevel === 5) ? customConfig.maxCombo : 5;
+                if ([0, 1, 9, 10].includes(format) && !td.isComboInception) {
+                    td.numReq = 1; 
+                } else {
+                    let maxR = Math.min(limitCombo, td.maxPossible); 
+                    td.numReq = Math.floor(Math.random() * maxR) + 1;
+                }
+            }
+
+            td.questionText = td.buildQuestionText(td.numReq);
+            return td;
+        }
+
+        function getValidAnswersArray(td, level) {
+            let validList = [];
+            td.validSiglas = [];
+            for (let country of globalDb) {
+                let match = false;
+                
+                if (td.negColor && (country.colori_base.includes(td.negColor) || country.colori_emblema.includes(td.negColor))) continue;
+                
+                if (td.negBorders && td.negBorders.length > 0) {
+                    let hasNegBorder = false;
+                    let cNames = [country.nome.toLowerCase(), ...country.alias_paese];
+                    for (let nb of td.negBorders) {
+                        if (country.confini.includes(nb) || cNames.includes(nb)) { hasNegBorder = true; break; }
+                    }
+                    if (hasNegBorder) continue;
+                }
+                
+                if (td.negArea && country.aree.includes(td.negArea)) continue;
+                if (td.negGeo && country.tipoGeo === td.negGeo) continue;
+                
+                if (td.negInit) {
+                    if (country.nome.toLowerCase().startsWith(td.negInit.toLowerCase())) continue;
+                }
+
+                if (td.isComboInception) {
+                    let targetConfini = td.targetNode.confini;
+                    let m = false;
+                    let countryNames = [country.nome.toLowerCase(), ...country.alias_paese];
+                    for (let name of countryNames) {
+                        if (targetConfini.includes(name)) { m = true; break; }
+                    }
+                    if (m && country.indipendente) {
+                        let hasCap = (td.format === 0 || td.format === 10);
+                        if (!hasCap || country.capitale) {
+                            match = true; 
+                            if (hasCap) validList.push(capitalize(country.capitale) + " (" + capitalize(country.nome) + ")");
+                            else validList.push(capitalize(country.nome));
+                        }
+                    }
+                } else {
+                    if (td.format === 0) { if (country.sigla === td.targetNode.sigla) match = true; }
+                    else if (td.format === 1) { if (country.capitale && normalizzaTesto(country.capitale) === normalizzaTesto(td.targetNode.capitale) && !isDoppelganger(country.capitale, td.targetNode.capitale)) match = true; }
+                    else if (td.format === 2) {
+                        let cBaseRichiesti = td.targetNode.colori_base;
+                        if (td.f2RequiresSymbol) {
+                            if (country.colori_base.includes(cBaseRichiesti[0]) && country.simboli.includes(td.f2RequiresSymbol)) match = true;
+                        } else {
+                            if (country.colori_base.sort().join(',') === cBaseRichiesti.sort().join(',')) match = true;
+                        }
+                    }
+                    else if (td.format === 3) {
+                        let m = false;
+                        if (td.isColoreEmblema) { if (country.colori_emblema.includes(td.elemScelto)) m = true; } 
+                        else { if (country.simboli.includes(td.elemScelto)) m = true; }
+                        if (m && td.reqArea && !country.aree.includes(td.reqArea)) m = false;
+                        
+                        if (m && td.reqColor) {
+                            let hasColor = country.colori_base.includes(td.reqColor) || country.colori_emblema.includes(td.reqColor);
+                            if (!hasColor) m = false;
+                        }
+                        
+                        if (m && td.reqInit) {
+                            if(!country.nome.toLowerCase().startsWith(td.reqInit.toLowerCase())) m = false;
+                        }
+                        if (m) match = true;
+                    }
+                    else if (td.format === 4) {
+                        if (country.confini.includes(td.reqConf1) && country.confini.includes(td.reqConf2) && country.indipendente) match = true;
+                    }
+                    else if (td.format === 5) {
+                        if (country.confini.length === td.targetNode.confini.length && country.indipendente) {
+                            if (!td.reqArea || country.aree.includes(td.reqArea)) match = true;
+                        }
+                    }
+                    else if (td.format === 6) {
+                        let capPaese = country.capitale ? country.capitale.toLowerCase() : "";
+                        if (capPaese && country.aree.includes(td.selectedArea)) {
+                            let textMatch = false;
+                            let cn = country.capitale.toLowerCase();
+                            if (td.varEnigmistica === 0 && cn.startsWith(td.reqCapInit.toLowerCase())) textMatch = true;
+                            if (td.varEnigmistica === 1 && cn.endsWith(td.reqCapFin.toLowerCase())) textMatch = true;
+                            if (td.varEnigmistica === 2 && cn.startsWith(td.reqCapInit.toLowerCase()) && cn.endsWith(td.reqCapFin.toLowerCase())) textMatch = true;
+                            
+                            if (textMatch) match = true;
+                        }
+                    }
+                    else if (td.format === 7) {
+                        if (country.confini.includes(td.targetNode.confini[0]) && country.indipendente) match = true;
+                    }
+                    else if (td.format === 8) {
+                        let geoMatch = false;
+                        if (td.reqGeo === 'marittima') {
+                            if (country.tipoGeo === 'isola' || country.tipoGeo === 'costiera') geoMatch = true;
+                        } else {
+                            if (country.tipoGeo === td.reqGeo) geoMatch = true;
+                        }
+                        if (geoMatch) {
+                            let ok = true;
+                            if (td.reqArea && !country.aree.includes(td.reqArea)) ok = false;
+                            if (td.reqInit) {
+                                if(!country.nome.toLowerCase().startsWith(td.reqInit.toLowerCase())) ok = false;
+                            }
+                            if (ok) match = true;
+                        }
+                    }
+                    else if (td.format === 9 || td.format === 10) {
+                        if (country.sigla === td.targetNode.sigla) match = true;
+                    }
+                    else if (td.format === 11) {
+                        if (country.formati_bandiera.includes(td.reqFormato)) {
+                            let m = true;
+                            if (td.reqArea && !country.aree.includes(td.reqArea)) m = false;
+                            if (td.reqGeo) {
+                                if (td.reqGeo === 'marittima') {
+                                    if (country.tipoGeo !== 'isola' && country.tipoGeo !== 'costiera') m = false;
+                                } else {
+                                    if (country.tipoGeo !== td.reqGeo) m = false;
+                                }
+                            }
+                            
+                            if (td.reqColor) {
+                                let hasColor = country.colori_base.includes(td.reqColor) || country.colori_emblema.includes(td.reqColor);
+                                if (!hasColor) m = false;
+                            }
+                            
+                            if (td.reqCapInit) {
+                                if(!country.capitale || !country.capitale.toLowerCase().startsWith(td.reqCapInit.toLowerCase())) m = false;
+                            }
+                            if (td.reqInit) {
+                                if(!country.nome.toLowerCase().startsWith(td.reqInit.toLowerCase())) m = false;
+                            }
+                            if (m) match = true;
+                        }
+                    }
+                    else if (td.format === 12) {
+                        let allCountryColors = [...country.colori_base, ...country.colori_emblema];
+                        let hasAllColors = td.f12Colors.every(col => allCountryColors.includes(col));
+                        if (hasAllColors) {
+                            let m = true;
+                            if (td.reqArea && !country.aree.includes(td.reqArea)) m = false;
+                            if (td.f12RequiresSymbol && !country.simboli.includes(td.f12RequiresSymbol)) m = false;
+                            if (td.reqInit) {
+                                if(!country.nome.toLowerCase().startsWith(td.reqInit.toLowerCase())) m = false;
+                            }
+                            if (td.f12AskCapital && !country.capitale) m = false;
+                            
+                            if (m) match = true;
+                        }
+                    }
+
+                    if (match) {
+                        td.validSiglas.push(country.sigla);
+                        let dName = capitalize(country.nome);
+                        if (td.format === 0 || td.format === 10 || td.format === 6 || (td.format === 12 && td.f12AskCapital)) {
+                            validList.push(capitalize(country.capitale) + " (" + dName + ")");
+                        } else {
+                            validList.push(dName);
+                        }
+                    }
+                }
+            }
+            td.validSiglas = [...new Set(td.validSiglas)];
+            return [...new Set(validList)];
+        }
+
+        function checkInit(country, matchedName, reqI) {
+            if (!reqI) return true;
+            if (country.nome.toLowerCase().startsWith(reqI.toLowerCase())) return true;
+            if (country.alias_paese_ufficiali.map(a=>a.toLowerCase()).includes(matchedName.toLowerCase())) {
+                if (matchedName.toLowerCase().startsWith(reqI.toLowerCase())) return true;
+            }
+            return false;
+        }
+
+        function checkCapInit(country, matchedCap, reqCapI) {
+            if (!reqCapI) return true;
+            if (!country.capitale) return false;
+            if (country.capitale.toLowerCase().startsWith(reqCapI.toLowerCase())) return true;
+            if (country.alias_capitale_ufficiali.map(a=>a.toLowerCase()).includes(matchedCap.toLowerCase())) {
+                if (matchedCap.toLowerCase().startsWith(reqCapI.toLowerCase())) return true;
+            }
+            return false;
+        }
+
+        function checkSingleAnswer(inputStr, td, level) {
+            let bestMatch = null;
+            let globalMinDist = 999;
+            let bestMatchNameStr = "";
+            let bestMatchCapitalStr = "";
+
+            for (let country of globalDb) {
+                if (td.negColor && (country.colori_base.includes(td.negColor) || country.colori_emblema.includes(td.negColor))) continue;
+                
+                if (td.negBorders && td.negBorders.length > 0) {
+                    let hasNegBorder = false;
+                    let cNames = [country.nome.toLowerCase(), ...country.alias_paese];
+                    for (let nb of td.negBorders) {
+                        if (country.confini.includes(nb) || cNames.includes(nb)) { hasNegBorder = true; break; }
+                    }
+                    if (hasNegBorder) continue;
+                }
+                
+                if (td.negArea && country.aree.includes(td.negArea)) continue;
+                if (td.negGeo && country.tipoGeo === td.negGeo) continue;
+                
+                if (td.negInit) {
+                    if (country.nome.toLowerCase().startsWith(td.negInit.toLowerCase())) continue;
+                }
+
+                let validNames = [country.nome.toLowerCase(), ...country.alias_paese];
+                let validCapitals = country.capitale ? [country.capitale.toLowerCase(), ...country.alias_capitale] : [];
+                
+                let nameMatch = false;
+                let nameDist = 999;
+                let matchedNameStr = "";
+                for(let n of validNames) {
+                    if (isDoppelganger(inputStr, n)) continue;
+                    let d = levenshteinDistance(inputStr, n);
+                    if (d <= getLevenshteinTolerance(n, level)) {
+                        nameMatch = true;
+                        if(d < nameDist) {
+                            nameDist = d;
+                            matchedNameStr = n;
+                        }
+                    }
+                }
+
+                let capitalMatch = false;
+                let capDist = 999;
+                let matchedCapitalStr = "";
+                for(let c of validCapitals) {
+                    if (isDoppelganger(inputStr, c)) continue;
+                    let d = levenshteinDistance(inputStr, c);
+                    if (d <= getLevenshteinTolerance(c, level)) {
+                        capitalMatch = true;
+                        if(d < capDist) {
+                            capDist = d;
+                            matchedCapitalStr = c;
+                        }
+                    }
+                }
+
+                let match = false;
+                let relevantDist = 999;
+
+                if (td.isComboInception) {
+                    let targetConfini = td.targetNode.confini;
+                    let cNames = [country.nome.toLowerCase(), ...country.alias_paese];
+                    let isBordering = cNames.some(n => targetConfini.includes(n));
+                    
+                    if (isBordering && country.indipendente) {
+                        if (td.format === 0 || td.format === 10) {
+                            if (capitalMatch && country.capitale) { match = true; relevantDist = capDist; }
+                        } else if (td.format === 1 || td.format === 9) {
+                            if (nameMatch) { match = true; relevantDist = nameDist; }
+                        }
+                    }
+                } else {
+                    if (td.format === 0 && capitalMatch && country.sigla === td.targetNode.sigla) { match = true; relevantDist = capDist; }
+                    else if (td.format === 1 && nameMatch && country.capitale && normalizzaTesto(country.capitale) === normalizzaTesto(td.targetNode.capitale) && !isDoppelganger(country.capitale, td.targetNode.capitale)) { match = true; relevantDist = nameDist; }
+                    else if (td.format === 2) {
+                        let cBaseRichiesti = td.targetNode.colori_base;
+                        if (td.f2RequiresSymbol) {
+                            if (country.colori_base.includes(cBaseRichiesti[0]) && country.simboli.includes(td.f2RequiresSymbol) && nameMatch) { match = true; relevantDist = nameDist; }
+                        } else {
+                            if (country.colori_base.sort().join(',') === cBaseRichiesti.sort().join(',')) {
+                                if (nameMatch) { match = true; relevantDist = nameDist; }
+                            }
+                        }
+                    }
+                    else if (td.format === 3) {
+                        let m = false;
+                        if (td.isColoreEmblema) { if (country.colori_emblema.includes(td.elemScelto)) m = true; }
+                        else { if (country.simboli.includes(td.elemScelto)) m = true; }
+                        if (m && td.reqArea && !country.aree.includes(td.reqArea)) m = false;
+                        
+                        if (m && td.reqColor) {
+                            let hasColor = country.colori_base.includes(td.reqColor) || country.colori_emblema.includes(td.reqColor);
+                            if (!hasColor) m = false;
+                        }
+                        
+                        if (m && td.reqInit) {
+                            if(!checkInit(country, matchedNameStr, td.reqInit)) m = false;
+                        }
+                        if (m && nameMatch) { match = true; relevantDist = nameDist; }
+                    }
+                    else if (td.format === 4) {
+                        if (country.confini.includes(td.reqConf1) && country.confini.includes(td.reqConf2) && country.indipendente && nameMatch) { match = true; relevantDist = nameDist; }
+                    }
+                    else if (td.format === 5) {
+                        if (country.confini.length === td.targetNode.confini.length && country.indipendente && nameMatch) {
+                            if (!td.reqArea || country.aree.includes(td.reqArea)) { match = true; relevantDist = nameDist; }
+                        }
+                    }
+                    else if (td.format === 6) {
+                        let capPaese = country.capitale ? country.capitale.toLowerCase() : "";
+                        if (capPaese && country.aree.includes(td.selectedArea) && capitalMatch) {
+                            let textMatch = false;
+                            let stringToTest = country.capitale.toLowerCase();
+                            if (!stringToTest.startsWith(td.reqCapInit.toLowerCase()) && 
+                                country.alias_capitale_ufficiali.map(a=>a.toLowerCase()).includes(matchedCapitalStr.toLowerCase())) {
+                                stringToTest = matchedCapitalStr.toLowerCase();
+                            }
+
+                            if (td.varEnigmistica === 0 && stringToTest.startsWith(td.reqCapInit.toLowerCase())) textMatch = true;
+                            if (td.varEnigmistica === 1 && stringToTest.endsWith(td.reqCapFin.toLowerCase())) textMatch = true;
+                            if (td.varEnigmistica === 2 && stringToTest.startsWith(td.reqCapInit.toLowerCase()) && stringToTest.endsWith(td.reqCapFin.toLowerCase())) textMatch = true;
+                            
+                            if (textMatch) { match = true; relevantDist = capDist; }
+                        }
+                    }
+                    else if (td.format === 7) {
+                        if (country.confini.includes(td.targetNode.confini[0]) && country.indipendente && nameMatch) { 
+                            match = true; relevantDist = nameDist; 
+                        }
+                    }
+                    else if (td.format === 8) {
+                        let geoMatch = false;
+                        if (td.reqGeo === 'marittima') {
+                            if (country.tipoGeo === 'isola' || country.tipoGeo === 'costiera') geoMatch = true;
+                        } else {
+                            if (country.tipoGeo === td.reqGeo) geoMatch = true;
+                        }
+                        if (geoMatch && nameMatch) {
+                            let ok = true;
+                            if (td.reqArea && !country.aree.includes(td.reqArea)) ok = false;
+                            if (td.reqInit) {
+                                if(!checkInit(country, matchedNameStr, td.reqInit)) ok = false;
+                            }
+                            if (ok) { match = true; relevantDist = nameDist; }
+                        }
+                    }
+                    else if (td.format === 9) {
+                        if (nameMatch && country.sigla === td.targetNode.sigla) { match = true; relevantDist = nameDist; }
+                    } 
+                    else if (td.format === 10) {
+                        if (capitalMatch && country.sigla === td.targetNode.sigla) { match = true; relevantDist = capDist; }
+                    }
+                    else if (td.format === 11) {
+                        if (country.formati_bandiera.includes(td.reqFormato) && nameMatch) {
+                            let m = true;
+                            if (td.reqArea && !country.aree.includes(td.reqArea)) m = false;
+                            if (td.reqGeo) {
+                                if (td.reqGeo === 'marittima') {
+                                    if (country.tipoGeo !== 'isola' && country.tipoGeo !== 'costiera') m = false;
+                                } else {
+                                    if (country.tipoGeo !== td.reqGeo) m = false;
+                                }
+                            }
+                            
+                            if (td.reqColor) {
+                                let hasColor = country.colori_base.includes(td.reqColor) || country.colori_emblema.includes(td.reqColor);
+                                if (!hasColor) m = false;
+                            }
+                            
+                            if (td.reqCapInit) {
+                                if(!checkCapInit(country, matchedCapitalStr, td.reqCapInit)) m = false;
+                            }
+                            
+                            if (td.reqInit) {
+                                if(!checkInit(country, matchedNameStr, td.reqInit)) m = false;
+                            }
+                            if (m) { match = true; relevantDist = nameDist; }
+                        }
+                    }
+                    else if (td.format === 12) {
+                        let allCountryColors = [...country.colori_base, ...country.colori_emblema];
+                        let hasAllColors = td.f12Colors.every(col => allCountryColors.includes(col));
+                        if (hasAllColors) {
+                            let m = true;
+                            if (td.reqArea && !country.aree.includes(td.reqArea)) m = false;
+                            if (td.f12RequiresSymbol && !country.simboli.includes(td.f12RequiresSymbol)) m = false;
+                            if (td.reqInit) {
+                                if(!checkInit(country, matchedNameStr, td.reqInit)) m = false;
+                            }
+                            if (td.f12AskCapital && !country.capitale) m = false;
+                            
+                            if (td.f12AskCapital) {
+                                if (m && capitalMatch) { match = true; relevantDist = capDist; }
+                            } else {
+                                if (m && nameMatch) { match = true; relevantDist = nameDist; }
+                            }
+                        }
+                    }
+                }
+
+                if (match) {
+                    if (relevantDist === 0) return { isCorrect: true, matchedCountry: country, matchedNameStr: matchedNameStr, matchedCapitalStr: matchedCapitalStr };
+                    if (relevantDist < globalMinDist) {
+                        globalMinDist = relevantDist;
+                        bestMatch = country;
+                        bestMatchNameStr = matchedNameStr;
+                        bestMatchCapitalStr = matchedCapitalStr;
+                    }
+                }
+            }
+            
+            if (bestMatch) return { isCorrect: true, matchedCountry: bestMatch, matchedNameStr: bestMatchNameStr, matchedCapitalStr: bestMatchCapitalStr };
+            return { isCorrect: false, matchedCountry: null };
+        }
+
+        function startTimerSandboxOrL4(calculatedTime) {
+            timerState = "reading";
+            activeTimeTotal = calculatedTime;
+            activeTimeLeft = calculatedTime;
+            
+            timerContainer.style.display = "block";
+            timerBar.style.transition = "none";
+            timerBar.style.width = "100%";
+            timerBar.style.backgroundColor = "#2196f3"; 
+            timerStatus.innerText = "TREGUA LETTURA (5s)";
+            
+            clearTimeout(readingTimeout);
+            clearInterval(mainTimerInterval);
+            
+            readingTimeout = setTimeout(() => {
+                if(timerState === "reading") activateMainTimer();
+            }, 5000);
+        }
+
+        function activateMainTimer() {
+            if(timerState === "active") return;
+            timerState = "active";
+            clearTimeout(readingTimeout);
+            
+            timerBar.style.backgroundColor = "#4caf50";
+            timerStatus.innerText = `TEMPO CALCOLATO: ${activeTimeTotal}s`;
+            
+            let lastUpdate = Date.now();
+            mainTimerInterval = setInterval(() => {
+                let now = Date.now();
+                let dt = (now - lastUpdate) / 1000;
+                lastUpdate = now;
+                activeTimeLeft -= dt;
+
+                if (activeTimeLeft <= 0) {
+                    activeTimeLeft = 0;
+                    stopTimer();
+                    timerBar.style.width = "0%";
+                    eseguiValidazioneMultipla(true); 
+                } else {
+                    let pct = (activeTimeLeft / activeTimeTotal) * 100;
+                    timerBar.style.width = pct + "%";
+                    if (pct < 25) timerBar.style.backgroundColor = "#f44336"; 
+                    else if (pct < 50) timerBar.style.backgroundColor = "#ff9800"; 
+                }
+            }, 50);
+        }
+
+        function stopTimer() {
+            timerState = "stopped";
+            clearTimeout(readingTimeout);
+            clearInterval(mainTimerInterval);
+            timerContainer.style.display = "none";
+        }
+
+        inputEl.addEventListener("input", function() {
+            if ((currentLevel === 4 || (currentLevel === 5 && customConfig.timer)) && timerState === "reading") activateMainTimer();
+        });
+
+        function aggiornaComboUI() {
+            let isMulti = (currentLevel === 4 || (currentLevel === 5 && (customConfig.maxCombo > 1 || customConfig.timer)));
+            if (!isMulti || currentTurnData.numReq === 1) {
+                comboTracker.style.display = "none";
+                return;
+            }
+            
+            comboTracker.style.display = "flex";
+            comboTracker.style.flexDirection = "column";
+            comboTracker.style.alignItems = "center";
+            comboTracker.style.gap = "10px";
+
+            if (comboInserted.length === 0) {
+                comboTracker.innerHTML = `<div>Inserisci la prima risposta...</div>`;
+            } else {
+                let htmlStr = `<div>Trovate (${comboInserted.length}/${currentTurnData.numReq}):</div>`;
+                htmlStr += `<div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:5px;">`;
+                
+                comboInserted.forEach(ans => {
+                    let matchedCountry = findCountryByInput(ans.toLowerCase().trim(), currentLevel, currentTurnData);
+                    
+                    if (matchedCountry) {
+                        htmlStr += `<div style="display:flex; flex-direction:column; align-items:center; background:#1a1a1a; padding:6px; border-radius:6px; border:1px solid #444; width:65px; height:70px; justify-content:flex-end;">
+                            <div style="flex-grow:1; display:flex; align-items:center; justify-content:center; width:100%;">
+                                <img src="GIF/${matchedCountry.sigla.toLowerCase()}.jpg" style="max-width:45px; max-height:35px; border-radius:3px; box-shadow:0 2px 4px rgba(0,0,0,0.5);" onerror="this.style.display='none'">
+                            </div>
+                            <span style="font-size:10px; color:#ffd700; font-weight:bold; letter-spacing:0.5px; text-align:center; width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:4px;">${ans.toUpperCase()}</span>
+                        </div>`;
+                    } else {
+                        htmlStr += `<div style="display:flex; flex-direction:column; align-items:center; background:#1a1a1a; padding:6px; border-radius:6px; border:1px solid #444; width:65px; height:70px; justify-content:flex-end;">
+                            <div style="flex-grow:1; display:flex; align-items:center; justify-content:center; width:100%; color:#888; font-size:20px;">❓</div>
+                            <span style="font-size:10px; color:#ffd700; font-weight:bold; letter-spacing:0.5px; text-align:center; width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:4px;">${ans.toUpperCase()}</span>
+                        </div>`;
+                    }
+                });
+                
+                htmlStr += `</div>`;
+                comboTracker.innerHTML = htmlStr;
+            }
+        }
+
+        function nextTurnMulti() {
+            inputEl.classList.remove("correct-flash", "wrong-flash", "shake", "warning-flash");
+            inputEl.value = "";
+            inputEl.disabled = false;
+            
+            eventBadge.style.display = "none";
+            eventBadge.innerHTML = "";
+            eventBadge.style.backgroundColor = "#2a2a2a";
+            eventBadge.style.color = "#fff";
+            
+            errPanel.style.display = "none";
+            nextBtn.style.display = "none";
+            submitBtn.style.display = "block";
+            submitBtn.disabled = false;
+            playTurn();
+        }
+
+        function surrenderTurn() {
+            if (inputEl.disabled && errPanel.style.display === "flex") return; 
+            
+            let surrTime = ((Date.now() - turnStartTime) / 1000).toFixed(1);
+            debugGameLog += `-> ESITO [${surrTime}s]: 🏳️ RESA\n\n`;
+            
+            if (currentLevel === 4 || (currentLevel === 5 && customConfig.timer)) stopTimer();
+            
+            vite--;
+            currentStreak = 0;
+            aggiornaUI();
+            
+            let isMulti = (currentLevel === 4 || (currentLevel === 5 && (customConfig.maxCombo > 1 || customConfig.timer)));
+            let insertedStr = isMulti && comboInserted.length > 0 ? " (Trovate: " + comboInserted.map(s => s.toUpperCase()).join(", ") + ")" : "";
+            
+            let domPulita = currentTurnData.questionText.replace(/<[^>]*>?/gm, ''); 
+            let stringaSoluzioni = currentTurnData.validAnswersCache.join(", ");
+            errororiCommessi.push({ 
+                q: domPulita, 
+                wrong: "🏳️ TI SEI ARRESO" + insertedStr, 
+                correct: "Risposte valide: " + stringaSoluzioni 
+            });
+
+            inputEl.value = "";
+            inputEl.disabled = true;
+            submitBtn.style.display = "none";
+            surrenderBtn.style.display = "none";
+            comboTracker.style.display = "none";
+
+            errTitle.innerText = "🏳️ RESA!";
+            errText.innerText = "Le risposte corrette erano: " + stringaSoluzioni;
+            errPanel.style.display = "flex";
+            
+            if (vite <= 0) {
+                 actionTimeout = setTimeout(() => {
+                    errPanel.style.display = "none";
+                    popolaGameOver(false);
+                }, 3000); 
+            } else {
+                nextBtn.style.display = "block";
+            }
+        }
+
+        function playTurn() {
+            turnStartTime = Date.now();
+            bandieraContainer.style.display = "none";
+            
+            eventBadge.style.display = "none";
+            eventBadge.innerHTML = "";
+            eventBadge.style.backgroundColor = "#2a2a2a";
+            eventBadge.style.color = "#fff";
+
+            let oldGrid = document.getElementById("combo-flags-grid");
+            if (oldGrid) oldGrid.remove();
+
+            inputEl.value = "";
+            currentTurnData = generateQuestion();
+            questionEl.innerHTML = currentTurnData.questionText;
+            
+            debugGameLog += "----------------------------------------\n[DOMANDA]\n";
+            debugGameLog += "TESTO: " + currentTurnData.questionText.replace(/<[^>]*>?/gm, '') + "\n";
+            debugGameLog += "TARGET IA: " + currentTurnData.targetNode.nome + " (" + currentTurnData.targetNode.sigla + ") - Formato Iniziale: " + currentTurnData.format + "\n";
+            debugGameLog += "VALIDE (" + currentTurnData.maxPossible + "): " + currentTurnData.validAnswersCache.join(", ") + "\n";
+            
+            if (currentTurnData.format === 9 || currentTurnData.format === 10) {
+                bandieraImg.onerror = function() {
+                    this.style.display = 'none'; 
+                    questionEl.innerHTML += "<br><span style='font-size:16px; color:#f44336; font-weight:bold;'><br>Errore caricamento immagine.<br>Salto in 2 secondi...</span>";
+                    inputEl.disabled = true; submitBtn.disabled = true; surrenderBtn.style.display = "none";
+                    actionTimeout = setTimeout(() => {
+                        inputEl.disabled = false; submitBtn.disabled = false;
+                        playTurn();
+                    }, 2000); 
+                };
+                bandieraImg.src = "GIF/" + currentTurnData.targetNode.sigla.toLowerCase() + ".jpg";
+                bandieraImg.style.display = "block";
+                bandieraContainer.style.display = "block";
+            }
+            
+            surrenderBtn.style.display = "block";
+            
+            let isMulti = (currentLevel === 4 || (currentLevel === 5 && (customConfig.maxCombo > 1 || customConfig.timer)));
+            let useTimer = (currentLevel === 4 || (currentLevel === 5 && customConfig.timer));
+
+            if (isMulti) {
+                comboInserted = [];
+                aggiornaComboUI();
+            } else {
+                comboTracker.style.display = "none";
+            }
+
+            if (useTimer) {
+                let mathTime = 15 * (currentTurnData.numReq + currentTurnData.numVariables - 1);
+                if (mathTime < 15) mathTime = 15; 
+                startTimerSandboxOrL4(mathTime);
+            } else {
+                timerContainer.style.display = "none";
+            }
+        }
+
+        function processaRisposta() {
+            let inputStr = inputEl.value.trim().toLowerCase();
+            if (!inputStr) return;
+
+            let isMulti = (currentLevel === 4 || (currentLevel === 5 && (customConfig.maxCombo > 1 || customConfig.timer)));
+            let useTimer = (currentLevel === 4 || (currentLevel === 5 && customConfig.timer));
+
+            if (useTimer && timerState === "reading") activateMainTimer();
+
+            if (isMulti) {
+                if (comboInserted.map(s => s.toLowerCase()).includes(inputStr)) {
+                    inputEl.classList.add("shake");
+                    setTimeout(()=> inputEl.classList.remove("shake"), 400);
+                    inputEl.value = "";
+                    return; 
+                }
+                comboInserted.push(inputEl.value.trim()); 
+                totalAnswersSubmitted++; 
+                inputEl.value = "";
+                aggiornaComboUI();
+
+                if (comboInserted.length === currentTurnData.numReq) eseguiValidazioneMultipla(false);
+                return;
+            }
+
+            let res = checkSingleAnswer(inputStr, currentTurnData, currentLevel);
+            inputEl.classList.remove("shake", "correct-flash", "wrong-flash", "warning-flash");
+            void inputEl.offsetWidth; 
+
+            totalAnswersSubmitted++;
+            totalActiveTimeMs += (Date.now() - turnStartTime);
+            
+            let actionTime = ((Date.now() - turnStartTime) / 1000).toFixed(1);
+            if (isMulti) {
+                if(res.isCorrect) debugGameLog += `-> INPUT COMBO PARZIALE [${actionTime}s]: ` + inputStr + " (Riconosciuto: " + res.matchedCountry.nome + ")\n";
+                else debugGameLog += `-> INPUT COMBO ERRATO [${actionTime}s]: ` + inputStr + "\n";
+            } else {
+                if(res.isCorrect) debugGameLog += `-> ESITO [${actionTime}s]: ✅ CORRETTO (Input: ` + inputStr + " -> Riconosciuto: " + res.matchedCountry.nome + ")\n\n";
+            }
+
+            if (res.isCorrect) {
+                if (useTimer) stopTimer();
+                
+                let sigla = res.matchedCountry.sigla;
+                nazioniDigitateCount[sigla] = (nazioniDigitateCount[sigla] || 0) + 1;
+
+                if (currentTurnData.validSiglas && currentTurnData.validSiglas.length <= 20) {
+                    currentTurnData.validSiglas.forEach(s => {
+                        if (s !== sigla) nazioniIgnorateCount[s] = (nazioniIgnorateCount[s] || 0) + 1;
+                    });
+                }
+
+                let lazyMargin = 2; 
+                let applyMalus = (currentLevel >= 1 && currentLevel <= 3) || (currentLevel === 5 && !customConfig.timer);
+                
+                let isLazy = false;
+                if (applyMalus && nazioniUsate.includes(sigla) && currentTurnData.maxPossible > currentTurnData.numReq + lazyMargin) {
+                    isLazy = true;
+                }
+                if (!nazioniUsate.includes(sigla)) {
+                    nazioniUsate.push(sigla);
+                }
+
+                esatte++;
+                currentStreak++;
+                if (currentStreak > bestStreak) bestStreak = currentStreak;
+
+                let numSoluzioni = currentTurnData.maxPossible;
+                let puntiGuadagnati = calcolaPuntiDomandaL1_3(currentTurnData.format, numSoluzioni); 
+                
+                let badgeText = "";
+                let badgeColor = "#2a2a2a";
+                let badgeBorder = "#555";
+
+                if (currentLevel < 3 && res.matchedCountry.livello > currentLevel) { 
+                    puntiGuadagnati *= 2; 
+                    badgeText += "⭐ OTTIMA SCELTA! (Bonus Audacia x2)<br>";
+                    badgeBorder = "#ffd700";
+                }
+
+                if (isLazy) {
+                    puntiGuadagnati = Math.floor(puntiGuadagnati / 2);
+                    badgeText += "⚠️ DÉJÀ VU! (Malus pigrizia)<br>";
+                    badgeBorder = "#ff9800";
+                }
+                
+                punteggio += puntiGuadagnati;
+
+                let hasWon = false;
+                let isEndlessTrig = false;
+                if (currentLevel === 1 && punteggio >= 2500) hasWon = true;
+                else if (currentLevel === 2 && punteggio >= 3500) hasWon = true;
+                else if ((currentLevel === 3 || currentLevel === 4) && punteggio >= 10000 && !endlessVittoriaSbloccata) {
+                    isEndlessTrig = true;
+                    endlessVittoriaSbloccata = true;
+                }
+
+                let currentMaxVite = customConfig.vite > 5 ? customConfig.vite : maxVite;
+                if (!hasWon && punteggio >= prossimoCuore && vite < currentMaxVite) {
+                    vite++;
+                    prossimoCuore += 750; 
+                    badgeText += "❤️ +1 VITA EXTRA!<br>";
+                    badgeBorder = "#f44336";
+                }
+
+                aggiornaUI();
+                inputEl.classList.add(isLazy ? "warning-flash" : "correct-flash");
+                inputEl.disabled = true;
+                submitBtn.disabled = true;
+                surrenderBtn.style.display = "none";
+                
+                let oldGrid = document.getElementById("combo-flags-grid");
+                if (oldGrid) oldGrid.remove();
+
+                if (currentTurnData.format === 9 || currentTurnData.format === 10) {
+                    bandieraImg.style.display = "block";
+                    
+                    if (currentTurnData.isComboInception) {
+                        let gridContainer = document.createElement("div");
+                        gridContainer.id = "combo-flags-grid";
+                        gridContainer.style.display = "flex";
+                        gridContainer.style.justifyContent = "center";
+                        gridContainer.style.marginTop = "15px";
+
+                        let img = document.createElement("img");
+                        img.src = "GIF/" + sigla.toLowerCase() + ".jpg";
+                        img.style.width = "70px"; 
+                        img.style.borderRadius = "4px";
+                        img.style.boxShadow = "0 3px 6px rgba(0,0,0,0.6)";
+                        img.style.border = "1px solid #444";
+                        img.onerror = function() { this.style.display = 'none'; };
+
+                        gridContainer.appendChild(img);
+                        bandieraContainer.appendChild(gridContainer);
+                    }
+                } else {
+                    bandieraImg.onerror = function() { this.style.display = 'none'; };
+                    bandieraImg.src = "GIF/" + sigla.toLowerCase() + ".jpg";
+                    bandieraImg.style.display = "block";
+                }
+                bandieraContainer.style.display = "block";
+
+                if (hasWon) {
+                    inputEl.value = `VITTORIA! Livello Superato! 🏆`;
+                    actionTimeout = setTimeout(() => {
+                        inputEl.classList.remove("correct-flash", "warning-flash");
+                        inputEl.value = "";
+                        popolaGameOver(true);
+                    }, 1800);
+                } else {
+                    let isCapitalReq = currentTurnData.format === 0 || currentTurnData.format === 6 || currentTurnData.format === 10 || (currentTurnData.format === 12 && currentTurnData.f12AskCapital);
+                    let dName = getPrintedName(res.matchedCountry, res.matchedNameStr);
+                    let nomeInserito = isCapitalReq ? `${getPrintedCapital(res.matchedCountry, res.matchedCapitalStr)} (${dName})` : dName;
+                    let nomePrimario = isCapitalReq ? `${capitalize(res.matchedCountry.capitale)} (${capitalize(res.matchedCountry.nome)})` : capitalize(res.matchedCountry.nome);
+                    
+                    if (currentTurnData.maxPossible > 1) {
+                        let rimanenti = currentTurnData.validAnswersCache.filter(v => v !== nomePrimario);
+                        if (rimanenti.length > 0) {
+                            comboTracker.style.display = "block";
+                            comboTracker.innerHTML = `<span style="color:#aaa;">Altre risposte valide: ${rimanenti.join(", ")}</span>`;
+                        }
+                    }
+
+                    if (isEndlessTrig) {
+                        inputEl.value = `VITTORIA! Mi inchino alla tua immensa conoscenza 👑`;
+                        inputEl.style.color = "#ffd700";
+                        if (badgeText !== "") { eventBadge.innerHTML = badgeText; eventBadge.style.borderColor = badgeBorder; eventBadge.style.display = "block"; } 
+                        else { eventBadge.style.display = "none"; }
+                        
+                        submitBtn.style.display = "none";
+                        nextBtn.style.display = "none";
+                        document.getElementById("ritirati-btn").style.display = "block";
+                        document.getElementById("continua-btn").style.display = "block";
+                    } else {
+                        inputEl.value = `Corretto! +${puntiGuadagnati}pt - ${nomeInserito}`; 
+                        if (badgeText !== "") { eventBadge.innerHTML = badgeText; eventBadge.style.borderColor = badgeBorder; eventBadge.style.display = "block"; } 
+                        else { eventBadge.style.display = "none"; }
+                        actionTimeout = setTimeout(() => {
+                            inputEl.classList.remove("correct-flash", "warning-flash");
+                            inputEl.value = "";
+                            inputEl.disabled = false;
+                            submitBtn.disabled = false;
+                            playTurn();
+                        }, 2600); 
+                    }
+                }
+            } else {
+                if (useTimer) stopTimer();
+                failStandard(inputStr);
+            }
+        }
+
+        function eseguiValidazioneMultipla(isTimeout = false) {
+            inputEl.disabled = true;
+            submitBtn.disabled = true;
+            surrenderBtn.style.display = "none";
+            
+            totalActiveTimeMs += (Date.now() - turnStartTime);
+            
+            let useTimer = (currentLevel === 4 || (currentLevel === 5 && customConfig.timer));
+            let pct = useTimer ? (activeTimeLeft / activeTimeTotal) * 100 : 100;
+            if (useTimer) stopTimer();
+
+            if (comboInserted.length === 0) {
+                failMulti(isTimeout ? "Tempo scaduto!" : "Errore nella combo!", "");
+                return;
+            }
+
+            let allCorrect = true;
+            let matchedSiglas = [];
+            let matchedCountriesInfos = [];
+
+            for (let ans of comboInserted) {
+                let res = checkSingleAnswer(ans, currentTurnData, currentLevel);
+                if (res.isCorrect) {
+                    if (matchedSiglas.includes(res.matchedCountry.sigla)) {
+                        allCorrect = false; 
+                    } else {
+                        matchedSiglas.push(res.matchedCountry.sigla);
+                        matchedCountriesInfos.push(res);
+                    }
+                } else {
+                    allCorrect = false; 
+                }
+            }
+
+            // AGGIORNAMENTO STATISTICHE TOP 5 (Anche se la combo fallisce)
+            matchedCountriesInfos.forEach(info => {
+                nazioniDigitateCount[info.matchedCountry.sigla] = (nazioniDigitateCount[info.matchedCountry.sigla] || 0) + 1;
+            });
+
+            if (!allCorrect) {
+                let wrongStr = comboInserted.map(s => s.toUpperCase()).join(", ");
+                failMulti(isTimeout ? "Tempo scaduto con errori!" : "Errore nella combo!", wrongStr);
+                return;
+            }
+
+            let isGrazia = false;
+            if (isTimeout && comboInserted.length < currentTurnData.numReq) {
+                if (currentTurnData.numReq >= 3 && comboInserted.length >= 2) {
+                    isGrazia = true; 
+                } else {
+                    let wrongStr = comboInserted.map(s => s.toUpperCase()).join(", ");
+                    failMulti("Tempo scaduto!", wrongStr);
+                    return;
+                }
+            }
+
+            if (allCorrect || isGrazia) {
+                
+                let comboTime = ((Date.now() - turnStartTime) / 1000).toFixed(1);
+                debugGameLog += `-> ESITO COMBO [${comboTime}s]: ✅ SUPERATA` + (isGrazia ? " CON GRAZIA" : "") + " (Trovate: " + comboInserted.join(", ") + ")\n\n";
+                
+                if (currentTurnData.validSiglas && currentTurnData.validSiglas.length <= 20) {
+                    currentTurnData.validSiglas.forEach(s => {
+                        if (!matchedSiglas.includes(s)) nazioniIgnorateCount[s] = (nazioniIgnorateCount[s] || 0) + 1;
+                    });
+                }
+                
+                let badgeText = "";
+                let badgeBorder = "#555";
+                let badgeBg = "#2a2a2a";
+                let badgeTxtColor = "#fff";
+
+                if (isGrazia) {
+                    grazieRicevuteCount++;
+                    let mancanti = currentTurnData.numReq - comboInserted.length;
+                    badgeText = `🕊️ GRAZIA RICEVUTA! (${mancanti === 1 ? 'Mancava' : 'Mancavano'} ${mancanti} ${mancanti === 1 ? 'risposta' : 'risposte'})<br>`;
+                    badgeBorder = "#ffd700";
+                    badgeBg = "rgba(255, 255, 255, 0.1)"; 
+                    badgeTxtColor = "#ffd700";
+                } else if (pct > 0 && pct <= 25) {
+                    fotofinishCount++;
+                    badgeText += "⏱️ FOTOFINISH! Che salvataggio!<br>";
+                    badgeBorder = "#2196f3";
+                }
+                
+                esatte += comboInserted.length; 
+                currentStreak++;
+                if (currentStreak > bestStreak) bestStreak = currentStreak;
+
+                let basePunti = 0;
+                if ([0, 1, 9, 10].includes(currentTurnData.format) && !currentTurnData.isComboInception) {
+                    basePunti = (currentTurnData.format === 10) ? 20 : 15;
+                } else {
+                    let maxP = currentTurnData.numReq * 100;
+                    let multiplier = currentTurnData.numReq / currentTurnData.maxPossible;
+                    basePunti = Math.round((maxP * multiplier) / 10) * 10;
+                    if (basePunti < 10) basePunti = 10; 
+                }
+
+                let puntiRound = basePunti;
+                if (isGrazia) {
+                    let mancanti = currentTurnData.numReq - comboInserted.length;
+                    puntiRound = Math.round(basePunti / Math.pow(2, mancanti));
+                    if (puntiRound < 10) puntiRound = 10;
+                }
+                
+                punteggio += puntiRound;
+                
+                let currentMaxVite = customConfig.vite > 5 ? customConfig.vite : maxVite;
+                if (punteggio >= prossimoCuore && vite < currentMaxVite) {
+                    vite++; prossimoCuore += 750; 
+                    badgeText += "❤️ +1 VITA EXTRA!<br>";
+                    if (!isGrazia) badgeBorder = "#f44336";
+                }
+
+                aggiornaUI();
+                inputEl.classList.add("correct-flash");
+
+                let oldGrid = document.getElementById("combo-flags-grid");
+                if (oldGrid) oldGrid.remove();
+
+                if (currentTurnData.format === 9 || currentTurnData.format === 10) {
+                    bandieraImg.style.display = "block"; 
+                } else {
+                    bandieraImg.style.display = "none"; 
+                }
+
+                if (currentTurnData.format !== 9 && currentTurnData.format !== 10 || currentTurnData.isComboInception) {
+                    let gridContainer = document.createElement("div");
+                    gridContainer.id = "combo-flags-grid";
+                    gridContainer.style.display = "flex";
+                    gridContainer.style.flexDirection = "column";
+                    gridContainer.style.gap = "10px";
+                    gridContainer.style.alignItems = "center";
+                    gridContainer.style.marginTop = "15px";
+
+                    let row1 = document.createElement("div");
+                    row1.style.display = "flex"; row1.style.gap = "10px"; row1.style.justifyContent = "center";
+                    
+                    let row2 = document.createElement("div");
+                    row2.style.display = "flex"; row2.style.gap = "10px"; row2.style.justifyContent = "center";
+
+                    matchedCountriesInfos.forEach((info, index) => {
+                        let img = document.createElement("img");
+                        img.src = "GIF/" + info.matchedCountry.sigla.toLowerCase() + ".jpg";
+                        img.style.width = "70px"; 
+                        img.style.borderRadius = "4px";
+                        img.style.boxShadow = "0 3px 6px rgba(0,0,0,0.6)";
+                        img.style.border = "1px solid #444";
+                        img.onerror = function() { this.style.display = 'none'; };
+                        
+                        if (matchedCountriesInfos.length === 5) {
+                            if (index < 3) row1.appendChild(img);
+                            else row2.appendChild(img);
+                        } else {
+                            row1.appendChild(img);
+                        }
+                    });
+
+                    gridContainer.appendChild(row1);
+                    if (matchedCountriesInfos.length === 5) gridContainer.appendChild(row2);
+                    
+                    bandieraContainer.appendChild(gridContainer);
+                }
+                bandieraContainer.style.display = "block";
+
+                let arrayNomiTrovati = [];
+                let arrayNomiPrimariTrovati = [];
+                let nomiTrovati = "";
+                let isCapitalRequired = currentTurnData.format === 0 || currentTurnData.format === 6 || currentTurnData.format === 10 || (currentTurnData.format === 12 && currentTurnData.f12AskCapital);
+                if (currentTurnData.isComboInception && (currentTurnData.format === 1 || currentTurnData.format === 9)) {
+                    isCapitalRequired = false; 
+                } else if (currentTurnData.isComboInception && (currentTurnData.format === 0 || currentTurnData.format === 10)) {
+                    isCapitalRequired = true;
+                }
+
+                if (isCapitalRequired) {
+                    arrayNomiTrovati = matchedCountriesInfos.map(info => `${getPrintedCapital(info.matchedCountry, info.matchedCapitalStr)} (${getPrintedName(info.matchedCountry, info.matchedNameStr)})`);
+                    arrayNomiPrimariTrovati = matchedCountriesInfos.map(info => `${capitalize(info.matchedCountry.capitale)} (${capitalize(info.matchedCountry.nome)})`);
+                    nomiTrovati = arrayNomiTrovati.join(", ");
+                } else {
+                    arrayNomiTrovati = matchedCountriesInfos.map(info => getPrintedName(info.matchedCountry, info.matchedNameStr));
+                    arrayNomiPrimariTrovati = matchedCountriesInfos.map(info => capitalize(info.matchedCountry.nome));
+                    nomiTrovati = arrayNomiTrovati.join(", ");
+                }
+
+                let isEndlessTrig = false;
+                if ((currentLevel === 3 || currentLevel === 4) && punteggio >= 10000 && !endlessVittoriaSbloccata) {
+                    isEndlessTrig = true;
+                    endlessVittoriaSbloccata = true;
+                }
+
+                if (currentTurnData.maxPossible > comboInserted.length) {
+                    let rimanenti = currentTurnData.validAnswersCache.filter(v => !arrayNomiPrimariTrovati.includes(v));
+                    if (rimanenti.length > 0) {
+                        comboTracker.style.display = "block";
+                        comboTracker.innerHTML = `<span style="color:#aaa;">Altre risposte valide: ${rimanenti.join(", ")}</span>`;
+                    } else comboTracker.style.display = "none";
+                } else comboTracker.style.display = "none";
+
+                if (isEndlessTrig) {
+                    inputEl.value = `VITTORIA! Mi inchino alla tua immensa conoscenza 👑`;
+                    inputEl.style.color = "#ffd700";
+                    if (badgeText !== "") {
+                        eventBadge.innerHTML = badgeText; eventBadge.style.backgroundColor = badgeBg;
+                        eventBadge.style.color = badgeTxtColor; eventBadge.style.borderColor = badgeBorder;
+                        eventBadge.style.display = "block";
+                    } else { eventBadge.style.display = "none"; }
+                    submitBtn.style.display = "none";
+                    nextBtn.style.display = "none";
+                    document.getElementById("ritirati-btn").style.display = "block";
+                    document.getElementById("continua-btn").style.display = "block";
+                } else {
+                    inputEl.value = `Corretto! +${puntiRound}pt - ${nomiTrovati}`; 
+                    if (badgeText !== "") {
+                        eventBadge.innerHTML = badgeText; eventBadge.style.backgroundColor = badgeBg;
+                        eventBadge.style.color = badgeTxtColor; eventBadge.style.borderColor = badgeBorder;
+                        eventBadge.style.display = "block";
+                    } else { eventBadge.style.display = "none"; }
+                    submitBtn.style.display = "none";
+                    nextBtn.style.display = "block";
+                }
+            }
+        }
+
+        function failStandard(wrongInput) {
+            let failTime = ((Date.now() - turnStartTime) / 1000).toFixed(1);
+            debugGameLog += `-> ESITO [${failTime}s]: ❌ ERRORE (Input: ` + (wrongInput || "Nessuno") + ")\n\n";
+            vite--;
+            currentStreak = 0;
+            aggiornaUI();
+            
+            let domPulita = currentTurnData.questionText.replace(/<[^>]*>?/gm, ''); 
+            let stringaSoluzioni = currentTurnData.validAnswersCache.join(", ");
+            errororiCommessi.push({ 
+                q: domPulita, 
+                wrong: "Hai inserito: " + (wrongInput ? wrongInput.toUpperCase() : "Nessuna risposta"), 
+                correct: "Risposte valide: " + stringaSoluzioni 
+            });
+
+            inputEl.value = "";
+            inputEl.classList.add("shake", "wrong-flash");
+            inputEl.disabled = true;
+            submitBtn.style.display = "none"; 
+            surrenderBtn.style.display = "none";
+            comboTracker.style.display = "none";
+
+            errTitle.innerText = "❌ ERRORE!";
+            errText.innerText = "Le risposte corrette erano: " + stringaSoluzioni;
+            errPanel.style.display = "flex";
+            
+            actionTimeout = setTimeout(() => {
+                inputEl.classList.remove("shake", "wrong-flash");
+                errPanel.style.display = "none";
+                if (vite <= 0) popolaGameOver(false);
+                else {
+                    inputEl.disabled = false; 
+                    submitBtn.style.display = "block"; 
+                    playTurn();
+                }
+            }, 3000); 
+        }
+
+        function failMulti(reason, wrongInput) {
+            let failTime = ((Date.now() - turnStartTime) / 1000).toFixed(1);
+            debugGameLog += `-> ESITO [${failTime}s]: ❌ FALLIMENTO COMBO (` + reason + ") (Input: " + (wrongInput || "Nessuno") + ")\n\n";
+            vite--;
+            currentStreak = 0;
+            aggiornaUI();
+            
+            let domPulita = currentTurnData.questionText.replace(/<[^>]*>?/gm, ''); 
+            let stringaSoluzioni = currentTurnData.validAnswersCache.join(", "); 
+            errororiCommessi.push({ 
+                q: domPulita, 
+                wrong: reason + (wrongInput ? " Hai inserito: " + wrongInput : ""), 
+                correct: "Risposte valide: " + stringaSoluzioni 
+            });
+
+            inputEl.value = "";
+            inputEl.classList.add("shake", "wrong-flash");
+            inputEl.disabled = true;
+            submitBtn.style.display = "none"; 
+            surrenderBtn.style.display = "none";
+            comboTracker.style.display = "none";
+            
+            errTitle.innerText = reason.includes("Tempo scaduto") ? "⏳ TEMPO SCADUTO!" : "❌ ERRORE!";
+            errText.innerText = "Le risposte corrette erano: " + stringaSoluzioni;
+            errPanel.style.display = "flex";
+            
+            if (vite <= 0) {
+                 actionTimeout = setTimeout(() => {
+                    inputEl.classList.remove("shake", "wrong-flash");
+                    errPanel.style.display = "none";
+                    popolaGameOver(false);
+                }, 3000); 
+            } else {
+                nextBtn.style.display = "block";
+            }
+        }
+
+        function ritiratiLeggenda() {
+            inputEl.style.color = "";
+            document.getElementById("ritirati-btn").style.display = "none";
+            document.getElementById("continua-btn").style.display = "none";
+            popolaGameOver(true);
+        }
+
+        function continuaSfida() {
+            inputEl.style.color = "";
+            document.getElementById("ritirati-btn").style.display = "none";
+            document.getElementById("continua-btn").style.display = "none";
+            
+            let isMulti = (currentLevel === 4 || (currentLevel === 5 && (customConfig.maxCombo > 1 || customConfig.timer)));
+            if (isMulti) {
+                nextTurnMulti();
+            } else {
+                inputEl.classList.remove("correct-flash", "warning-flash");
+                inputEl.value = "";
+                inputEl.disabled = false;
+                submitBtn.disabled = false;
+                playTurn();
+            }
+        }
+        
+        function aggiornaUI() {
+            let cuoriStringa = "";
+            let currentMaxVite = customConfig.vite > 5 ? customConfig.vite : maxVite;
+            
+            if (vite > 5) heartsEl.style.fontSize = "16px";
+            else heartsEl.style.fontSize = "26px";
+
+            let loopCount = Math.max(vite, currentMaxVite);
+            for(let i=0; i<vite; i++) cuoriStringa += "❤️";
+            for(let i=vite; i<loopCount; i++) cuoriStringa += "🖤";
+            
+            heartsEl.innerText = cuoriStringa;
+            esatteEl.innerText = esatte;
+            puntiEl.innerText = punteggio;
+        }
+
+        function popolaGameOver(isVictory = false) {
+            document.getElementById("header").style.display = "none";
+            document.getElementById("question").style.display = "none";
+            document.getElementById("input-area").style.display = "none";
+            bandieraContainer.style.display = "none";
+            timerContainer.style.display = "none";
+            comboTracker.style.display = "none";
+            errPanel.style.display = "none";
+            homeBtn.style.display = "none"; 
+            
+            gameOverScreen.style.display = "flex";
+            
+            let avgTime = totalAnswersSubmitted > 0 ? (totalActiveTimeMs / totalAnswersSubmitted / 1000).toFixed(1) : "0.0";
+            document.getElementById("final-avg-time").innerText = avgTime + "s";
+            
+            globalPlays++;
+            statsByLevel[currentLevel].plays++;
+            
+            let isNewRecord = false;
+            if (punteggio > statsByLevel[currentLevel].bestScore && punteggio > 0) {
+                statsByLevel[currentLevel].bestScore = punteggio;
+                isNewRecord = true;
+            }
+            if (bestStreak > statsByLevel[currentLevel].bestStreak) statsByLevel[currentLevel].bestStreak = bestStreak;
+            
+            if (avgTime > 0) {
+                if (statsByLevel[currentLevel].bestAvgTime === 0 || parseFloat(avgTime) < statsByLevel[currentLevel].bestAvgTime) {
+                    statsByLevel[currentLevel].bestAvgTime = parseFloat(avgTime);
+                }
+            }
+            
+            if (currentLevel >= 4 || currentLevel === 5) { 
+                statsByLevel[currentLevel].fotofinish += fotofinishCount;
+                statsByLevel[currentLevel].grazie += grazieRicevuteCount;
+            }
+
+            // Statistiche Globali Legacy - Aggiunte solo se non siamo nel Livello 5 Sandbox
+            if (punteggio > allTimeBestScore) allTimeBestScore = punteggio;
+            if (bestStreak > allTimeBestStreak) allTimeBestStreak = bestStreak;
+            allTimeFotofinish += fotofinishCount;
+            allTimeGrazie += grazieRicevuteCount;
+            
+            if (currentLevel !== 5) {
+                for (let sigla in nazioniDigitateCount) { allTimeNazioniCount[sigla] = (allTimeNazioniCount[sigla] || 0) + nazioniDigitateCount[sigla]; }
+                for (let sigla in nazioniIgnorateCount) { allTimeNazioniIgnorate[sigla] = (allTimeNazioniIgnorate[sigla] || 0) + nazioniIgnorateCount[sigla]; }
+            }
+            
+            let badge = document.getElementById("new-record-badge");
+            if(isNewRecord) badge.style.display = "block";
+            else badge.style.display = "none";
+
+            saveStats(); 
+
+            document.getElementById("final-score").innerText = punteggio;
+            document.getElementById("final-esatte").innerText = esatte;
+            document.getElementById("final-streak").innerText = bestStreak;
+            document.getElementById("final-fotofinish").innerText = fotofinishCount;
+            document.getElementById("final-grazie").innerText = grazieRicevuteCount;
+
+            const titleEl = document.getElementById("game-over-title");
+            const msgEl = document.getElementById("game-over-msg");
+            
+            if (isVictory) {
+                titleEl.innerText = "VITTORIA!";
+                titleEl.style.color = "#4caf50"; 
+                msgEl.innerText = "Sei troppo bravo per questo livello, passa al prossimo!";
+            } else {
+                titleEl.innerText = "GAME OVER";
+                titleEl.style.color = "#f44336";
+                msgEl.innerText = "";
+            }
+
+            errorLogEl.style.display = "block";
+            errorLogEl.innerHTML = "";
+            if (errororiCommessi.length === 0) {
+                errorLogEl.innerHTML = "<p style='text-align:center; color:#4caf50;'>Nessun errore commesso! Sei stato perfetto.</p>";
+            } else {
+                let errorHtml = `<h3 style="color:#f44336; margin:0 0 15px 0; font-size:18px; text-transform:uppercase; text-align:center;">❌ RIEPILOGO ERRORI</h3>`;
+                errororiCommessi.forEach(err => {
+                    errorHtml += `<div class="error-item">
+                                     <div class="error-q">${err.q}</div>
+                                     <div class="error-user-input">${err.wrong}</div>
+                                     <div class="error-valid-answers">${err.correct}</div>
+                                 </div>`;
+                });
+                errorLogEl.innerHTML = errorHtml;
+            }
+
+            // Top 5 Usate e Ignorate
+            let top5Container = document.getElementById("top5-nations");
+            let sortedUsate = Object.keys(nazioniDigitateCount).map(sigla => {
+                let n = globalDb.find(c => c.sigla === sigla);
+                return { nome: n.nome, count: nazioniDigitateCount[sigla], sigla: sigla };
+            }).sort((a, b) => b.count - a.count).slice(0, 5);
+
+            let sortedIgnorate = Object.keys(nazioniIgnorateCount).map(sigla => {
+                let n = globalDb.find(c => c.sigla === sigla);
+                return { nome: n.nome, count: nazioniIgnorateCount[sigla], sigla: sigla };
+            }).sort((a, b) => b.count - a.count).slice(0, 5);
+
+            const buildMiniList = (arr, color) => {
+                if (arr.length === 0) return `<p style="font-size:13px; color:#888;">Nessun dato</p>`;
+                let h = `<div style="display:flex; flex-direction:column;">`;
+                arr.forEach((sn, idx) => {
+                    h += `<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; height:40px;">
+                            <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:0; padding-right:8px;">
+                                <img src="GIF/${sn.sigla.toLowerCase()}.jpg" style="width:16px; border-radius:2px; flex-shrink:0;" onerror="this.style.display='none'">
+                                <span style="color:#ccc; font-size:12px; line-height:1.2; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; text-overflow:ellipsis;">${sn.nome.toUpperCase()}</span>
+                            </div>
+                            <span style="color:${color}; font-weight:bold; font-size:13px; flex-shrink:0;">${sn.count}</span>
+                          </div>`;
+                });
+                return h + `</div>`;
+            };
+
+            if (sortedUsate.length > 0 || sortedIgnorate.length > 0) {
+                let html = `<div style="display:flex; gap:15px; margin-top:10px;">
+                                <div style="flex:1;">
+                                    <h3 style="color:#4caf50; margin:0 0 10px 0; font-size:14px; text-transform:uppercase; text-align:center;">Top 5 Usate</h3>
+                                    ${buildMiniList(sortedUsate, "#4caf50")}
+                                </div>
+                                <div style="flex:1;">
+                                    <h3 style="color:#f44336; margin:0 0 10px 0; font-size:14px; text-transform:uppercase; text-align:center;">Top 5 Ignorate</h3>
+                                    ${buildMiniList(sortedIgnorate, "#f44336")}
+                                </div>
+                            </div>`;
+                top5Container.innerHTML = html;
+                top5Container.style.display = "block";
+            } else {
+                top5Container.style.display = "none";
+            }
+
+            // --- AGGIUNTA DELLE STATISTICHE AL FILE DI LOG ---
+            debugGameLog += "========================================\n";
+            debugGameLog += "[STATISTICHE FINALI PARTITA]\n";
+            debugGameLog += "Esito: " + (isVictory ? "🏆 VITTORIA" : "💀 GAME OVER") + "\n";
+            debugGameLog += "Punteggio: " + punteggio + " | Esatte: " + esatte + " | Serie Max: " + bestStreak + "\n";
+            debugGameLog += "Tempo Medio di Risposta: " + avgTime + "s\n";
+            if (currentLevel >= 4 || currentLevel === 5) {
+                debugGameLog += "Salvataggi al Fotofinish: " + fotofinishCount + " | Grazie Ricevute: " + grazieRicevuteCount + "\n";
+            }
+            debugGameLog += "Top 5 Usate: " + (sortedUsate.length > 0 ? sortedUsate.map(u => u.nome + " (" + u.count + ")").join(", ") : "Nessuna") + "\n";
+            debugGameLog += "Top 5 Ignorate: " + (sortedIgnorate.length > 0 ? sortedIgnorate.map(i => i.nome + " (" + i.count + ")").join(", ") : "Nessuna") + "\n";
+            debugGameLog += "========================================\n";
+        }
+
+        document.addEventListener("keydown", function(event) {
+            if (document.getElementById("input-area").style.display !== "flex") return;
+
+            if (event.key === "Enter") {
+            if (document.getElementById("continua-btn").style.display === "block") {
+                continuaSfida();
+                event.preventDefault();
+            } else if (nextBtn.style.display === "block") {
+                nextTurnMulti(); 
+                event.preventDefault(); 
+            } else if (!inputEl.disabled && errPanel.style.display !== "flex") {
+                processaRisposta(); 
+                event.preventDefault();
+            }
+            return;
+        }
+
+            if (event.key.length === 1 && !event.ctrlKey && !event.altKey && !event.metaKey && !inputEl.disabled) {
+                if (document.activeElement !== inputEl) {
+                    inputEl.focus();
+                }
+            }
+        });
+        
+        // --- AVVIO SERVICE WORKER (PWA) ---
+        let newWorker;
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').then(reg => {
+                reg.addEventListener('updatefound', () => {
+                    newWorker = reg.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            document.getElementById('update-banner').style.display = 'block';
+                        }
+                    });
+                });
+            });
+
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) {
+                    refreshing = true;
+                    window.location.reload();
+                }
+            });
+        }
+
+        function applyUpdate() {
+            if (newWorker) {
+                newWorker.postMessage('SKIP_WAITING');
+            }
+            document.getElementById('update-banner').style.display = 'none';
+        }
+        
+</script>
