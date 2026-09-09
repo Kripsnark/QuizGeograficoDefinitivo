@@ -560,7 +560,7 @@
         </div>
     </div>
     
-    <div id="version-badge">v2.0.3.4</div>
+    <div id="version-badge">v2.0.0</div>
 
     <div id="modal-overlay">
         <div id="modal-content">
@@ -1734,7 +1734,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
 
             if ((currentLevel === 4 || currentLevel === 5) && [0, 1, 9, 10].includes(format)) {
                 let validBordersCount = 0;
-                for (let c of globalDb) {
+                for (let c of getAnswerPool(currentLevel)) {
                     let cNames = [c.nome.toLowerCase(), ...c.alias_paese];
                     if (c.indipendente && cNames.some(n => td.targetNode.confini.includes(n))) {
                         if (format === 0 || format === 10) {
@@ -2091,7 +2091,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                 let targetBorders = td.targetNode.confini;
                 let targetNameLower = td.targetNode.nome.toLowerCase();
 
-                let otherCountries = globalDb.filter(c => {
+                let otherCountries = getAnswerPool(currentLevel).filter(c => {
                     let isMatch = false;
                     let capStr = c.capitale ? capitalize(c.capitale) + " (" + capitalize(c.nome) + ")" : "";
                     let nomStr = capitalize(c.nome);
@@ -2200,10 +2200,25 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             return td;
         }
 
-        function getValidAnswersArray(td, level) {
+        function getAnswerPool(level) {
+            if (level !== 5) return globalDb;
+            return globalDb.filter(c => {
+                let cl = c.aree.join(" ").toLowerCase();
+                let isAm = cl.includes('nord america') || cl.includes('sud america') || cl.includes('america centrale') || cl.includes('caraibi');
+                let match = false;
+                if(customConfig.continenti.includes('europa') && cl.includes('europa')) match = true;
+                if(customConfig.continenti.includes('asia') && cl.includes('asia')) match = true;
+                if(customConfig.continenti.includes('africa') && cl.includes('africa')) match = true;
+                if(customConfig.continenti.includes('oceania') && cl.includes('oceania')) match = true;
+                if(customConfig.continenti.includes('americhe') && isAm) match = true;
+                return match;
+            });
+        }
+
+	function getValidAnswersArray(td, level) {
             let validList = [];
             td.validSiglas = [];
-            for (let country of globalDb) {
+            for (let country of getAnswerPool(level)) {
                 let match = false;
                 
                 if (td.negColor && (country.colori_base.includes(td.negColor) || country.colori_emblema.includes(td.negColor))) continue;
