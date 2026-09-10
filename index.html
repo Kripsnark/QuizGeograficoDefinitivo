@@ -529,6 +529,7 @@
             
             <div class="action-btn-group">
                 <button id="surrender-btn" onclick="surrenderTurn()">🏳️ ARRENDITI</button>
+		<button id="termina-custom-btn" onclick="terminaPartitaVolontaria()" style="display:none; background:#2a2a2a; color:#fff; border:none; font-size:16px; padding:15px 20px; cursor:pointer; border-radius:4px; font-weight:bold; flex-grow:1;">🚪 TERMINA PARTITA</button>
                 <button id="submit-btn" onclick="processaRisposta()">INVIA</button>
                 <button id="next-btn" onclick="nextTurnMulti()">PROSSIMA DOMANDA ➔</button>
                 <button id="ritirati-btn" onclick="ritiratiLeggenda()" style="display:none; background-color: #ffd700; color: #121212; border: none; font-size: 16px; padding: 15px 20px; cursor: pointer; border-radius: 4px; font-weight: bold; flex-grow: 1;">🏆 RITIRATI DA LEGGENDA</button>
@@ -560,7 +561,7 @@
         </div>
     </div>
     
-    <div id="version-badge">v2.0.0</div>
+    <div id="version-badge">v2.0.1</div>
 
     <div id="modal-overlay">
         <div id="modal-content">
@@ -1522,6 +1523,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             submitBtn.disabled = false;
             submitBtn.style.display = "block";
             nextBtn.style.display = "none";
+	    document.getElementById("termina-custom-btn").style.display = "none";
             surrenderBtn.style.display = "none";
             inputEl.classList.remove("shake", "correct-flash", "wrong-flash", "warning-flash");
             inputEl.value = "";
@@ -2215,6 +2217,21 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             });
         }
 
+	function getAnswerPool(level) {
+            if (level !== 5) return globalDb;
+            return globalDb.filter(c => {
+                let cl = c.aree.join(" ").toLowerCase();
+                let isAm = cl.includes('nord america') || cl.includes('sud america') || cl.includes('america centrale') || cl.includes('caraibi');
+                let match = false;
+                if(customConfig.continenti.includes('europa') && cl.includes('europa')) match = true;
+                if(customConfig.continenti.includes('asia') && cl.includes('asia')) match = true;
+                if(customConfig.continenti.includes('africa') && cl.includes('africa')) match = true;
+                if(customConfig.continenti.includes('oceania') && cl.includes('oceania')) match = true;
+                if(customConfig.continenti.includes('americhe') && isAm) match = true;
+                return match;
+            });
+        }
+
 	function getValidAnswersArray(td, level) {
             let validList = [];
             td.validSiglas = [];
@@ -2831,6 +2848,8 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             } else {
                 timerContainer.style.display = "none";
             }
+            
+            if(currentLevel === 5) document.getElementById("termina-custom-btn").style.display = "block";
         }
 
         function processaRisposta() {
@@ -2907,7 +2926,12 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                 let badgeColor = "#2a2a2a";
                 let badgeBorder = "#555";
 
-                if (currentLevel < 3 && res.matchedCountry.livello > currentLevel) { 
+                let virtualLevel = currentLevel;
+                if (currentLevel === 5) {
+                    virtualLevel = customConfig.difficolta === 'facile' ? 1 : (customConfig.difficolta === 'medio' ? 2 : 3);
+                }
+
+                if (virtualLevel < 3 && res.matchedCountry.livello > virtualLevel) { 
                     puntiGuadagnati *= 2; 
                     badgeText += "⭐ OTTIMA SCELTA! (Bonus Audacia x2)<br>";
                     badgeBorder = "#ffd700";
@@ -3124,12 +3148,62 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                     if (basePunti < 10) basePunti = 10; 
                 }
 
-                let puntiRound = basePunti;
+                let puntiRound = 0;
+                let lazyNames = [];
+                let audaceNames = [];
+                let isL5Relax = (currentLevel === 5 && !customConfig.timer);
+                
+                let virtualLevel = currentLevel;
+                if (currentLevel === 5) {
+                    virtualLevel = customConfig.difficolta === 'facile' ? 1 : (customConfig.difficolta === 'medio' ? 2 : 3);
+                }
+
                 if (isGrazia) {
                     let mancanti = currentTurnData.numReq - comboInserted.length;
-                    puntiRound = Math.round(basePunti / Math.pow(2, mancanti));
-                    if (puntiRound < 10) puntiRound = 10;
+                    let pRound = Math.round(basePunti / Math.pow(2, mancanti));
+                    puntiRound = Math.round(pRound / 5) * 5; 
+                    if (puntiRound < 5) puntiRound = 5;
+                    
+                    matchedCountriesInfos.forEach(info => {
+                        if (!nazioniUsate.includes(info.matchedCountry.sigla)) nazioniUsate.push(info.matchedCountry.sigla);
+                    });
+                } else {
+                    let pointsPerCountry = basePunti / comboInserted.length;
+                    let lazyMargin = 2;
+                    
+                    matchedCountriesInfos.forEach(info => {
+                        let sigla = info.matchedCountry.sigla;
+                        let dName = capitalize(info.matchedCountry.nome);
+                        let p = pointsPerCountry;
+                        
+                        if (isL5Relax && nazioniUsate.includes(sigla) && currentTurnData.maxPossible > currentTurnData.numReq + lazyMargin) {
+                            p = p / 2;
+                            lazyNames.push(dName);
+                        }
+                        
+                        if (virtualLevel < 3 && info.matchedCountry.livello > virtualLevel) {
+                            p = p * 2;
+                            audaceNames.push(dName);
+                        }
+                        
+                        if (!nazioniUsate.includes(sigla)) nazioniUsate.push(sigla); 
+                        puntiRound += p;
+                    });
+                    
+                    puntiRound = Math.round(puntiRound / 5) * 5; 
+                    if (puntiRound < 5) puntiRound = 5;
+                    
+                    if (audaceNames.length > 0) {
+                        badgeText += `⭐ AUDACIA su ${audaceNames.join(", ")} (x2)<br>`;
+                        if (!isGrazia) badgeBorder = "#ffd700";
+                    }
+                    if (lazyNames.length > 0) {
+                        badgeText += `⚠️ DÉJÀ VU su ${lazyNames.join(", ")} (-50%)<br>`;
+                        if (!isGrazia && audaceNames.length === 0) badgeBorder = "#ff9800";
+                    }
                 }
+                
+                punteggio += puntiRound;
                 
                 punteggio += puntiRound;
                 
@@ -3533,6 +3607,18 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                 }
             }
         });
+
+	function terminaPartitaVolontaria() {
+            let conf = confirm("Vuoi davvero terminare la partita e salvare i tuoi record?");
+            if (conf) {
+                if (currentLevel === 4 || (currentLevel === 5 && customConfig.timer)) stopTimer();
+                inputEl.disabled = true;
+                popolaGameOver(false); 
+                document.getElementById("game-over-title").innerText = "PARTITA CONCLUSA";
+                document.getElementById("game-over-title").style.color = "#2196f3";
+                document.getElementById("game-over-msg").innerText = "Ti sei ritirato con onore dalla Sandbox. Ottimo allenamento!";
+            }
+        }
         
         // --- AVVIO SERVICE WORKER (PWA) ---
         let newWorker;
