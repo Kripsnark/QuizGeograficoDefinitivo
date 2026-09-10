@@ -562,7 +562,7 @@
         </div>
     </div>
     
-    <div id="version-badge">v2.0.3</div>
+    <div id="version-badge">v2.0.4</div>
 
     <div id="modal-overlay">
         <div id="modal-content">
@@ -1452,7 +1452,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             
             vite = 3; 
             
-            debugGameLog = "=== GEOQUIZ DEBUG LOG ===\nData: " + new Date().toLocaleString() + "\nLivello Giocato: 5 (Personalizzata)\n";
+            debugGameLog = "=== GEOQUIZ DEBUG LOG ===\nData: " + new Date().toLocaleString() + "\nLivello Giocato: " + currentLevel + "\n\n";
                         
             document.getElementById("start-screen").style.display = "none";
             document.getElementById("custom-setup-screen").style.display = "none";
@@ -2089,6 +2089,9 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             td.negBorders = []; 
             
             let allowSmartNeg = lvlCheckNeg;
+            
+            // FIX PALETTO INVISIBILE: Disabilita i vincoli negativi per domande dirette e confini
+            if ([0, 1, 9, 10].includes(td.format)) allowSmartNeg = false;
             
             if (tempValid.length > 1 && allowSmartNeg && !td.disableSmartNeg && Math.random() < negProb) {
                 let possibleNegColors = new Set();
