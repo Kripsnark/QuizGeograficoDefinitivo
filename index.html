@@ -562,7 +562,7 @@
         </div>
     </div>
     
-    <div id="version-badge">v2.0.2</div>
+    <div id="version-badge">v2.0.3</div>
 
     <div id="modal-overlay">
         <div id="modal-content">
@@ -1157,7 +1157,12 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
         function findCountryByInput(inputStr, level, td = null) {
             let bestMatches = [];
             let globalMinDist = 999;
-            for (let country of globalDb) {
+            let searchPool = globalDb;
+            if (td !== null) {
+                searchPool = (td.format === 4 || td.format === 7 || td.isComboInception) ? globalDb : getAnswerPool(level);
+            }
+            
+            for (let country of searchPool) {
                 let validNames = [country.nome.toLowerCase(), ...country.alias_paese];
                 let validCapitals = country.capitale ? [country.capitale.toLowerCase(), ...country.alias_capitale] : [];
                 
@@ -1448,10 +1453,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             vite = 3; 
             
             debugGameLog = "=== GEOQUIZ DEBUG LOG ===\nData: " + new Date().toLocaleString() + "\nLivello Giocato: 5 (Personalizzata)\n";
-            debugGameLog += "Difficoltà: " + customConfig.difficolta.toUpperCase() + " | Timer: " + (customConfig.timer ? "Ghigliottina" : "Relax") + " | Max Combo: " + customConfig.maxCombo + " | Vite Iniziali: " + customConfig.vite + "\n";
-            debugGameLog += "Continenti: " + customConfig.continenti.map(c => c.toUpperCase()).join(", ") + "\n";
-            debugGameLog += "Argomenti: " + (customConfig.stati?"Stati ":"") + (customConfig.capitali?"Capitali ":"") + (customConfig.bandiere?"Bandiere":"") + "\n\n";
-            
+                        
             document.getElementById("start-screen").style.display = "none";
             document.getElementById("custom-setup-screen").style.display = "none";
             document.getElementById("header").style.display = "flex";
@@ -1503,7 +1505,10 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             vite = customConfig.vite;
             
             debugGameLog = "=== GEOQUIZ DEBUG LOG ===\nData: " + new Date().toLocaleString() + "\nLivello Giocato: 5 (Personalizzata)\n\n";
-            
+            debugGameLog += "Difficoltà: " + customConfig.difficolta.toUpperCase() + " | Timer: " + (customConfig.timer ? "Ghigliottina" : "Relax") + " | Max Combo: " + customConfig.maxCombo + " | Vite Iniziali: " + customConfig.vite + "\n";
+            debugGameLog += "Continenti: " + customConfig.continenti.map(c => c.toUpperCase()).join(", ") + "\n";
+            debugGameLog += "Argomenti: " + (customConfig.stati?"Stati ":"") + (customConfig.capitali?"Capitali ":"") + (customConfig.bandiere?"Bandiere":"") + "\n\n";
+
             document.getElementById("start-screen").style.display = "none";
             document.getElementById("custom-setup-screen").style.display = "none";
             document.getElementById("header").style.display = "flex";
@@ -2415,7 +2420,10 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             let bestMatchNameStr = "";
             let bestMatchCapitalStr = "";
 
-            for (let country of globalDb) {
+            // Il motore guarda tutto il mondo SOLO per le tre casistiche di confine, altrimenti resta nel livello/continente!
+            let searchPool = (td.format === 4 || td.format === 7 || td.isComboInception) ? globalDb : getAnswerPool(level);
+            
+            for (let country of searchPool) {
                 if (td.negColor && (country.colori_base.includes(td.negColor) || country.colori_emblema.includes(td.negColor))) continue;
                 
                 if (td.negBorders && td.negBorders.length > 0) {
@@ -2686,7 +2694,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
         });
 
         function aggiornaComboUI() {
-            let isMulti = (currentLevel === 4 || (currentLevel === 5 && (customConfig.maxCombo > 1 || customConfig.timer)));
+            let isMulti = (currentLevel === 4 || (currentLevel === 5 && currentTurnData.numReq > 1));
             if (!isMulti || currentTurnData.numReq === 1) {
                 comboTracker.style.display = "none";
                 return;
@@ -2755,7 +2763,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             currentStreak = 0;
             aggiornaUI();
             
-            let isMulti = (currentLevel === 4 || (currentLevel === 5 && (customConfig.maxCombo > 1 || customConfig.timer)));
+            let isMulti = (currentLevel === 4 || (currentLevel === 5 && currentTurnData.numReq > 1));
             let insertedStr = isMulti && comboInserted.length > 0 ? " (Trovate: " + comboInserted.map(s => s.toUpperCase()).join(", ") + ")" : "";
             
             let domPulita = currentTurnData.questionText.replace(/<[^>]*>?/gm, ''); 
@@ -2824,7 +2832,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             
             surrenderBtn.style.display = "block";
             
-            let isMulti = (currentLevel === 4 || (currentLevel === 5 && (customConfig.maxCombo > 1 || customConfig.timer)));
+            let isMulti = (currentLevel === 4 || (currentLevel === 5 && currentTurnData.numReq > 1));
             let useTimer = (currentLevel === 4 || (currentLevel === 5 && customConfig.timer));
 
             if (isMulti) {
@@ -2849,7 +2857,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             let inputStr = inputEl.value.trim().toLowerCase();
             if (!inputStr) return;
 
-            let isMulti = (currentLevel === 4 || (currentLevel === 5 && (customConfig.maxCombo > 1 || customConfig.timer)));
+            let isMulti = (currentLevel === 4 || (currentLevel === 5 && currentTurnData.numReq > 1));
             let useTimer = (currentLevel === 4 || (currentLevel === 5 && customConfig.timer));
 
             if (useTimer && timerState === "reading") activateMainTimer();
