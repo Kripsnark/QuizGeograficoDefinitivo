@@ -1044,6 +1044,9 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
         let endlessVittoriaSbloccata = false;
 
         let debugGameLog = "";
+	    let logQuestionCounter = 0;
+        let totalActiveTime = 0;
+
         function downloadDebugLog() {
             let now = new Date();
             let pad = (num) => String(num).padStart(2, '0');
@@ -1450,7 +1453,10 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             currentLevel = lvl;
             levelDb = globalDb.filter(n => n.livello <= (lvl === 5 ? 3 : lvl)); 
             
-            vite = 3; 
+            vite = 3;
+			logQuestionCounter = 0;
+            totalActiveTime = 0;
+
             
             debugGameLog = "=== GEOQUIZ DEBUG LOG ===\nData: " + new Date().toLocaleString() + "\nLivello Giocato: " + currentLevel + "\n\n";
                         
@@ -1503,6 +1509,9 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             }
             
             vite = customConfig.vite;
+			logQuestionCounter = 0;
+            totalActiveTime = 0;
+
             
             debugGameLog = "=== GEOQUIZ DEBUG LOG ===\nData: " + new Date().toLocaleString() + "\nLivello Giocato: 5 (Personalizzata)\n\n";
             debugGameLog += "Difficoltà: " + customConfig.difficolta.toUpperCase() + " | Timer: " + (customConfig.timer ? "Ghigliottina" : "Relax") + " | Max Combo: " + customConfig.maxCombo + " | Vite Iniziali: " + customConfig.vite + "\n";
@@ -2813,7 +2822,8 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             currentTurnData = generateQuestion();
             questionEl.innerHTML = currentTurnData.questionText;
             
-            debugGameLog += "----------------------------------------\n[DOMANDA]\n";
+                        logQuestionCounter++;
+            debugGameLog += "----------------------------------------\n[DOMANDA " + logQuestionCounter + "]\n";
             debugGameLog += "TESTO: " + currentTurnData.questionText.replace(/<[^>]*>?/gm, '') + "\n";
             debugGameLog += "TARGET IA: " + currentTurnData.targetNode.nome + " (" + currentTurnData.targetNode.sigla + ") - Formato Iniziale: " + currentTurnData.format + "\n";
             debugGameLog += "VALIDE (" + currentTurnData.maxPossible + "): " + currentTurnData.validAnswersCache.join(", ") + "\n";
@@ -2888,8 +2898,9 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             totalAnswersSubmitted++;
             totalActiveTimeMs += (Date.now() - turnStartTime);
             
-            let actionTime = ((Date.now() - turnStartTime) / 1000).toFixed(1);
-            if (isMulti) {
+                        let actionTime = ((Date.now() - turnStartTime) / 1000).toFixed(1);
+            totalActiveTime += parseFloat(actionTime);
+                if (isMulti) {
                 if(res.isCorrect) debugGameLog += `-> INPUT COMBO PARZIALE [${actionTime}s]: ` + inputStr + " (Riconosciuto: " + res.matchedCountry.nome + ")\n";
                 else debugGameLog += `-> INPUT COMBO ERRATO [${actionTime}s]: ` + inputStr + "\n";
             } else {
@@ -3111,7 +3122,8 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
 
             if (allCorrect || isGrazia) {
                 
-                let comboTime = ((Date.now() - turnStartTime) / 1000).toFixed(1);
+                                let comboTime = ((Date.now() - turnStartTime) / 1000).toFixed(1);
+                totalActiveTime += parseFloat(comboTime);
                 debugGameLog += `-> ESITO COMBO [${comboTime}s]: ✅ SUPERATA` + (isGrazia ? " CON GRAZIA" : "") + " (Trovate: " + comboInserted.join(", ") + ")\n\n";
                 
                 if (currentTurnData.validSiglas && currentTurnData.validSiglas.length <= 20) {
@@ -3574,12 +3586,16 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                 top5Container.style.display = "none";
             }
 
-            // --- AGGIUNTA DELLE STATISTICHE AL FILE DI LOG ---
+                        // --- AGGIUNTA DELLE STATISTICHE AL FILE DI LOG ---
+            let minutiAttivi = Math.floor(totalActiveTime / 60);
+            let secondiAttivi = (totalActiveTime % 60).toFixed(1);
+            let tempoAttivoString = minutiAttivi > 0 ? `${minutiAttivi}m ${secondiAttivi}s` : `${secondiAttivi}s`;
+
             debugGameLog += "========================================\n";
             debugGameLog += "[STATISTICHE FINALI PARTITA]\n";
             debugGameLog += "Esito: " + (isVictory ? "🏆 VITTORIA" : "💀 GAME OVER") + "\n";
-            debugGameLog += "Punteggio: " + punteggio + " | Esatte: " + esatte + " | Serie Max: " + bestStreak + "\n";
-            debugGameLog += "Tempo Medio di Risposta: " + avgTime + "s\n";
+            debugGameLog += "Punteggio: " + punteggio + " | Esatte: " + esatte + " su " + logQuestionCounter + " | Serie Max: " + bestStreak + "\n";
+            debugGameLog += "Tempo Medio di Risposta: " + avgTime + "s | Tempo di Gioco Attivo: " + tempoAttivoString + "\n";
             if (currentLevel >= 4 || currentLevel === 5) {
                 debugGameLog += "Salvataggi al Fotofinish: " + fotofinishCount + " | Grazie Ricevute: " + grazieRicevuteCount + "\n";
             }
