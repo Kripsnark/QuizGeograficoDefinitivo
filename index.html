@@ -567,7 +567,7 @@
         </div>
     </div>
     
-    <div id="version-badge">v2.0.6</div>
+    <div id="version-badge">v2.0.5</div>
 
     <div id="modal-overlay">
         <div id="modal-content">
@@ -3484,11 +3484,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                     document.getElementById("ritirati-btn").style.display = "block";
                     document.getElementById("continua-btn").style.display = "block";
                 } else {
-                    if (currentLevel === 0) {
-                        inputEl.value = `Corretto! +${puntiRound}pt`; 
-                    } else {
-                        inputEl.value = `Corretto! +\({puntiRound}pt -\){nomiTrovati}`; 
-                    }
+                    inputEl.value = `Corretto! +\({puntiRound}pt -\){nomiTrovati}`; 
                     
                     if (badgeText !== "") {
                         eventBadge.innerHTML = badgeText; eventBadge.style.backgroundColor = badgeBg;
