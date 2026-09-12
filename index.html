@@ -3171,7 +3171,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                     let nomeInserito = isCapitalReq ? `${getPrintedCapital(res.matchedCountry, res.matchedCapitalStr)} (${dName})` : dName;
                     let nomePrimario = isCapitalReq ? `${capitalize(res.matchedCountry.capitale)} (${capitalize(res.matchedCountry.nome)})` : capitalize(res.matchedCountry.nome);
                     
-                    if (currentTurnData.maxPossible > 1) {
+                                        if (currentTurnData.maxPossible > 1) {
                         let rimanenti = currentTurnData.validAnswersCache.filter(v => v !== nomePrimario);
                         if (rimanenti.length > 0) {
                             comboTracker.style.display = "block";
@@ -3180,44 +3180,50 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                     }
 
                     if (isEndlessTrig) {
-                    if (currentLevel === 0) {
-                        inputEl.value = `LIVELLO COMPLETATO! 🎓`;
-                        inputEl.style.color = "#4caf50";
-                        document.getElementById("ritirati-btn").innerHTML = "🚪 TERMINA LA SFIDA";
-                        document.getElementById("continua-btn").innerHTML = "🔁 CONTINUA LA SFIDA";
-                    } else {
-                        inputEl.value = `VITTORIA! Mi inchino alla tua immensa conoscenza 👑`;
-                        inputEl.style.color = "#ffd700";
-                        document.getElementById("ritirati-btn").innerHTML = "🏆 RITIRATI DA LEGGENDA";
-                        document.getElementById("continua-btn").innerHTML = "⚔️ CONTINUA LA SFIDA";
-                    }
-                    
-                    if (badgeText !== "") {
-                        eventBadge.innerHTML = badgeText; eventBadge.style.backgroundColor = badgeBg;
-                        eventBadge.style.color = badgeTxtColor; eventBadge.style.borderColor = badgeBorder;
-                        eventBadge.style.display = "block";
-                    } else { eventBadge.style.display = "none"; }
-                    submitBtn.style.display = "none";
-                    nextBtn.style.display = "none";
-                    document.getElementById("ritirati-btn").style.display = "block";
-                    document.getElementById("continua-btn").style.display = "block";
-                } else {
-                        let msg = (currentLevel === 0) ? "Corretto! +" + puntiGuadagnati + "pt" : "Corretto! +" + puntiGuadagnati + "pt - " + nomeInserito;
-                        
                         if (currentLevel === 0) {
-                            badgeText = "<span style='color:#4caf50; font-size:18px;'>✅ " + msg + "</span><br>" + badgeText;
-                            eventBadge.innerHTML = badgeText;
+                            badgeText = `<span style="color:#4caf50; font-size:18px;">TUTORIAL COMPLETATO! 🎓</span><br>` + badgeText;
+                            document.getElementById("ritirati-btn").innerHTML = "🚪 TERMINA ALLENAMENTO";
+                            document.getElementById("continua-btn").innerHTML = "🔁 CONTINUA PRATICA";
+                        } else {
+                            inputEl.value = `VITTORIA! Mi inchino alla tua immensa conoscenza 👑`;
+                            inputEl.style.color = "#ffd700";
+                            document.getElementById("ritirati-btn").innerHTML = "🏆 RITIRATI DA LEGGENDA";
+                            document.getElementById("continua-btn").innerHTML = "⚔️ CONTINUA LA SFIDA";
+                        }
+                        
+                        if (currentLevel === 0 || badgeText !== "") {
+                            eventBadge.innerHTML = badgeText; 
+                            eventBadge.style.backgroundColor = badgeBg;
+                            eventBadge.style.color = badgeTxtColor; 
+                            eventBadge.style.borderColor = currentLevel === 0 ? "#4caf50" : badgeBorder;
+                            eventBadge.style.display = "block";
+                        } else { eventBadge.style.display = "none"; }
+                        
+                        submitBtn.style.display = "none";
+                        nextBtn.style.display = "none";
+                        document.getElementById("ritirati-btn").style.display = "block";
+                        document.getElementById("continua-btn").style.display = "block";
+                    } else {
+                        // LA MAGIA DELLA UI DI SUCCESSO
+                        if (currentLevel === 0) {
+                            badgeText = `<span style="color:#4caf50; font-size:18px;">✅ Corretto! +${puntiRound}pt</span>` + (badgeText !== "" ? `<br>${badgeText}` : "");
+                            eventBadge.innerHTML = badgeText; 
+                            eventBadge.style.backgroundColor = badgeBg;
+                            eventBadge.style.color = badgeTxtColor; 
                             eventBadge.style.borderColor = "#4caf50";
                             eventBadge.style.display = "block";
                         } else {
-                            inputEl.value = msg; 
-                            if (badgeText !== "") { eventBadge.innerHTML = badgeText; eventBadge.style.borderColor = badgeBorder; eventBadge.style.display = "block"; } 
-                            else { eventBadge.style.display = "none"; }
+                            inputEl.value = `Corretto! +${puntiRound}pt - ${nomiTrovati}`; 
+                            if (badgeText !== "") {
+                                eventBadge.innerHTML = badgeText; 
+                                eventBadge.style.backgroundColor = badgeBg;
+                                eventBadge.style.color = badgeTxtColor; 
+                                eventBadge.style.borderColor = badgeBorder;
+                                eventBadge.style.display = "block";
+                            } else { eventBadge.style.display = "none"; }
                         }
-                        
                         submitBtn.style.display = "none";
-                        nextBtn.innerText = "PROSSIMA DOMANDA ➔";
-                        nextBtn.style.display = "block"; 
+                        nextBtn.style.display = "block";
                     }
                 }
             } else {
