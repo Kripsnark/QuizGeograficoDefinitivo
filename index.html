@@ -554,8 +554,8 @@
             <div id="game-over-stats">
                 <div>Hai totalizzato <strong class="score-highlight" id="final-score">0</strong> punti con <strong id="final-esatte">0</strong> risposte esatte.</div>
                 <div style="font-size:16px; margin-top:10px;">🔥 Serie Migliore: <strong id="final-streak" style="color:#ff9800;">0</strong></div>
-                <div style="font-size:16px;">⏱️ Salvataggi al fotofinish: <strong id="final-fotofinish" style="color:#2196f3;">0</strong></div>
-                <div style="font-size:16px;">🕊️ Grazie Ricevute: <strong id="final-grazie" style="color:#ffd700;">0</strong></div>
+		<div id="stat-fotofinish-row" style="font-size:16px; display:none;">⏱️ Salvataggi al fotofinish: <strong id="final-fotofinish" style="color:#2196f3;">0</strong></div>
+		<div id="stat-grazie-row" style="font-size:16px; display:none;">🕊️ Grazie Ricevute: <strong id="final-grazie" style="color:#ffd700;">0</strong></div>
                 <div style="font-size:16px;">⚡ Tempo medio: <strong id="final-avg-time" style="color:#4caf50;">0.0s</strong></div>
             </div>
             <div id="error-log"></div>
@@ -878,7 +878,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                 allTimeNazioniCount = data.nazioniCount || {}; 
                 allTimeNazioniIgnorate = data.nazioniIgnorate || data.nazioniEvitate || {}; 
                 allTimeBestAvgTime = data.bestAvgTime || 0; 
-                statsByLevel = data.statsByLevel || statsByLevel;
+                if (data.statsByLevel) { statsByLevel = Object.assign({}, statsByLevel, data.statsByLevel); }
                 globalPlays = data.globalPlays || 0;
             }
         }
@@ -1358,8 +1358,6 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                             <div style="display:flex; flex-direction:column;"><span>Tempo Med</span><strong style="font-size:14px; color:#fff;">${allTimeBestAvgTime > 0 ? allTimeBestAvgTime + 's' : '-'}</strong></div>
                         </div>
                         <div style="display:flex; justify-content:center; gap:20px; font-size:10px; color:#888; margin-top:5px; border-top:1px dashed #444; padding-top:4px;">
-                            <span>Tot. Fotofinish: <strong style="color:#2196f3;">${allTimeFotofinish}</strong></span>
-                            <span>Tot. Grazie: <strong style="color:#ffd700;">${allTimeGrazie}</strong></span>
                         </div>
                     </div>
                     
