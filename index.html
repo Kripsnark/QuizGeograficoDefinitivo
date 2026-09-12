@@ -1626,11 +1626,14 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             // Estrae tutte le parole chiave dalla domanda (es. rimuove articoli, punteggiatura, ecc.)
             let qTextLower = td.questionText.toLowerCase();
             
+                        let qTextLower = td.questionText.toLowerCase();
             let pool = levelDb.filter(c => {
-                if (c.sigla === td.targetNode.sigla) return false; // Non il bersaglio
-                // Se il nome o uno degli alias è presente nella domanda, NON includerlo nei distrattori
+                if (c.sigla === td.targetNode.sigla) return false; // Non può essere il bersaglio
+                
+                // Se il nome della nazione è palesemente scritto nella domanda, scartalo!
                 let cNames = [c.nome.toLowerCase(), ...c.alias_paese];
-                if (cNames.some(name => qTextLower.includes(name))) return false;
+                let isNamedInQuestion = cNames.some(name => new RegExp(`\\b${name}\\b`).test(qTextLower));
+                if (isNamedInQuestion) return false;
                 
                 return true;
             });
@@ -3202,7 +3205,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                         let msg = (currentLevel === 0) ? "Corretto! +" + puntiGuadagnati + "pt" : "Corretto! +" + puntiGuadagnati + "pt - " + nomeInserito;
                         
                         if (currentLevel === 0) {
-                            badgeText = "(span style='color:#4caf50; font-size:18px;')✅ " + msg + "(/span)(br)" + badgeText;
+                            badgeText = "<span style='color:#4caf50; font-size:18px;'>✅ " + msg + "</span><br>" + badgeText;
                             eventBadge.innerHTML = badgeText;
                             eventBadge.style.borderColor = "#4caf50";
                             eventBadge.style.display = "block";
