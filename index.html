@@ -3646,16 +3646,8 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             document.getElementById("final-score").innerText = punteggio;
             document.getElementById("final-esatte").innerText = esatte;
             document.getElementById("final-streak").innerText = bestStreak;
-            
-            if (currentLevel >= 4 || currentLevel === 5) {
-                document.getElementById("stat-fotofinish-row").style.display = "block";
-                document.getElementById("stat-grazie-row").style.display = "block";
-                document.getElementById("final-fotofinish").innerText = fotofinishCount;
-                document.getElementById("final-grazie").innerText = grazieRicevuteCount;
-            } else {
-                document.getElementById("stat-fotofinish-row").style.display = "none";
-                document.getElementById("stat-grazie-row").style.display = "none";
-            }
+            document.getElementById("final-fotofinish").innerText = fotofinishCount;
+            document.getElementById("final-grazie").innerText = grazieRicevuteCount;
 
             const titleEl = document.getElementById("game-over-title");
             const msgEl = document.getElementById("game-over-msg");
