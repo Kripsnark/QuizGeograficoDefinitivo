@@ -3199,7 +3199,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                     document.getElementById("ritirati-btn").style.display = "block";
                     document.getElementById("continua-btn").style.display = "block";
                 } else {
-                        let msg = `Corretto! +${puntiGuadagnati}pt - ${nomeInserito}`;
+                        let msg = (currentLevel === 0) ? "Corretto! +" + puntiGuadagnati + "pt" : "Corretto! +" + puntiGuadagnati + "pt - " + nomeInserito;
                         if (currentLevel === 0) {
                             badgeText = `<span style="color:#4caf50; font-size:18px;">✅ ${msg}</span><br>` + badgeText;
                             eventBadge.innerHTML = badgeText;
