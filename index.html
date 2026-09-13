@@ -567,7 +567,7 @@
         </div>
     </div>
     
-    <div id="version-badge">v2.0.5</div>
+    <div id="version-badge">v2.0.6</div>
 
     <div id="modal-overlay">
         <div id="modal-content">
@@ -1623,7 +1623,9 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             let correctStr = (td.format === 0) ? capitalize(td.targetNode.capitale) : (td.format === 13 ? td.targetNode.nome : capitalize(td.targetNode.nome));
             options.push({ text: correctStr, sigla: td.targetNode.sigla, isCorrect: true });
             
-                        let qTextLower = td.questionText.toLowerCase();
+            // Estrae tutte le parole chiave dalla domanda (rimuovendo la punteggiatura)
+            let qTextLower = td.questionText.toLowerCase();
+            
             let pool = levelDb.filter(c => {
                 if (c.sigla === td.targetNode.sigla) return false; // Non può essere il bersaglio
                 
@@ -1634,19 +1636,46 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                 
                 return true;
             });
+            
             let wrongPool = [];
             
             if (td.format === 13 || td.format === 9) {
-                // Logica Colori (65%) o Caso (35%)
-                if (Math.random() < 0.65) {
-                    let targetColors = [...new Set([...td.targetNode.colori_base, ...td.targetNode.colori_emblema])];
-                    wrongPool = pool.filter(c => {
-                        let cCols = [...new Set([...c.colori_base, ...c.colori_emblema])];
-                        return cCols.filter(col => targetColors.includes(col)).length >= 2;
-                    });
-                }
+                // --- SCORING SYSTEM PER LE TRAPPOLE VISIVE ---
+                let targetColors = [...new Set([...td.targetNode.colori_base, ...td.targetNode.colori_emblema])];
+                let targetFormats = td.targetNode.formati_bandiera || [];
+                let targetSymbols = td.targetNode.simboli || [];
+                
+                // Diamo un "voto di somiglianza" a tutte le nazioni del bacino
+                let scoredPool = pool.map(c => {
+                    let score = 0;
+                    
+                    // 1. Colori (+1 punto per ogni colore in comune)
+                    let cCols = [...new Set([...c.colori_base, ...c.colori_emblema])];
+                    let sharedColors = cCols.filter(col => targetColors.includes(col)).length;
+                    score += sharedColors * 1; 
+                    
+                    // 2. Geometria (+3 punti se condividono il formato base)
+                    let sharedFormats = c.formati_bandiera.filter(f => targetFormats.includes(f)).length;
+                    if (sharedFormats > 0) score += 3;
+                    
+                    // 3. Simboli (+2 punti se condividono un simbolo, es. stella o mezzaluna)
+                    let sharedSymbols = c.simboli.filter(s => targetSymbols.includes(s)).length;
+                    if (sharedSymbols > 0) score += 2; 
+                    
+                    return { country: c, score: score };
+                });
+                
+                // Ordiniamo le nazioni dalla più simile (voto alto) alla meno simile
+                scoredPool.sort((a, b) => b.score - a.score);
+                
+                // Prendiamo solo le Top 8 "gemelle" per creare la rete della trappola
+                let topCandidates = scoredPool.slice(0, 8).map(item => item.country);
+                
+                // Mescoliamo la Top 8 per uccidere il "Pattern Recognition" e dare imprevedibilità
+                wrongPool = topCandidates;
+
             } else {
-                // Logica Geografica (Confinanti e Micro-Area)
+                // --- LOGICA GEOGRAFICA PER LE DOMANDE NORMALI ---
                 wrongPool = pool.filter(c => {
                     let isConf = td.targetNode.confini.includes(c.nome.toLowerCase()) || td.targetNode.confini.some(b => c.alias_paese.includes(b));
                     let isMicro = (c.aree.length > 1 && td.targetNode.aree.length > 1 && c.aree[1] === td.targetNode.aree[1]);
@@ -1654,10 +1683,11 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                 });
             }
             
-            // Riempimento di emergenza se il filtro è troppo stretto
+            // Rete di emergenza: se per qualche motivo il filtro restringe troppo, pesca a caso
             if (wrongPool.length < NUM_OPZIONI - 1) wrongPool = pool.sort(() => 0.5 - Math.random());
             if (td.format === 0) wrongPool = wrongPool.filter(c => c.capitale); // Solo nazioni con capitali
             
+            // Estrazione finale dei distrattori (pesca i primi 2 dalla wrongPool mescolata)
             wrongPool.sort(() => 0.5 - Math.random()).slice(0, NUM_OPZIONI - 1).forEach(c => {
                 let wStr = (td.format === 0) ? capitalize(c.capitale) : (td.format === 13 ? c.nome : capitalize(c.nome));
                 options.push({ text: wStr, sigla: c.sigla, isCorrect: false });
