@@ -1026,7 +1026,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
         let esatte = 0;
         let punteggio = 0;
         let prossimoCuore = 750;
-        let errororiCommessi = []; 
+        let erroriCommessi = []; 
         let currentTurnData = null; 
         
         let nazioniUsate = []; 
@@ -1566,7 +1566,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             
             vite = 3; esatte = 0; punteggio = 0; prossimoCuore = 750;
             currentStreak = 0; bestStreak = 0; fotofinishCount = 0; grazieRicevuteCount = 0;
-            errororiCommessi = []; comboInserted = []; nazioniUsate = [];
+            erroriCommessi = []; comboInserted = []; nazioniUsate = [];
             logQuestionCounter = 0; 
             recentTargets = [];
         
@@ -2898,7 +2898,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             
             let domPulita = currentTurnData.questionText.replace(/<[^>]*>?/gm, ''); 
             let stringaSoluzioni = currentTurnData.validAnswersCache.join(", ");
-            errororiCommessi.push({ 
+            erroriCommessi.push({ 
                 q: domPulita, 
                 wrong: "🏳️ TI SEI ARRESO" + insertedStr, 
                 correct: "Risposte valide: " + stringaSoluzioni 
@@ -3578,7 +3578,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             
             let domPulita = currentTurnData.questionText.replace(/<[^>]*>?/gm, ''); 
             let stringaSoluzioni = currentTurnData.validAnswersCache.join(", ");
-            errororiCommessi.push({ 
+            erroriCommessi.push({ 
                 q: domPulita, 
                 wrong: "Hai inserito: " + (wrongInput ? wrongInput.toUpperCase() : "Nessuna risposta"), 
                 correct: "Risposte valide: " + stringaSoluzioni 
@@ -3615,7 +3615,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             
             let domPulita = currentTurnData.questionText.replace(/<[^>]*>?/gm, ''); 
             let stringaSoluzioni = currentTurnData.validAnswersCache.join(", "); 
-            errororiCommessi.push({ 
+            erroriCommessi.push({ 
                 q: domPulita, 
                 wrong: reason + (wrongInput ? " Hai inserito: " + wrongInput : ""), 
                 correct: "Risposte valide: " + stringaSoluzioni 
@@ -3765,11 +3765,11 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
 
             errorLogEl.style.display = "block";
             errorLogEl.innerHTML = "";
-            if (errororiCommessi.length === 0) {
+            if (erroriCommessi.length === 0) {
                 errorLogEl.innerHTML = "<p style='text-align:center; color:#4caf50;'>Nessun errore commesso! Sei stato perfetto.</p>";
             } else {
                 let errorHtml = `<h3 style="color:#f44336; margin:0 0 15px 0; font-size:18px; text-transform:uppercase; text-align:center;">❌ RIEPILOGO ERRORI</h3>`;
-                errororiCommessi.forEach(err => {
+                erroriCommessi.forEach(err => {
                     errorHtml += `<div class="error-item">
                                      <div class="error-q">${err.q}</div>
                                      <div class="error-user-input">${err.wrong}</div>
