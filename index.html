@@ -391,7 +391,7 @@
     </style>
 </head>
 <body>
-<div id="update-banner" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#2196f3; color:#fff; padding:12px 25px; border-radius:30px; z-index:9999; cursor:pointer; font-weight:bold; box-shadow:0 4px 10px rgba(0,0,0,0.6); text-transform:uppercase; font-size:14px; border:2px solid #fff;" onclick="applyUpdate()">
+<div id="update-banner" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#2196f3; color:#fff; padding:12px 25px; border-radius:30px; z-index:9999; cursor:pointer; font-weight:bold; box-shadow:0 4px 10px rgba(0,0,0,0.6); text-transform:uppercase; font-size:14px; border:2px solid #fff; text-align:center;" onclick="applyUpdate()">
         🚀 Nuovo aggiornamento disponibile! Clicca per ricaricare
     </div>
 
@@ -567,7 +567,7 @@
         </div>
     </div>
     
-    <div id="version-badge">v2.0.6</div>
+    <div id="version-badge">v2.0.7</div>
 
     <div id="modal-overlay">
         <div id="modal-content">
@@ -1052,6 +1052,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
         let endlessVittoriaSbloccata = false;
 
         let debugGameLog = "";
+        let recentTargets = [];
         let logQuestionCounter = 0;
         let totalActiveTime = 0;
 
@@ -1566,6 +1567,8 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             vite = 3; esatte = 0; punteggio = 0; prossimoCuore = 750;
             currentStreak = 0; bestStreak = 0; fotofinishCount = 0; grazieRicevuteCount = 0;
             errororiCommessi = []; comboInserted = []; nazioniUsate = [];
+            logQuestionCounter = 0; 
+            recentTargets = [];
         
             endlessVittoriaSbloccata = false;
             window.pendingVictory = false;
@@ -1628,6 +1631,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             
             let pool = levelDb.filter(c => {
                 if (c.sigla === td.targetNode.sigla) return false; // Non può essere il bersaglio
+                if (td.validSiglas && td.validSiglas.includes(c.sigla)) return false; // FIX: Esclude SEMPRE tutte le altre risposte valide
                 
                 // Se il nome della nazione è palesemente scritto nella domanda, scartalo!
                 let cNames = [c.nome.toLowerCase(), ...c.alias_paese];
@@ -1713,7 +1717,16 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             }
 
             let format = availableFormats[Math.floor(Math.random() * availableFormats.length)];
-            let nazioneEstratta = levelDb[Math.floor(Math.random() * levelDb.length)];
+            
+            // --- SISTEMA DI MEMORIA A BREVE TERMINE (Evita ripetizioni per 15 turni) ---
+            let availableDb = levelDb.filter(n => !recentTargets.includes(n.sigla));
+            if (availableDb.length === 0) availableDb = levelDb; // Se finiscono le nazioni, resetta la memoria
+            
+            let nazioneEstratta = availableDb[Math.floor(Math.random() * availableDb.length)];
+            
+            recentTargets.push(nazioneEstratta.sigla);
+            if (recentTargets.length > 15) recentTargets.shift(); // Ricorda solo le ultime 15
+            
             let td = { format: format, targetNode: nazioneEstratta, numVariables: 1, isComboInception: false };
             
             if (td.targetNode.aree && td.targetNode.aree.length > 0) {
@@ -2974,7 +2987,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             let mcContainer = document.getElementById("mc-container");
             if (currentLevel === 0) {
                 inputEl.style.display = "none";
-                mcContainer.style.display = "flex";
+                mcContainer.style.display = "none"; // FIX: Parte invisibile per dare respiro
                 mcContainer.innerHTML = "";
                 let opzioni = generaDistrattori(currentTurnData);
                 opzioni.forEach(opz => {
@@ -3023,8 +3036,19 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                         inputEl.value = opz.text;
                         processaRisposta();
                     };
+                    };
                     mcContainer.appendChild(btn);
                 });
+                
+                // --- RITARDO DI 1 SECONDO PER I BOTTONI ---
+                setTimeout(() => {
+                    // Evita di mostrarli se nel frattempo hai premuto Arrenditi o chiuso la partita
+                    if (mcContainer.innerHTML !== "" && !window.pendingDefeat && !window.pendingVictory) {
+                        mcContainer.style.display = "flex";
+                        mcContainer.style.animation = "fadeIn 0.3s"; // Piccolo effetto comparsa!
+                    }
+                }, 1000);
+                
             } else {
                 inputEl.style.display = "block";
                 mcContainer.style.display = "none";
@@ -3160,6 +3184,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
 
                 if (currentTurnData.format === 9 || currentTurnData.format === 10) {
                     bandieraImg.style.display = "block";
+                    bandieraContainer.style.display = "block";
                     
                     if (currentTurnData.isComboInception) {
                         let gridContainer = document.createElement("div");
@@ -3179,12 +3204,16 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                         gridContainer.appendChild(img);
                         bandieraContainer.appendChild(gridContainer);
                     }
+                } else if (currentTurnData.format === 13) {
+                    // FIX: Nasconde la bandiera in alto se stiamo già cliccando sulle bandiere!
+                    bandieraImg.style.display = "none";
+                    bandieraContainer.style.display = "none";
                 } else {
                     bandieraImg.onerror = function() { this.style.display = 'none'; };
                     bandieraImg.src = "GIF/" + sigla.toLowerCase() + ".jpg";
                     bandieraImg.style.display = "block";
+                    bandieraContainer.style.display = "block";
                 }
-                bandieraContainer.style.display = "block";
 
                 if (hasWon) {
                     inputEl.value = `VITTORIA! Livello Superato! 🏆`;
