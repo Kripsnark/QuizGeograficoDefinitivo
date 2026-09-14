@@ -567,7 +567,7 @@
         </div>
     </div>
     
-    <div id="version-badge">v2.0.7.1</div>
+    <div id="version-badge">v2.0.8</div>
 
     <div id="modal-overlay">
         <div id="modal-content">
@@ -857,6 +857,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
         let allTimeNazioniCount = {}; let allTimeNazioniIgnorate = {}; 
         let allTimeBestAvgTime = 0;
         let globalPlays = 0;
+        let recentGamesHistory = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [] };
 
         let statsByLevel = {
             0: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 },
@@ -880,6 +881,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                 allTimeBestAvgTime = data.bestAvgTime || 0; 
                 if (data.statsByLevel) { statsByLevel = Object.assign({}, statsByLevel, data.statsByLevel); }
                 globalPlays = data.globalPlays || 0;
+                if (data.recentGamesHistory) { recentGamesHistory = data.recentGamesHistory; }
             }
         }
         
@@ -888,7 +890,8 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                 bestScore: allTimeBestScore, bestStreak: allTimeBestStreak,
                 fotofinish: allTimeFotofinish, grazie: allTimeGrazie,
                 nazioniCount: allTimeNazioniCount, nazioniIgnorate: allTimeNazioniIgnorate, 
-                bestAvgTime: allTimeBestAvgTime, statsByLevel: statsByLevel, globalPlays: globalPlays
+                bestAvgTime: allTimeBestAvgTime, statsByLevel: statsByLevel, globalPlays: globalPlays,
+                recentGamesHistory: recentGamesHistory
             };
             localStorage.setItem('geoQuizStats', JSON.stringify(data));
         }
@@ -928,6 +931,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                 allTimeNazioniCount = {}; allTimeNazioniIgnorate = {}; 
                 allTimeBestAvgTime = 0;
                 globalPlays = 0;
+                recentGamesHistory = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [] };
                 statsByLevel = {
                     0: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 },
                     1: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 },
@@ -1293,31 +1297,101 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
         }
 
         function openRecords() {
-            let sortedUsate = Object.keys(allTimeNazioniCount).map(sigla => {
-                let n = globalDb.find(c => c.sigla === sigla);
-                return { nome: n ? n.nome : sigla, count: allTimeNazioniCount[sigla], sigla: sigla };
-            }).sort((a, b) => b.count - a.count).slice(0, 10);
+    let sortedUsate = Object.keys(allTimeNazioniCount).map(sigla => {
+        let n = globalDb.find(c => c.sigla === sigla);
+        return { nome: n ? n.nome : sigla, count: allTimeNazioniCount[sigla], sigla: sigla };
+    }).sort((a, b) => b.count - a.count).slice(0, 10);
 
-            let sortedIgnorate = Object.keys(allTimeNazioniIgnorate).map(sigla => {
-                let n = globalDb.find(c => c.sigla === sigla);
-                return { nome: n ? n.nome : sigla, count: allTimeNazioniIgnorate[sigla], sigla: sigla };
-            }).sort((a, b) => b.count - a.count).slice(0, 10);
+    let sortedIgnorate = Object.keys(allTimeNazioniIgnorate).map(sigla => {
+        let n = globalDb.find(c => c.sigla === sigla);
+        return { nome: n ? n.nome : sigla, count: allTimeNazioniIgnorate[sigla], sigla: sigla };
+    }).sort((a, b) => b.count - a.count).slice(0, 10);
 
-            const buildList = (arr, emptyMsg, color) => {
-                if (arr.length === 0) return `<p style="text-align:center; color:#888; font-size:12px;">${emptyMsg}</p>`;
-                let h = `<div style="display:flex; flex-direction:column;">`;
-                arr.forEach((sn, idx) => {
-                    h += `<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding: 3px 0; height: 22px;">
-                            <div style="display:flex; align-items:center; gap:5px; flex:1; min-width:0; padding-right:5px;">
-                                <span style="color:#777; font-weight:bold; font-size:10px; width:14px; text-align:right; flex-shrink:0;">${idx + 1}.</span>
-                                <img src="GIF/${sn.sigla.toLowerCase()}.jpg" style="width:16px; height:11px; border-radius:2px; flex-shrink:0; object-fit:cover;" onerror="this.style.display='none'">
-                                <span style="color:#ccc; font-weight:bold; font-size:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; flex:1;">${sn.nome.toUpperCase()}</span>
-                            </div>
-                            <span style="color:${color}; font-weight:bold; font-size:11px; flex-shrink:0; width:15px; text-align:right;">${sn.count}</span>
-                          </div>`;
-                });
-                return h + `</div>`;
-            };
+    const buildList = (arr, emptyMsg, color) => {
+        if (arr.length === 0) return "\x3Cp style='text-align:center; color:#888; font-size:12px;'\x3E" + emptyMsg + "\x3C/p\x3E";
+        let h = "\x3Cdiv style='display:flex; flex-direction:column;'\x3E";
+        arr.forEach((sn, idx) => {
+            h += "\x3Cdiv style='display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding: 3px 0; height: 22px;'\x3E";
+            h += "\x3Cdiv style='display:flex; align-items:center; gap:5px; flex:1; min-width:0; padding-right:5px;'\x3E";
+            h += "\x3Cspan style='color:#777; font-weight:bold; font-size:10px; width:14px; text-align:right; flex-shrink:0;'\x3E" + (idx + 1) + ".\x3C/span\x3E";
+            h += "\x3Cimg src='GIF/" + sn.sigla.toLowerCase() + ".jpg' style='width:16px; height:11px; border-radius:2px; flex-shrink:0; object-fit:cover;' onerror='this.style.display=\"none\"'\x3E";
+            h += "\x3Cspan style='color:#ccc; font-weight:bold; font-size:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; flex:1;'\x3E" + sn.nome.toUpperCase() + "\x3C/span\x3E";
+            h += "\x3C/div\x3E";
+            h += "\x3Cspan style='color:" + color + "; font-weight:bold; font-size:11px; flex-shrink:0; width:15px; text-align:right;'\x3E" + sn.count + "\x3C/span\x3E";
+            h += "\x3C/div\x3E";
+        });
+        return h + "\x3C/div\x3E";
+    };
+
+    const renderLvlBox = (lvl, s, isPro, vicThreshold) => {
+        let vicStr = (vicThreshold && s.bestScore >= vicThreshold) ? " 🏆" : "";
+        let h = "\x3Cdiv class='rbox-lvl' id='rbox-" + lvl + "' style='display:" + (lvl === 1 ? 'block' : 'none') + "; background:#2a2a2a; border:1px solid #444; border-radius:6px; padding:6px 10px; margin-bottom:8px;'\x3E";
+        h += "\x3Cdiv style='display:flex; justify-content:space-around; font-size:10px; color:#aaa; text-align:center;'\x3E";
+        h += "\x3Cdiv style='display:flex; flex-direction:column;'\x3E\x3Cspan\x3EPartite\x3C/span\x3E\x3Cstrong style='font-size:14px; color:#fff;'\x3E" + s.plays + "\x3C/strong\x3E\x3C/div\x3E";
+        h += "\x3Cdiv style='display:flex; flex-direction:column;'\x3E\x3Cspan\x3ERecord\x3C/span\x3E\x3Cstrong style='font-size:14px; color:#fff;'\x3E" + (s.plays > 0 ? s.bestScore : '-') + vicStr + "\x3C/strong\x3E\x3C/div\x3E";
+        h += "\x3Cdiv style='display:flex; flex-direction:column;'\x3E\x3Cspan\x3ESerie Max\x3C/span\x3E\x3Cstrong style='font-size:14px; color:#fff;'\x3E" + (s.bestStreak || 0) + "\x3C/strong\x3E\x3C/div\x3E";
+        h += "\x3Cdiv style='display:flex; flex-direction:column;'\x3E\x3Cspan\x3ETempo Med\x3C/span\x3E\x3Cstrong style='font-size:14px; color:#fff;'\x3E" + (s.bestAvgTime > 0 ? s.bestAvgTime + 's' : '-') + "\x3C/strong\x3E\x3C/div\x3E";
+        h += "\x3C/div\x3E";
+        if (isPro) {
+            h += "\x3Cdiv style='display:flex; justify-content:center; gap:20px; font-size:10px; color:#888; margin-top:5px; border-top:1px dashed #444; padding-top:4px;'\x3E";
+            h += "\x3Cspan\x3EFotofinish: \x3Cstrong style='color:#2196f3;'\x3E" + (s.fotofinish || 0) + "\x3C/strong\x3E\x3C/span\x3E";
+            h += "\x3Cspan\x3EGrazie: \x3Cstrong style='color:#ffd700;'\x3E" + (s.grazie || 0) + "\x3C/strong\x3E\x3C/span\x3E";
+            h += "\x3C/div\x3E";
+        }
+        h += "\x3C/div\x3E";
+        return h;
+    };
+
+    let btnStyle = "flex:1; padding:6px 2px; font-size:11px; font-weight:bold; cursor:pointer; border-radius:4px; border:1px solid #444; text-align:center; transition:all 0.2s; ";
+    let tabsHtml = "\x3Cdiv style='display:flex; gap:5px; margin-bottom:8px; width:100%;'\x3E";
+    tabsHtml += "\x3Cbutton id='rtab-0' onclick='switchRecordTab(0)' style='" + btnStyle + " background:#2a2a2a; color:#ccc;'\x3EL0\x3C/button\x3E";
+    tabsHtml += "\x3Cbutton id='rtab-1' onclick='switchRecordTab(1)' style='" + btnStyle + " background:#ffd700; color:#121212;'\x3EL1\x3C/button\x3E";
+    tabsHtml += "\x3Cbutton id='rtab-2' onclick='switchRecordTab(2)' style='" + btnStyle + " background:#2a2a2a; color:#ccc;'\x3EL2\x3C/button\x3E";
+    tabsHtml += "\x3Cbutton id='rtab-3' onclick='switchRecordTab(3)' style='" + btnStyle + " background:#2a2a2a; color:#ccc;'\x3EL3\x3C/button\x3E";
+    tabsHtml += "\x3Cbutton id='rtab-4' onclick='switchRecordTab(4)' style='" + btnStyle + " background:#2a2a2a; color:#ccc;'\x3EL4\x3C/button\x3E";
+    tabsHtml += "\x3Cbutton id='rtab-5' onclick='switchRecordTab(5)' style='" + btnStyle + " background:#2a2a2a; color:#ccc;'\x3ECUST\x3C/button\x3E";
+    tabsHtml += "\x3C/div\x3E";
+
+    let html = "\x3Cdiv style='padding:0px; display:flex; flex-direction:column; max-height:82vh;'\x3E";
+    html += "\x3Cdiv style='background:#1e1e1e; border:1px solid #ffd700; border-radius:6px; padding:6px 10px; margin-bottom:10px; text-align:center; flex-shrink:0;'\x3E";
+    html += "\x3Cdiv style='font-size:12px; color:#ffd700; font-weight:bold; margin-bottom:6px; text-transform:uppercase; letter-spacing:1px;'\x3EStatistiche Globali\x3C/div\x3E";
+    html += "\x3Cdiv style='display:flex; justify-content:space-around; font-size:10px; color:#aaa;'\x3E";
+    html += "\x3Cdiv style='display:flex; flex-direction:column;'\x3E\x3Cspan\x3EPartite\x3C/span\x3E\x3Cstrong style='font-size:14px; color:#fff;'\x3E" + globalPlays + "\x3C/strong\x3E\x3C/div\x3E";
+    html += "\x3Cdiv style='display:flex; flex-direction:column;'\x3E\x3Cspan\x3ERecord Assoluto\x3C/span\x3E\x3Cstrong style='font-size:14px; color:#fff;'\x3E" + allTimeBestScore + "\x3C/strong\x3E\x3C/div\x3E";
+    html += "\x3Cdiv style='display:flex; flex-direction:column;'\x3E\x3Cspan\x3ESerie Max\x3C/span\x3E\x3Cstrong style='font-size:14px; color:#fff;'\x3E" + allTimeBestStreak + "\x3C/strong\x3E\x3C/div\x3E";
+    html += "\x3Cdiv style='display:flex; flex-direction:column;'\x3E\x3Cspan\x3ETempo Med\x3C/span\x3E\x3Cstrong style='font-size:14px; color:#fff;'\x3E" + (allTimeBestAvgTime > 0 ? allTimeBestAvgTime + 's' : '-') + "\x3C/strong\x3E\x3C/div\x3E";
+    html += "\x3C/div\x3E\x3C/div\x3E";
+    
+    html += "\x3Cdiv style='flex-shrink:0;'\x3E";
+    html += tabsHtml;
+    html += renderLvlBox(0, statsByLevel[0], false, 1500);
+    html += renderLvlBox(1, statsByLevel[1], false, 2500);
+    html += renderLvlBox(2, statsByLevel[2], false, 3500);
+    html += renderLvlBox(3, statsByLevel[3], false, 5000);
+    html += renderLvlBox(4, statsByLevel[4], true, null);
+    html += renderLvlBox(5, statsByLevel[5], true, null);
+    html += "\x3C/div\x3E";
+
+    html += "\x3Cdiv style='display:flex; gap:10px; text-align:left; flex-grow:1; overflow:hidden; margin-bottom:10px;'\x3E";
+    html += "\x3Cdiv style='flex:1;'\x3E";
+    html += "\x3Ch3 style='color:#4caf50; margin:0 0 4px 0; font-size:11px; text-transform:uppercase; text-align:center;'\x3ETop 10 Usate\x3C/h3\x3E";
+    html += buildList(sortedUsate, 'Nessuna', '#4caf50');
+    html += "\x3C/div\x3E\x3Cdiv style='flex:1;'\x3E";
+    html += "\x3Ch3 style='color:#f44336; margin:0 0 4px 0; font-size:11px; text-transform:uppercase; text-align:center;'\x3ETop 10 Ignorate\x3C/h3\x3E";
+    html += buildList(sortedIgnorate, 'Nessuna', '#f44336');
+    html += "\x3C/div\x3E\x3C/div\x3E";
+    
+    html += "\x3Cdiv style='display:flex; flex-direction:column; gap:8px; flex-shrink:0; margin-top:auto;'\x3E";
+    html += "\x3Cbutton onclick='openGamesHistory()' style='width:100%; background:#2196f3; color:#fff; border:1px solid #1976d2; padding:10px 0; border-radius:4px; font-weight:bold; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(0,0,0,0.3); text-transform:uppercase;'\x3E📜 Ultime Partite e Log\x3C/button\x3E";
+    html += "\x3Cdiv style='display:flex; gap:6px; justify-content:center;'\x3E";
+    html += "\x3Cbutton onclick='exportBackup()' style='flex:1; background:#2a2a2a; color:#fff; border:1px solid #444; padding:8px 0; border-radius:4px; font-weight:bold; font-size:10px; cursor:pointer; display:flex; align-items:center; justify-content:center;'\x3E💾 ESPORTA\x3C/button\x3E";
+    html += "\x3Cbutton onclick='clearAllData()' style='flex:1; background:#b71c1c; color:#fff; border:1px solid #f44336; padding:8px 0; border-radius:4px; font-weight:bold; font-size:10px; cursor:pointer; display:flex; align-items:center; justify-content:center;'\x3E🗑️ CANC DATI\x3C/button\x3E";
+    html += "\x3Clabel style='flex:1; background:#2a2a2a; color:#fff; border:1px solid #444; padding:8px 0; border-radius:4px; font-weight:bold; font-size:10px; cursor:pointer; margin:0; display:flex; align-items:center; justify-content:center; box-sizing:border-box;'\x3E";
+    html += "📂 IMPORTA \x3Cinput type='file' accept='.json' style='display:none;' onchange='importBackup(event)'\x3E";
+    html += "\x3C/label\x3E\x3C/div\x3E\x3C/div\x3E\x3C/div\x3E";
+
+    openModal('🏆 STORICO E RECORD', html);
+}
 
             const renderLvlBox = (lvl, s, isPro, vicThreshold) => {
                 let vicStr = (vicThreshold && s.bestScore >= vicThreshold) ? " 🏆" : "";
@@ -1417,8 +1491,48 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             document.getElementById("custom-setup-screen").style.display = "flex";
         }
         function closeCustomSetup() {
-            document.getElementById("custom-setup-screen").style.display = "none";
-            document.getElementById("start-screen").style.display = "flex";
+            window.openGamesHistory = function() {
+    let html = "\x3Cdiv style='max-height: 70vh; overflow-y: auto; padding-right: 5px;'\x3E";
+    
+    for(let lvl = 0; lvl <= 5; lvl++) {
+        let lvlName = lvl === 0 ? "L0 (Tutorial)" : (lvl === 5 ? "Personalizzata" : "Livello " + lvl);
+        html += "\x3Ch3 style='color:#ffd700; border-bottom:1px solid #444; padding-bottom:3px; margin-top:10px; margin-bottom:5px; font-size:14px; text-transform:uppercase;'\x3E" + lvlName + "\x3C/h3\x3E";
+        
+        if (recentGamesHistory[lvl].length === 0) {
+            html += "\x3Cp style='color:#888; font-size:12px; font-style:italic; margin: 0 0 15px 0;'\x3ENessuna partita registrata.\x3C/p\x3E";
+        } else {
+            recentGamesHistory[lvl].forEach((game, idx) => {
+                html += "\x3Cdiv style='display:flex; justify-content:space-between; align-items:center; background:#2a2a2a; margin-bottom:6px; padding:8px 12px; border-radius:6px; border:1px solid #444;'\x3E";
+                html += "\x3Cdiv style='display:flex; flex-direction:column; gap:2px;'\x3E";
+                html += "\x3Cspan style='color:#ccc; font-size:11px;'\x3E" + game.date + "\x3C/span\x3E";
+                html += "\x3Cspan style='color:#fff; font-size:13px; font-weight:bold;'\x3EPunti: \x3Cspan style='color:#4caf50;'\x3E" + game.punteggio + "\x3C/span\x3E | Esatte: " + game.esatte + "\x3C/span\x3E";
+                html += "\x3C/div\x3E";
+                html += "\x3Cbutton onclick='downloadSpecificLog(" + lvl + ", " + idx + ")' style='background:#2196f3; color:#fff; border:none; border-radius:4px; padding:6px 12px; font-size:11px; font-weight:bold; cursor:pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.3); display:flex; align-items:center; gap:4px;'\x3E📥 LOG\x3C/button\x3E";
+                html += "\x3C/div\x3E";
+            });
+            html += "\x3Cdiv style='margin-bottom: 15px;'\x3E\x3C/div\x3E";
+        }
+    }
+    
+    html += "\x3C/div\x3E";
+    html += "\x3Cbutton onclick='openRecords()' style='width:100%; background:#444; color:#fff; border:none; padding:12px; margin-top:10px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:14px;'\x3E🔙 TORNA AI RECORD\x3C/button\x3E";
+    
+    openModal('📜 ULTIME PARTITE', html);
+};
+
+window.downloadSpecificLog = function(lvl, idx) {
+    let game = recentGamesHistory[lvl][idx];
+    if (!game || !game.log) return;
+    
+    let dateStr = game.date.replace(/[\\/ :]/g, "_").replace(",", "");
+    let dataStr = 'data:text/plain;charset=utf-8,' + encodeURIComponent(game.log);
+    let node = document.createElement('a');
+    node.setAttribute('href', dataStr);
+    node.setAttribute('download', 'QG_Log_L' + lvl + '_' + dateStr + '.txt');
+    document.body.appendChild(node);
+    node.click();
+    node.remove();
+};
         }
         function toggleCustomOpt(opt) {
             customConfig[opt] = !customConfig[opt];
@@ -3708,10 +3822,23 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
             }
             if (bestStreak > statsByLevel[currentLevel].bestStreak) statsByLevel[currentLevel].bestStreak = bestStreak;
             
-            if (avgTime > 0) {
+            // FIX RECORD TEMPO: Evita i record falsati. Si aggiorna solo se fai almeno 5 risposte esatte.
+            if (parseFloat(avgTime) > 0 && esatte >= 5) {
                 if (statsByLevel[currentLevel].bestAvgTime === 0 || parseFloat(avgTime) < statsByLevel[currentLevel].bestAvgTime) {
                     statsByLevel[currentLevel].bestAvgTime = parseFloat(avgTime);
                 }
+            }
+            
+            // --- SALVATAGGIO ULTIME 5 PARTITE ---
+            let gameRecord = {
+                date: new Date().toLocaleString(),
+                punteggio: punteggio,
+                esatte: esatte,
+                log: debugGameLog
+            };
+            recentGamesHistory[currentLevel].unshift(gameRecord); // Inserisce in cima
+            if (recentGamesHistory[currentLevel].length > 5) {
+                recentGamesHistory[currentLevel].pop(); // Mantiene solo le ultime 5
             }
             
             if (currentLevel >= 4 || currentLevel === 5) { 
