@@ -567,7 +567,7 @@
         </div>
     </div>
     
-    <div id="version-badge">v2.0.9</div>
+    <div id="version-badge">v2.0.9.1</div>
 
     <div id="modal-overlay">
         <div id="modal-content">
@@ -610,7 +610,7 @@ BO	Bolivia		Sucre	*La Paz	perù, brasile, paraguay, argentina, cile	Sud America,
 BQ	Bonaire		Kralendijk			Nord America, caraibi	giallo, bianco, blu	bianco, rosso	stella	x	stella rossa	3
 BA	Bosnia ed Erzegovina	Bosnia	Sarajevo		croazia, serbia, montenegro, mare	Europa, Mediterraneo, Balcani	blu, giallo, bianco		stella		stella bianca	1
 BW	Botswana		Gaborone		namibia, zambia, zimbabwe, sudafrica	Africa, Africa meridionale	azzurro, bianco, nero				strisce orizzontali	2
-BR	Brasile		Brasilia		uruguay, argentina, paraguay, bolivia, perù, colombia, venezuela, guyana, suriname, guyana francese, mare	Sud America	verde, giallo, blu	blu, bianco	cerchio, scritta		cerchio blu, lenzuolo verde	1
+BR	Brasile		Brasilia		uruguay, argentina, paraguay, bolivia, perù, colombia, venezuela, guyana, suriname, guyana francese, mare	Sud America, Amazzonia	verde, giallo, blu	blu, bianco	cerchio, scritta		cerchio blu, lenzuolo verde	1
 BN	Brunei		Bandar Seri Begawan	Bandar	Malaysia, mare	Asia, Sud-Est Asiatico	giallo, bianco, nero	rosso	mezzaluna, emblema nazionale, scritta		mezzaluna rossa	2
 BG	Bulgaria		Sofia		turchia, grecia, macedonia del nord, serbia, romania, mare	europa, Balcani	bianco, verde, rosso				strisce orizzontali	1
 BF	Burkina Faso		Ouagadougou	Ouaga, Ouagadogu	mali, niger, benin, togo, ghana, costa d'avorio	africa, africa centrale	rosso, verde	giallo	stella		strisce orizzontali, stella gialla	2
@@ -2399,6 +2399,20 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
 	function getValidAnswersArray(td, level) {
             let validList = [];
             td.validSiglas = [];
+            
+            const checkInitAny = (country, req) => {
+                if (!req) return true;
+                let cNames = [country.nome.toLowerCase(), ...country.alias_paese];
+                return cNames.some(n => n.startsWith(req.toLowerCase()));
+            };
+            
+            const checkCapInitAny = (country, req) => {
+                if (!req) return true;
+                if (!country.capitale) return false;
+                let cCaps = [country.capitale.toLowerCase(), ...country.alias_capitale];
+                return cCaps.some(c => c.startsWith(req.toLowerCase()));
+            };
+
             for (let country of getAnswerPool(level)) {
                 let match = false;
                 
@@ -2417,7 +2431,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                 if (td.negGeo && country.tipoGeo === td.negGeo) continue;
                 
                 if (td.negInit) {
-                    if (country.nome.toLowerCase().startsWith(td.negInit.toLowerCase())) continue;
+                    if (checkInitAny(country, td.negInit)) continue;
                 }
 
                 if (td.isComboInception) {
@@ -2431,8 +2445,6 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                         let hasCap = (td.format === 0 || td.format === 10);
                         if (!hasCap || country.capitale) {
                             match = true; 
-                            if (hasCap) validList.push(capitalize(country.capitale) + " (" + capitalize(country.nome) + ")");
-                            else validList.push(capitalize(country.nome));
                         }
                     }
                 } else {
@@ -2458,7 +2470,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                         }
                         
                         if (m && td.reqInit) {
-                            if(!country.nome.toLowerCase().startsWith(td.reqInit.toLowerCase())) m = false;
+                            if(!checkInitAny(country, td.reqInit)) m = false;
                         }
                         if (m) match = true;
                     }
@@ -2474,11 +2486,13 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                         let capPaese = country.capitale ? country.capitale.toLowerCase() : "";
                         if (capPaese && country.aree.includes(td.selectedArea)) {
                             let textMatch = false;
-                            let cn = country.capitale.toLowerCase();
-                            if (td.varEnigmistica === 0 && cn.startsWith(td.reqCapInit.toLowerCase())) textMatch = true;
-                            if (td.varEnigmistica === 1 && cn.endsWith(td.reqCapFin.toLowerCase())) textMatch = true;
-                            if (td.varEnigmistica === 2 && cn.startsWith(td.reqCapInit.toLowerCase()) && cn.endsWith(td.reqCapFin.toLowerCase())) textMatch = true;
-                            
+                            let cCaps = [country.capitale.toLowerCase(), ...country.alias_capitale];
+                            for (let cn of cCaps) {
+                                if (td.varEnigmistica === 0 && cn.startsWith(td.reqCapInit.toLowerCase())) textMatch = true;
+                                if (td.varEnigmistica === 1 && cn.endsWith(td.reqCapFin.toLowerCase())) textMatch = true;
+                                if (td.varEnigmistica === 2 && cn.startsWith(td.reqCapInit.toLowerCase()) && cn.endsWith(td.reqCapFin.toLowerCase())) textMatch = true;
+                                if (textMatch) break;
+                            }
                             if (textMatch) match = true;
                         }
                     }
@@ -2496,7 +2510,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                             let ok = true;
                             if (td.reqArea && !country.aree.includes(td.reqArea)) ok = false;
                             if (td.reqInit) {
-                                if(!country.nome.toLowerCase().startsWith(td.reqInit.toLowerCase())) ok = false;
+                                if(!checkInitAny(country, td.reqInit)) ok = false;
                             }
                             if (ok) match = true;
                         }
@@ -2522,10 +2536,10 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                             }
                             
                             if (td.reqCapInit) {
-                                if(!country.capitale || !country.capitale.toLowerCase().startsWith(td.reqCapInit.toLowerCase())) m = false;
+                                if(!checkCapInitAny(country, td.reqCapInit)) m = false;
                             }
                             if (td.reqInit) {
-                                if(!country.nome.toLowerCase().startsWith(td.reqInit.toLowerCase())) m = false;
+                                if(!checkInitAny(country, td.reqInit)) m = false;
                             }
                             if (m) match = true;
                         }
@@ -2538,7 +2552,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                             if (td.reqArea && !country.aree.includes(td.reqArea)) m = false;
                             if (td.f12RequiresSymbol && !country.simboli.includes(td.f12RequiresSymbol)) m = false;
                             if (td.reqInit) {
-                                if(!country.nome.toLowerCase().startsWith(td.reqInit.toLowerCase())) m = false;
+                                if(!checkInitAny(country, td.reqInit)) m = false;
                             }
                             if (td.f12AskCapital && !country.capitale) m = false;
                             
@@ -2548,13 +2562,46 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                 }
 
                 if (match) {
-                    // Questa è la modifica chiave: se match=true, lo inseriamo sempre nelle validSiglas
-                    // in modo che poi il motore sappia ESATTAMENTE chi ignorare, incluse capitali e territori.
                     td.validSiglas.push(country.sigla);
                     
                     let dName = capitalize(country.nome);
+                    let matchedAlias = null;
+                    if (td.reqInit) {
+                        let cNames = [country.nome.toLowerCase(), ...country.alias_paese];
+                        for (let n of cNames) {
+                            if (n.startsWith(td.reqInit.toLowerCase()) && n !== country.nome.toLowerCase()) {
+                                matchedAlias = capitalize(n);
+                                break;
+                            }
+                        }
+                    }
+                    if (matchedAlias) {
+                        dName = matchedAlias + " [" + dName + "]";
+                    }
+
                     if (td.format === 0 || td.format === 10 || td.format === 6 || (td.format === 12 && td.f12AskCapital)) {
-                        validList.push(capitalize(country.capitale) + " (" + dName + ")");
+                        let cName = capitalize(country.capitale);
+                        let matchedCapAlias = null;
+                        if (td.reqCapInit || td.format === 6) {
+                            let cCaps = [country.capitale.toLowerCase(), ...country.alias_capitale];
+                            for (let c of cCaps) {
+                                let ok = false;
+                                if (td.reqCapInit && c.startsWith(td.reqCapInit.toLowerCase())) ok = true;
+                                if (td.format === 6) {
+                                    if (td.varEnigmistica === 0 && c.startsWith(td.reqCapInit.toLowerCase())) ok = true;
+                                    if (td.varEnigmistica === 1 && c.endsWith(td.reqCapFin.toLowerCase())) ok = true;
+                                    if (td.varEnigmistica === 2 && c.startsWith(td.reqCapInit.toLowerCase()) && c.endsWith(td.reqCapFin.toLowerCase())) ok = true;
+                                }
+                                if (ok && c !== country.capitale.toLowerCase()) {
+                                    matchedCapAlias = capitalize(c);
+                                    break;
+                                }
+                            }
+                        }
+                        if (matchedCapAlias) {
+                            cName = matchedCapAlias + " [" + cName + "]";
+                        }
+                        validList.push(cName + " (" + dName + ")");
                     } else {
                         validList.push(dName);
                     }
