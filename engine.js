@@ -1729,50 +1729,40 @@
                     td.validSiglas.push(country.sigla);
                     
                     let dName = capitalize(country.nome);
-                    let matchedAlias = null;
-                    if (td.reqInit) {
-                        let cNames = [country.nome.toLowerCase(), ...country.alias_paese];
-                        for (let n of cNames) {
-                            if (n.startsWith(td.reqInit.toLowerCase()) && n !== country.nome.toLowerCase()) {
-                                matchedAlias = capitalize(n);
-                                break;
-                            }
-                        }
-                    }
-                    if (matchedAlias) {
-                        dName = matchedAlias + " [" + dName + "]";
+                    if (td.reqInit && !country.nome.toLowerCase().startsWith(td.reqInit.toLowerCase())) {
+                        let offAlias = country.alias_paese_ufficiali.find(a => a.toLowerCase().startsWith(td.reqInit.toLowerCase()));
+                        if (offAlias) dName = capitalize(offAlias);
                     }
 
                     if (td.format === 0 || td.format === 10 || td.format === 6 || (td.format === 12 && td.f12AskCapital)) {
                         let cName = capitalize(country.capitale);
-                        let matchedCapAlias = null;
-                        if (td.reqCapInit || td.format === 6) {
-                            let cCaps = [country.capitale.toLowerCase(), ...country.alias_capitale];
-                            for (let c of cCaps) {
-                                let ok = false;
-                                if (td.reqCapInit && c.startsWith(td.reqCapInit.toLowerCase())) ok = true;
-                                if (td.format === 6) {
-                                    if (td.varEnigmistica === 0 && c.startsWith(td.reqCapInit.toLowerCase())) ok = true;
-                                    if (td.varEnigmistica === 1 && c.endsWith(td.reqCapFin.toLowerCase())) ok = true;
-                                    if (td.varEnigmistica === 2 && c.startsWith(td.reqCapInit.toLowerCase()) && c.endsWith(td.reqCapFin.toLowerCase())) ok = true;
-                                }
-                                if (ok && c !== country.capitale.toLowerCase()) {
-                                    matchedCapAlias = capitalize(c);
-                                    break;
-                                }
-                            }
+                        
+                        let textMatchBase = false;
+                        let cnLower = country.capitale ? country.capitale.toLowerCase() : "";
+                        if (td.reqCapInit && cnLower.startsWith(td.reqCapInit.toLowerCase())) textMatchBase = true;
+                        if (td.format === 6 && cnLower) {
+                            let starts = td.reqCapInit ? cnLower.startsWith(td.reqCapInit.toLowerCase()) : true;
+                            let ends = td.reqCapFin ? cnLower.endsWith(td.reqCapFin.toLowerCase()) : true;
+                            if (starts && ends) textMatchBase = true;
                         }
-                        if (matchedCapAlias) {
-                            cName = matchedCapAlias + " [" + cName + "]";
+                        
+                        if (!textMatchBase && country.alias_capitale_ufficiali) {
+                            let offCapAlias = country.alias_capitale_ufficiali.find(c => {
+                                let cLow = c.toLowerCase();
+                                let s = td.reqCapInit ? cLow.startsWith(td.reqCapInit.toLowerCase()) : true;
+                                let e = td.reqCapFin ? cLow.endsWith(td.reqCapFin.toLowerCase()) : true;
+                                return s && e;
+                            });
+                            if (offCapAlias) cName = capitalize(offCapAlias);
                         }
+                        
                         validList.push(cName + " (" + dName + ")");
                     } else {
                         validList.push(dName);
                     }
                 }
             }
-            td.validSiglas = [...new Set(td.validSiglas)];
-            return [...new Set(validList)];
+            return validList;
         }
 
         function checkInit(country, matchedName, reqI) {
@@ -2492,10 +2482,17 @@
                     let nomePrimario = isCapitalReq ? `${capitalize(res.matchedCountry.capitale)} (${capitalize(res.matchedCountry.nome)})` : capitalize(res.matchedCountry.nome);
                     
                     if (currentTurnData.maxPossible > 1) {
-                        let rimanenti = currentTurnData.validAnswersCache.filter(v => v !== nomePrimario);
+                        let rimanenti = [];
+                        currentTurnData.validSiglas.forEach((s, index) => {
+                            if (s !== res.matchedCountry.sigla) {
+                                rimanenti.push(currentTurnData.validAnswersCache[index]);
+                            }
+                        });
                         if (rimanenti.length > 0) {
                             comboTracker.style.display = "block";
-                            comboTracker.innerHTML = `<span style="color:#aaa;">Altre risposte valide: ${rimanenti.join(", ")}</span>`;
+                            comboTracker.innerHTML = `Altre risposte valide: ${rimanenti.join(", ")}`;
+                        } else {
+                            comboTracker.style.display = "none";
                         }
                     }
 
@@ -2796,11 +2793,18 @@
                 }
 
                 if (currentTurnData.maxPossible > comboInserted.length) {
-                    let rimanenti = currentTurnData.validAnswersCache.filter(v => !arrayNomiPrimariTrovati.includes(v));
+                    let rimanenti = [];
+                    currentTurnData.validSiglas.forEach((s, index) => {
+                        if (!matchedSiglas.includes(s)) {
+                            rimanenti.push(currentTurnData.validAnswersCache[index]);
+                        }
+                    });
                     if (rimanenti.length > 0) {
                         comboTracker.style.display = "block";
-                        comboTracker.innerHTML = `<span style="color:#aaa;">Altre risposte valide: ${rimanenti.join(", ")}</span>`;
-                    } else comboTracker.style.display = "none";
+                        comboTracker.innerHTML = `Altre risposte valide: ${rimanenti.join(", ")}`;
+                    } else {
+                        comboTracker.style.display = "none";
+                    }
                 } else comboTracker.style.display = "none";
 
                 if (isEndlessTrig) {
