@@ -567,7 +567,7 @@
         </div>
     </div>
     
-    <div id="version-badge">v2.0.8</div>
+    <div id="version-badge">v2.0.8.5</div>
 
     <div id="modal-overlay">
         <div id="modal-content">
@@ -580,8 +580,7 @@
     </div>
 
     <script>
-        const rawData = `Sigla	Paese	Alias - paese	Capitale	Alias - capitale	Confini	Continente/Area geografica	Colore bandiera base	Colore emblema	simboli bandiera	dipendente	Caratteristiche bandiera	Livello
-AF	Afghanistan	Afganistan	Kabul		iran, turkmenistan, uzbekistan, tagikistan, cina, pakistan	Asia	rosso, nero, verde	bianco	scritta		strisce verticali	1
+        const rawData = `AF	Afghanistan	Afganistan	Kabul		iran, turkmenistan, uzbekistan, tagikistan, cina, pakistan	Asia	rosso, nero, verde	bianco	scritta		strisce verticali	1
 AL	Albania		Tirana		Montenegro, Kosovo, Macedonia del Nord, grecia, mare	Europa, Mediterraneo, Balcani	rosso, nero	nero	aquila		lenzuolo rosso	1
 DZ	Algeria		Algeri		marocco, tunisia, libia, niger, mali, mauritania, mare	Africa, Africa settentrionale, Mediterraneo	verde, bianco	rosso	mezzaluna, stella		strisce verticali, mezzaluna rossa, stella rossa	1
 AD	Andorra		Andorra la Vella	La Vella	francia, spagna	Europa	blu, giallo, rosso		emblema nazionale		strisce verticali	2
@@ -659,7 +658,7 @@ DE	Germania		Berlino		danimarca, polonia, cechia, austria, svizzera, francia, lu
 GH	Ghana		Accra		togo, burkina faso, costa d'avorio, mare	africa, africa centrale, Golfo di Guinea	rosso, giallo, verde, nero	nero	stella		strisce orizzontali, stella nera	1
 JM	Giamaica	*Jamaica	Kingston			Nord America, caraibi	verde, nero, giallo				croce di Sant'Andrea (X)	1
 JP	Giappone		Tokyo			Asia	bianco, rosso	rosso	cerchio		cerchio rosso, lenzuolo bianco	1
-GI	Gibilterra		Gibilterra		spagna, mare	europa	bianco, rosso	rosso	edificio	x	strisce orizzontali	3
+GI	Gibilterra		Gibilterra		spagna, mare	europa, mediterraneo	bianco, rosso	rosso	edificio	x	strisce orizzontali	3
 DJ	Gibuti		Gibuti		eritrea, etiopia, somalia, mare	africa, africa centrale	bianco, azzurro, verde	rosso	stella		triangolo a sinistra bianco, stella rossa	2
 JO	Giordania		Amman		israele, siria, iraq, arabia saudita, mare	Asia, medio oriente	rosso, nero, bianco, verde	bianco	stella, 		triangolo a sinistra rosso, stella bianca	2
 GR	Grecia		Atene		albania, macedonia del nord, bulgaria, turchia, mare	Europa, Mediterraneo, Balcani	bianco, azzurro		croce simmetrica			1
@@ -764,7 +763,7 @@ MC	Principato di Monaco	*Monaco	Monaco		francia, mare	Europa, Mediterraneo	rosso
 QA	Qatar		Doha		arabia saudita, mare	Asia, Medio Oriente, Penisola Arabica	bianco, rosso					1
 GB	Regno Unito	*Gran Bretagna, UK, GB	Londra		irlanda, mare	Europa	blu, rosso, bianco		union jack			1
 CF	Repubblica Centrafricana	Rep Centrafricana	Bangui		ciad, sudan, sudan del sud, repubblica democratica del congo, congo, camerun	africa, africa centrale	blu, bianco, verde, giallo, rosso	giallo	stella		stella gialla	2
-CD	Repubblica Democratica del Congo	Rep Dem Congo, Rep democratica Congo, Repubblica Democratica Congo	Kinshasa		congo, repubblica centrafricana, sudan del sud, uganda, ruanda, burundi, tanzania, zambia, angola, mare	africa, africa centrale	azzurro, giallo, rosso	giallo	stella		stella gialla	1
+CD	Repubblica Democratica del Congo	Rep Dem Congo, Rep democratica Congo, Repubblica democratica Congo	Kinshasa		congo, repubblica centrafricana, sudan del sud, uganda, ruanda, burundi, tanzania, zambia, angola, mare	africa, africa centrale	azzurro, giallo, rosso	giallo	stella		stella gialla	1
 DO	Repubblica Dominicana	Rep Dominicana	Santo Domingo		haiti, mare	Nord America, caraibi	blu, bianco, rosso		emblema nazionale			1
 RE	Riunione	Reunion	Saint-Denis	S Denis, Saint Denis, San Denis		africa	blu, rosso, giallo			x		3
 RO	Romania		Bucarest		moldavia, ucraina, bulgaria, serbia, ungheria, mare	europa, Balcani	blu, giallo, rosso				strisce verticali	1
@@ -820,7 +819,7 @@ TA	Tristan da Cunha		Edinburgh of the Seven Seas	Edimburgh		africa	blu		emblema 
 TN	Tunisia		Tunisi		algeria, libia, mare	Africa, Africa settentrionale, Mediterraneo	rosso, bianco	rosso, bianco	mezzaluna, stella, cerchio		cerchio bianco, mezzaluna rossa, stella rossa, lenzuolo rosso	1
 TR	Turchia		Ankara		azerbaigian, grecia, bulgaria, georgia, armenia, iran, iraq, siria, mare	Asia, mediterraneo	rosso, bianco	bianco	mezzaluna, stella		mezzaluna bianca, stella bianca, lenzuolo rosso	1
 TM	Turkmenistan		Ashgabat		kazakistan, uzbekistan, afghanistan, iran	Asia	verde, rosso	bianco	mezzaluna, stella		mezzaluna bianca, stella bianca	2
-TC	Turks e Caicos		Cockburn Town			nord america	blu		emblema nazionale, union jack	x		3
+TC	Turks e Caicos		Cockburn Town			nord america, caraibi	blu		emblema nazionale, union jack	x		3
 TV	Tuvalu		Funafuti			Oceania	azzurro	giallo	stella, union jack		stella gialla	2
 UA	Ucraina		Kiev		russia, moldavia, romania, ungheria, slovacchia, polonia, bielorussia, mare	europa	blu, giallo				strisce orizzontali	1
 UG	Uganda		Kampala		kenya, tanzania, ruanda, repubblica democratica del congo, sudan del sud	africa, africa centrale	nero, giallo, rosso	bianco	uccello, animale, cerchio		strisce orizzontali	2
@@ -1424,7 +1423,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
     window.openGamesHistory = function() {
         let html = "<div style='max-height: 70vh; overflow-y: auto; padding-right: 5px;'>";
         for(let lvl = 0; lvl <= 5; lvl++) {
-            let lvlName = lvl === 0 ? "L0 (Tutorial)" : (lvl === 5 ? "Personalizzata" : "Livello " + lvl);
+            let lvlName = lvl === 0 ? (lvl === 5 ? "Personalizzata" : "Livello " + lvl);
             html += "<h3 style='color:#ffd700; border-bottom:1px solid #444; padding-bottom:3px; margin-top:10px; margin-bottom:5px; font-size:14px; text-transform:uppercase;'>" + lvlName + "</h3>";
             if (recentGamesHistory[lvl].length === 0) {
                 html += "<p style='color:#888; font-size:12px; font-style:italic; margin: 0 0 15px 0;'>Nessuna partita registrata.</p>";
@@ -3275,7 +3274,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
 
                     if (isEndlessTrig) {
                     if (currentLevel === 0) {
-                        inputEl.value = `TUTORIAL COMPLETATO! 🎓`;
+                        inputEl.value = `LIVELLO COMPLETATO! 🎓`;
                         inputEl.style.color = "#4caf50";
                         document.getElementById("ritirati-btn").innerHTML = "🚪 TERMINA LA SFIDA";
                         document.getElementById("continua-btn").innerHTML = "🔁 CONTINUA LA SFIDA";
