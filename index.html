@@ -567,7 +567,7 @@
         </div>
     </div>
     
-    <div id="version-badge">v2.0.8.5</div>
+    <div id="version-badge">v2.0.9</div>
 
     <div id="modal-overlay">
         <div id="modal-content">
@@ -1130,7 +1130,20 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                 }
             }
         });
-
+		
+		// --- BLOCCO SWIPE-TO-REFRESH SU MOBILE DURANTE LA PARTITA ---
+        document.addEventListener('touchmove', function(e) {
+            // Se la home page è visibile (start-screen), permetti lo swipe-to-refresh
+            if (document.getElementById("start-screen").style.display === "flex") {
+                return; 
+            }
+            // Se siamo nel database, nelle classifiche o nel log errori, permetti lo scorrimento
+            if (e.target.closest('.db-table-container') || e.target.closest('#modal-body') || e.target.closest('#error-log') || e.target.closest('#top5-nations')) {
+                return;
+            }
+            // In tutti gli altri casi (durante la partita), blocca lo scroll verticale che causa il refresh
+            e.preventDefault();
+        }, { passive: false });
         function getLevenshteinTolerance(word, level) {
             if (word.length <= 3) return 0;
             let tolerance = 0;
@@ -2532,15 +2545,18 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
                             if (m) match = true;
                         }
                     }
+                }
 
-                    if (match) {
-                        td.validSiglas.push(country.sigla);
-                        let dName = capitalize(country.nome);
-                        if (td.format === 0 || td.format === 10 || td.format === 6 || (td.format === 12 && td.f12AskCapital)) {
-                            validList.push(capitalize(country.capitale) + " (" + dName + ")");
-                        } else {
-                            validList.push(dName);
-                        }
+                if (match) {
+                    // Questa è la modifica chiave: se match=true, lo inseriamo sempre nelle validSiglas
+                    // in modo che poi il motore sappia ESATTAMENTE chi ignorare, incluse capitali e territori.
+                    td.validSiglas.push(country.sigla);
+                    
+                    let dName = capitalize(country.nome);
+                    if (td.format === 0 || td.format === 10 || td.format === 6 || (td.format === 12 && td.f12AskCapital)) {
+                        validList.push(capitalize(country.capitale) + " (" + dName + ")");
+                    } else {
+                        validList.push(dName);
                     }
                 }
             }
