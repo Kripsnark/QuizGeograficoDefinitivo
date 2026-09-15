@@ -3190,6 +3190,4 @@
             }
             document.getElementById('update-banner').style.display = 'none';
         }
-        
-    </script>
 
