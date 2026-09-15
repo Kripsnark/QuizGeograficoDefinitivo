@@ -1423,7 +1423,7 @@ ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa merid
     window.openGamesHistory = function() {
         let html = "<div style='max-height: 70vh; overflow-y: auto; padding-right: 5px;'>";
         for(let lvl = 0; lvl <= 5; lvl++) {
-            let lvlName = lvl === 0 ? (lvl === 5 ? "Personalizzata" : "Livello " + lvl);
+            let lvlName = lvl === 0 ? "Livello 0" : (lvl === 5 ? "Personalizzata" : "Livello " + lvl);
             html += "<h3 style='color:#ffd700; border-bottom:1px solid #444; padding-bottom:3px; margin-top:10px; margin-bottom:5px; font-size:14px; text-transform:uppercase;'>" + lvlName + "</h3>";
             if (recentGamesHistory[lvl].length === 0) {
                 html += "<p style='color:#888; font-size:12px; font-style:italic; margin: 0 0 15px 0;'>Nessuna partita registrata.</p>";
