@@ -14,14 +14,15 @@
             vite: 3
         };
         
-        let vibrationEnabled = true;
+let vibrationEnabled = true;
 
 function toggleVibration() {
     vibrationEnabled = !vibrationEnabled;
     let btn = document.getElementById("vibe-toggle");
     if (btn) btn.innerText = vibrationEnabled ? "📳" : "📴";
     saveStats();
-    if (vibrationEnabled) triggerVibration(500);
+    // Doppio colpo rapido, molto più percettibile di uno singolo lungo
+    if (vibrationEnabled) triggerVibration([40, 30, 40]); 
 }
 
 function triggerVibration(pattern) {
