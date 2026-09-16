@@ -21,7 +21,7 @@ function toggleVibration() {
     let btn = document.getElementById("vibe-toggle");
     if (btn) btn.innerText = vibrationEnabled ? "📳" : "📴";
     saveStats();
-    if (vibrationEnabled) triggerVibration(30);
+    if (vibrationEnabled) triggerVibration(500);
 }
 
 function triggerVibration(pattern) {
