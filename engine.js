@@ -1551,7 +1551,22 @@ function triggerVibration(pattern) {
             
             getValidAnswersArray(td, currentLevel);
 
-            td.maxPossible = tempValid.length;
+            let typeableSet = new Set();
+            let isCapRequired = td.format === 0 || td.format === 6 || td.format === 10 || (td.format === 12 && td.f12AskCapital);
+            
+            td.validSiglas.forEach(s => {
+                let node = globalDb.find(n => n.sigla === s);
+                if (node) {
+                    if (isCapRequired && node.capitale) {
+                        typeableSet.add(normalizzaTesto(node.capitale));
+                    } else {
+                        typeableSet.add(normalizzaTesto(node.nome));
+                    }
+                }
+            });
+
+            td.maxPossible = typeableSet.size; 
+
             td.validAnswersCache = tempValid;
             td.numReq = 1;
 
