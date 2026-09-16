@@ -16,19 +16,26 @@
         
         let vibrationEnabled = true;
 
-function toggleVibration() {
-    vibrationEnabled = !vibrationEnabled;
-    let btn = document.getElementById("vibe-toggle");
-    if (btn) btn.innerText = vibrationEnabled ? "📳" : "📴";
-    saveStats();
-    if (vibrationEnabled) triggerVibration(30);
+​function toggleVibration() {
+vibrationEnabled = !vibrationEnabled;
+let btn = document.getElementById("vibe-toggle");
+if (btn) btn.innerText = vibrationEnabled ? "📳" : "📴";
+saveStats();
+​if (vibrationEnabled) {
+if (navigator.vibrate) {
+let esito = navigator.vibrate(300);
+alert("API supportata dal browser. Comando accettato: " + esito);
+} else {
+alert("Il tuo browser NON supporta o ha disattivato navigator.vibrate alla radice!");
+}
+}
+}
+​function triggerVibration(pattern) {
+if (vibrationEnabled && navigator.vibrate) {
+navigator.vibrate(pattern);
+}
 }
 
-function triggerVibration(pattern) {
-    if (vibrationEnabled && navigator.vibrate) {
-        navigator.vibrate(pattern);
-    }
-}
 
 // --- SISTEMA DI SALVATAGGIO LOCALE (LOCALSTORAGE) E BACKUP ---
         let allTimeBestScore = 0; let allTimeBestStreak = 0;
