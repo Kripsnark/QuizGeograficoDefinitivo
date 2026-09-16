@@ -14,7 +14,23 @@
             vite: 3
         };
         
-        // --- SISTEMA DI SALVATAGGIO LOCALE (LOCALSTORAGE) E BACKUP ---
+        let vibrationEnabled = true;
+
+function toggleVibration() {
+    vibrationEnabled = !vibrationEnabled;
+    let btn = document.getElementById("vibe-toggle");
+    if (btn) btn.innerText = vibrationEnabled ? "📳" : "📴";
+    saveStats();
+    if (vibrationEnabled) triggerVibration(30);
+}
+
+function triggerVibration(pattern) {
+    if (vibrationEnabled && navigator.vibrate) {
+        navigator.vibrate(pattern);
+    }
+}
+
+// --- SISTEMA DI SALVATAGGIO LOCALE (LOCALSTORAGE) E BACKUP ---
         let allTimeBestScore = 0; let allTimeBestStreak = 0;
         let allTimeFotofinish = 0; let allTimeGrazie = 0;
         let allTimeNazioniCount = {}; let allTimeNazioniIgnorate = {}; 
@@ -32,32 +48,43 @@
         };
 
         function loadStats() {
-            let saved = localStorage.getItem('geoQuizStats');
-            if (saved) {
-                let data = JSON.parse(saved);
-                allTimeBestScore = data.bestScore || 0;
-                allTimeBestStreak = data.bestStreak || 0;
-                allTimeFotofinish = data.fotofinish || 0;
-                allTimeGrazie = data.grazie || 0;
-                allTimeNazioniCount = data.nazioniCount || {}; 
-                allTimeNazioniIgnorate = data.nazioniIgnorate || data.nazioniEvitate || {}; 
-                allTimeBestAvgTime = data.bestAvgTime || 0; 
-                if (data.statsByLevel) { statsByLevel = Object.assign({}, statsByLevel, data.statsByLevel); }
-                globalPlays = data.globalPlays || 0;
-                if (data.recentGamesHistory) { recentGamesHistory = data.recentGamesHistory; }
-            }
+    let saved = localStorage.getItem('geoQuizStats');
+    if (saved) {
+        let data = JSON.parse(saved);
+        allTimeBestScore = data.bestScore || 0;
+        allTimeBestStreak = data.bestStreak || 0;
+        allTimeFotofinish = data.fotofinish || 0;
+        allTimeGrazie = data.grazie || 0;
+        allTimeNazioniCount = data.nazioniCount || {}; 
+        allTimeNazioniIgnorate = data.nazioniIgnorate || data.nazioniEvitate || {}; 
+        allTimeBestAvgTime = data.bestAvgTime || 0; 
+        if (data.statsByLevel) { statsByLevel = Object.assign({}, statsByLevel, data.statsByLevel); }
+        globalPlays = data.globalPlays || 0;
+        if (data.recentGamesHistory) { recentGamesHistory = data.recentGamesHistory; }
+        if (data.vibrationEnabled !== undefined) {
+            vibrationEnabled = data.vibrationEnabled;
         }
+    }
+    let btn = document.getElementById("vibe-toggle");
+    if (btn) btn.innerText = vibrationEnabled ? "📳" : "📴";
+}
         
         function saveStats() {
-            let data = {
-                bestScore: allTimeBestScore, bestStreak: allTimeBestStreak,
-                fotofinish: allTimeFotofinish, grazie: allTimeGrazie,
-                nazioniCount: allTimeNazioniCount, nazioniIgnorate: allTimeNazioniIgnorate, 
-                bestAvgTime: allTimeBestAvgTime, statsByLevel: statsByLevel, globalPlays: globalPlays,
-                recentGamesHistory: recentGamesHistory
-            };
-            localStorage.setItem('geoQuizStats', JSON.stringify(data));
-        }
+    let data = {
+        bestScore: allTimeBestScore,
+        bestStreak: allTimeBestStreak,
+        fotofinish: allTimeFotofinish,
+        grazie: allTimeGrazie,
+        nazioniCount: allTimeNazioniCount,
+        nazioniIgnorate: allTimeNazioniIgnorate, 
+        bestAvgTime: allTimeBestAvgTime,
+        statsByLevel: statsByLevel,
+        globalPlays: globalPlays,
+        recentGamesHistory: recentGamesHistory,
+        vibrationEnabled: vibrationEnabled
+    };
+    localStorage.setItem('geoQuizStats', JSON.stringify(data));
+}
 
         function exportBackup() {
             let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(localStorage.getItem('geoQuizStats') || "{}");
@@ -2024,33 +2051,42 @@
         }
 
         function activateMainTimer() {
-            if(timerState === "active") return;
-            timerState = "active";
-            clearTimeout(readingTimeout);
-            
-            timerBar.style.backgroundColor = "#4caf50";
-            timerStatus.innerText = `TEMPO CALCOLATO: ${activeTimeTotal}s`;
-            
-            let lastUpdate = Date.now();
-            mainTimerInterval = setInterval(() => {
-                let now = Date.now();
-                let dt = (now - lastUpdate) / 1000;
-                lastUpdate = now;
-                activeTimeLeft -= dt;
+    if(timerState === "active") return;
+    timerState = "active";
+    clearTimeout(readingTimeout);
+    window.lastVibeSecond = null;
+    
+    timerBar.style.backgroundColor = "#4caf50";
+    timerStatus.innerText = `TEMPO CALCOLATO: ${activeTimeTotal}s`;
+    
+    let lastUpdate = Date.now();
+    mainTimerInterval = setInterval(() => {
+        let now = Date.now();
+        let dt = (now - lastUpdate) / 1000;
+        lastUpdate = now;
+        activeTimeLeft -= dt;
 
-                if (activeTimeLeft <= 0) {
-                    activeTimeLeft = 0;
-                    stopTimer();
-                    timerBar.style.width = "0%";
-                    eseguiValidazioneMultipla(true); 
-                } else {
-                    let pct = (activeTimeLeft / activeTimeTotal) * 100;
-                    timerBar.style.width = pct + "%";
-                    if (pct < 25) timerBar.style.backgroundColor = "#f44336"; 
-                    else if (pct < 50) timerBar.style.backgroundColor = "#ff9800"; 
+        if (activeTimeLeft <= 0) {
+            activeTimeLeft = 0;
+            stopTimer();
+            timerBar.style.width = "0%";
+            eseguiValidazioneMultipla(true); 
+        } else {
+            let pct = (activeTimeLeft / activeTimeTotal) * 100;
+            timerBar.style.width = pct + "%";
+            if (pct < 25) {
+                timerBar.style.backgroundColor = "#f44336";
+                let currentSecondInt = Math.ceil(activeTimeLeft);
+                if (window.lastVibeSecond !== currentSecondInt) {
+                    window.lastVibeSecond = currentSecondInt;
+                    triggerVibration([40, 60, 40]);
                 }
-            }, 50);
+            } else if (pct < 50) {
+                timerBar.style.backgroundColor = "#ff9800"; 
+            } 
         }
+    }, 50);
+}
 
         function stopTimer() {
             timerState = "stopped";
@@ -2137,48 +2173,49 @@
         }
 
         function surrenderTurn() {
-            if (inputEl.disabled && errPanel.style.display === "flex") return; 
-            
-            let surrTime = ((Date.now() - turnStartTime) / 1000).toFixed(1);
-            debugGameLog += `-> ESITO [${surrTime}s]: 🏳️ RESA\n\n`;
-            
-            if (currentLevel === 4 || (currentLevel === 5 && customConfig.timer)) stopTimer();
-            
-            vite--;
-            currentStreak = 0;
-            aggiornaUI();
-            
-            let isMulti = (currentLevel === 4 || (currentLevel === 5 && currentTurnData.numReq > 1));
-            let insertedStr = isMulti && comboInserted.length > 0 ? " (Trovate: " + comboInserted.map(s => s.toUpperCase()).join(", ") + ")" : "";
-            
-            let domPulita = currentTurnData.questionText.replace(/<[^>]*>?/gm, ''); 
-            let stringaSoluzioni = currentTurnData.validAnswersCache.join(", ");
-            erroriCommessi.push({ 
-                q: domPulita, 
-                wrong: "🏳️ TI SEI ARRESO" + insertedStr, 
-                correct: "Risposte valide: " + stringaSoluzioni 
-            });
+    if (inputEl.disabled && errPanel.style.display === "flex") return; 
+    
+    triggerVibration([100, 50, 100]);
+    let surrTime = ((Date.now() - turnStartTime) / 1000).toFixed(1);
+    debugGameLog += `-> ESITO [${surrTime}s]: 🏳️ RESA\n\n`;
+    
+    if (currentLevel === 4 || (currentLevel === 5 && customConfig.timer)) stopTimer();
+    
+    vite--;
+    currentStreak = 0;
+    aggiornaUI();
+    
+    let isMulti = (currentLevel === 4 || (currentLevel === 5 && currentTurnData.numReq > 1));
+    let insertedStr = isMulti && comboInserted.length > 0 ? " (Trovate: " + comboInserted.map(s => s.toUpperCase()).join(", ") + ")" : "";
+    
+    let domPulita = currentTurnData.questionText.replace(/<[^>]*>?/gm, ''); 
+    let stringaSoluzioni = currentTurnData.validAnswersCache.join(", ");
+    erroriCommessi.push({ 
+        q: domPulita, 
+        wrong: "🏳️ TI SEI ARRESO" + insertedStr, 
+        correct: "Risposte valide: " + stringaSoluzioni 
+    });
 
-            inputEl.value = "";
-            inputEl.disabled = true;
-            submitBtn.style.display = "none";
-            surrenderBtn.style.display = "none";
-            comboTracker.style.display = "none";
+    inputEl.value = "";
+    inputEl.disabled = true;
+    submitBtn.style.display = "none";
+    surrenderBtn.style.display = "none";
+    comboTracker.style.display = "none";
 
-            errTitle.innerText = "🏳️ RESA!";
-            errText.innerText = "Le risposte corrette erano: " + stringaSoluzioni;
-            errPanel.style.display = "flex";
-            
-            submitBtn.style.display = "none";
-            nextBtn.style.display = "block";
-            if (vite <= 0) {
-                window.pendingDefeat = true;
-                nextBtn.innerText = "VAI AI RISULTATI ➔";
-            } else {
-                window.pendingDefeat = false;
-                nextBtn.innerText = "PROSSIMA DOMANDA ➔";
-            }
-        }
+    errTitle.innerText = "🏳️ RESA!";
+    errText.innerText = "Le risposte corrette erano: " + stringaSoluzioni;
+    errPanel.style.display = "flex";
+    
+    submitBtn.style.display = "none";
+    nextBtn.style.display = "block";
+    if (vite <= 0) {
+        window.pendingDefeat = true;
+        nextBtn.innerText = "VAI AI RISULTATI ➔";
+    } else {
+        window.pendingDefeat = false;
+        nextBtn.innerText = "PROSSIMA DOMANDA ➔";
+    }
+}
 
         function playTurn() {
             turnStartTime = Date.now();
@@ -2310,532 +2347,517 @@
         }
 
         function processaRisposta() {
-            let inputStr = inputEl.value.trim().toLowerCase();
-            if (!inputStr) return;
+    let inputStr = inputEl.value.trim().toLowerCase();
+    if (!inputStr) return;
 
-            let isMulti = (currentLevel === 4 || (currentLevel === 5 && currentTurnData.numReq > 1));
-            let useTimer = (currentLevel === 4 || (currentLevel === 5 && customConfig.timer));
+    let isMulti = (currentLevel === 4 || (currentLevel === 5 && currentTurnData.numReq > 1));
+    let useTimer = (currentLevel === 4 || (currentLevel === 5 && customConfig.timer));
 
-            if (useTimer && timerState === "reading") activateMainTimer();
+    if (useTimer && timerState === "reading") activateMainTimer();
 
-            if (isMulti) {
-                if (comboInserted.map(s => s.toLowerCase()).includes(inputStr)) {
-                    inputEl.classList.add("shake");
-                    setTimeout(()=> inputEl.classList.remove("shake"), 400);
-                    inputEl.value = "";
-                    return; 
-                }
-                comboInserted.push(inputEl.value.trim()); 
-                totalAnswersSubmitted++; 
-                inputEl.value = "";
-                aggiornaComboUI();
+    if (isMulti) {
+        if (comboInserted.map(s => s.toLowerCase()).includes(inputStr)) {
+            inputEl.classList.add("shake");
+            setTimeout(()=> inputEl.classList.remove("shake"), 400);
+            inputEl.value = "";
+            return; 
+        }
+        comboInserted.push(inputEl.value.trim()); 
+        totalAnswersSubmitted++; 
+        inputEl.value = "";
+        aggiornaComboUI();
 
-                if (comboInserted.length === currentTurnData.numReq) eseguiValidazioneMultipla(false);
-                return;
-            }
+        if (comboInserted.length === currentTurnData.numReq) eseguiValidazioneMultipla(false);
+        return;
+    }
 
-            let res = checkSingleAnswer(inputStr, currentTurnData, currentLevel);
-            inputEl.classList.remove("shake", "correct-flash", "wrong-flash", "warning-flash");
-            void inputEl.offsetWidth; 
+    let res = checkSingleAnswer(inputStr, currentTurnData, currentLevel);
+    inputEl.classList.remove("shake", "correct-flash", "wrong-flash", "warning-flash");
+    void inputEl.offsetWidth; 
 
-            totalAnswersSubmitted++;
-            totalActiveTimeMs += (Date.now() - turnStartTime);
-            
-            let actionTime = ((Date.now() - turnStartTime) / 1000).toFixed(1);
-            if (isMulti) {
-                if(res.isCorrect) debugGameLog += `-> INPUT COMBO PARZIALE [${actionTime}s]: ` + inputStr + " (Riconosciuto: " + res.matchedCountry.nome + ")\n";
-                else debugGameLog += `-> INPUT COMBO ERRATO [${actionTime}s]: ` + inputStr + "\n";
-            } else {
-                if(res.isCorrect) debugGameLog += `-> ESITO [${actionTime}s]: ✅ CORRETTO (Input: ` + inputStr + " -> Riconosciuto: " + res.matchedCountry.nome + ")\n\n";
-            }
+    totalAnswersSubmitted++;
+    totalActiveTimeMs += (Date.now() - turnStartTime);
+    
+    let actionTime = ((Date.now() - turnStartTime) / 1000).toFixed(1);
+    if (isMulti) {
+        if(res.isCorrect) debugGameLog += `-> INPUT COMBO PARZIALE [${actionTime}s]: ` + inputStr + " (Riconosciuto: " + res.matchedCountry.nome + ")\n";
+        else debugGameLog += `-> INPUT COMBO ERRATO [${actionTime}s]: ` + inputStr + "\n";
+    } else {
+        if(res.isCorrect) debugGameLog += `-> ESITO [${actionTime}s]: ✅ CORRETTO (Input: ` + inputStr + " -> Riconosciuto: " + res.matchedCountry.nome + ")\n\n";
+    }
 
-            if (res.isCorrect) {
-                if (useTimer) stopTimer();
-                
-                let sigla = res.matchedCountry.sigla;
-                nazioniDigitateCount[sigla] = (nazioniDigitateCount[sigla] || 0) + 1;
+    if (res.isCorrect) {
+        triggerVibration(30);
+        if (useTimer) stopTimer();
+        
+        let sigla = res.matchedCountry.sigla;
+        nazioniDigitateCount[sigla] = (nazioniDigitateCount[sigla] || 0) + 1;
 
-                if (currentTurnData.validSiglas && currentTurnData.validSiglas.length <= 30) {
-                    currentTurnData.validSiglas.forEach(s => {
-                        if (s !== sigla) nazioniIgnorateCount[s] = (nazioniIgnorateCount[s] || 0) + 1;
-                    });
-                }
-
-                let lazyMargin = 2; 
-                let applyMalus = (currentLevel >= 1 && currentLevel <= 3) || (currentLevel === 5 && !customConfig.timer);
-                
-                let isLazy = false;
-                if (applyMalus && nazioniUsate.includes(sigla) && currentTurnData.maxPossible > currentTurnData.numReq + lazyMargin) {
-                    isLazy = true;
-                }
-                if (!nazioniUsate.includes(sigla)) {
-                    nazioniUsate.push(sigla);
-                }
-
-                esatte++;
-                currentStreak++;
-                if (currentStreak > bestStreak) bestStreak = currentStreak;
-
-                let numSoluzioni = currentTurnData.maxPossible;
-                // Punteggio fisso a 50 per L0
-                let puntiGuadagnati = (currentLevel === 0) ? 50 : calcolaPuntiDomandaL1_3(currentTurnData.format, numSoluzioni); 
-                
-                let badgeText = "";
-                let badgeColor = "#2a2a2a";
-                let badgeBorder = "#555";
-
-                let virtualLevel = currentLevel;
-                if (currentLevel === 5) {
-                    virtualLevel = customConfig.difficolta === 'facile' ? 1 : (customConfig.difficolta === 'medio' ? 2 : 3);
-                }
-
-                // Niente bonus/malus nel Livello 0
-                if (currentLevel !== 0) {
-                    if (virtualLevel < 3 && res.matchedCountry.livello > virtualLevel) { 
-                        puntiGuadagnati *= 2; 
-                        badgeText += "⭐ OTTIMA SCELTA! (Bonus Audacia x2)<br>";
-                        badgeBorder = "#ffd700";
-                    }
-
-                    if (isLazy) {
-                        puntiGuadagnati = Math.floor(puntiGuadagnati / 2);
-                        badgeText += "⚠️ DÉJÀ VU! (Malus pigrizia)<br>";
-                        badgeBorder = "#ff9800";
-                    }
-                }
-                
-                punteggio += puntiGuadagnati;
-
-                let hasWon = false;
-                let isEndlessTrig = false;
-                if (currentLevel === 0 && punteggio >= 1500 && !endlessVittoriaSbloccata) {
-                    isEndlessTrig = true;
-                    endlessVittoriaSbloccata = true;
-                }
-                else if (currentLevel === 1 && punteggio >= 2500) hasWon = true;
-                else if (currentLevel === 2 && punteggio >= 3500) hasWon = true;
-                else if ((currentLevel === 3 || currentLevel === 4) && punteggio >= 10000 && !endlessVittoriaSbloccata) {
-                    isEndlessTrig = true;
-                    endlessVittoriaSbloccata = true;
-                }
-
-                let currentMaxVite = customConfig.vite > 5 ? customConfig.vite : maxVite;
-                if (!hasWon && punteggio >= prossimoCuore && vite < currentMaxVite) {
-                    vite++;
-                    prossimoCuore += 750; 
-                    badgeText += "❤️ +1 VITA EXTRA!<br>";
-                    badgeBorder = "#f44336";
-                }
-
-                aggiornaUI();
-                inputEl.classList.add(isLazy ? "warning-flash" : "correct-flash");
-                inputEl.disabled = true;
-                submitBtn.disabled = true;
-                surrenderBtn.style.display = "none";
-                
-                let oldGrid = document.getElementById("combo-flags-grid");
-                if (oldGrid) oldGrid.remove();
-
-                if (currentTurnData.format === 9 || currentTurnData.format === 10) {
-                    bandieraImg.style.display = "block";
-                    bandieraContainer.style.display = "block";
-                    
-                    if (currentTurnData.isComboInception) {
-                        let gridContainer = document.createElement("div");
-                        gridContainer.id = "combo-flags-grid";
-                        gridContainer.style.display = "flex";
-                        gridContainer.style.justifyContent = "center";
-                        gridContainer.style.marginTop = "15px";
-
-                        let img = document.createElement("img");
-                        img.src = "GIF/" + sigla.toLowerCase() + ".jpg";
-                        img.style.width = "70px"; 
-                        img.style.borderRadius = "4px";
-                        img.style.boxShadow = "0 3px 6px rgba(0,0,0,0.6)";
-                        img.style.border = "1px solid #444";
-                        img.onerror = function() { this.style.display = 'none'; };
-
-                        gridContainer.appendChild(img);
-                        bandieraContainer.appendChild(gridContainer);
-                    }
-                } else if (currentTurnData.format === 13) {
-                    // FIX: Nasconde la bandiera in alto se stiamo già cliccando sulle bandiere!
-                    bandieraImg.style.display = "none";
-                    bandieraContainer.style.display = "none";
-                } else {
-                    bandieraImg.onerror = function() { this.style.display = 'none'; };
-                    bandieraImg.src = "GIF/" + sigla.toLowerCase() + ".jpg";
-                    bandieraImg.style.display = "block";
-                    bandieraContainer.style.display = "block";
-                }
-
-                if (hasWon) {
-                    inputEl.value = `VITTORIA! Livello Superato! 🏆`;
-                    window.pendingVictory = true;
-                    submitBtn.style.display = "none";
-                    nextBtn.innerText = "VAI AI RISULTATI ➔";
-                    nextBtn.style.display = "block";
-                } else {
-                    let isCapitalReq = currentTurnData.format === 0 || currentTurnData.format === 6 || currentTurnData.format === 10 || (currentTurnData.format === 12 && currentTurnData.f12AskCapital);
-                    let dName = getPrintedName(res.matchedCountry, res.matchedNameStr);
-                    let nomeInserito = isCapitalReq ? `${getPrintedCapital(res.matchedCountry, res.matchedCapitalStr)} (${dName})` : dName;
-                    let nomePrimario = isCapitalReq ? `${capitalize(res.matchedCountry.capitale)} (${capitalize(res.matchedCountry.nome)})` : capitalize(res.matchedCountry.nome);
-                    
-                    if (currentTurnData.maxPossible > 1) {
-                        let rimanenti = [];
-                        currentTurnData.validSiglas.forEach((s, index) => {
-                            if (s !== res.matchedCountry.sigla) {
-                                rimanenti.push(currentTurnData.validAnswersCache[index]);
-                            }
-                        });
-                        if (rimanenti.length > 0) {
-                            comboTracker.style.display = "block";
-                            comboTracker.innerHTML = `Altre risposte valide: ${rimanenti.join(", ")}`;
-                        } else {
-                            comboTracker.style.display = "none";
-                        }
-                    }
-
-                    if (isEndlessTrig) {
-                    if (currentLevel === 0) {
-                        inputEl.value = `LIVELLO COMPLETATO! 🎓`;
-                        inputEl.style.color = "#4caf50";
-                        document.getElementById("ritirati-btn").innerHTML = "🚪 TERMINA LA SFIDA";
-                        document.getElementById("continua-btn").innerHTML = "🔁 CONTINUA LA SFIDA";
-                    } else {
-
-                            inputEl.value = `VITTORIA! Mi inchino alla tua immensa conoscenza 👑`;
-                            inputEl.style.color = "#ffd700";
-                            document.getElementById("ritirati-btn").innerHTML = "🏆 RITIRATI DA LEGGENDA";
-                            document.getElementById("continua-btn").innerHTML = "⚔️ CONTINUA LA SFIDA";
-                        }
-                        
-                        if (badgeText !== "") {
-                            eventBadge.innerHTML = badgeText; 
-                            eventBadge.style.borderColor = badgeBorder;
-                            eventBadge.style.display = "block";
-                        } else { eventBadge.style.display = "none"; }
-                        
-                        submitBtn.style.display = "none";
-                        nextBtn.style.display = "none";
-                        document.getElementById("ritirati-btn").style.display = "block";
-                        document.getElementById("continua-btn").style.display = "block";
-                    } else {
-                        let msg = `Corretto! +${puntiGuadagnati}pt`;
-                        
-                        if (currentLevel === 0) {
-                            badgeText = `<span style="color:#4caf50; font-size:18px;">✅ ${msg}</span><br>` + badgeText;
-                            eventBadge.innerHTML = badgeText;
-                            eventBadge.style.borderColor = "#4caf50";
-                            eventBadge.style.display = "block";
-                        } else {
-                            inputEl.value = `${msg} - ${nomeInserito}`; 
-                            if (badgeText !== "") { 
-                                eventBadge.innerHTML = badgeText; 
-                                eventBadge.style.borderColor = badgeBorder; 
-                                eventBadge.style.display = "block"; 
-                            } else { 
-                                eventBadge.style.display = "none"; 
-                            }
-                        }
-                        
-                        submitBtn.style.display = "none";
-                        nextBtn.innerText = "PROSSIMA DOMANDA ➔";
-                        nextBtn.style.display = "block"; 
-                    }
-                }
-            } else {
-                if (useTimer) stopTimer();
-                failStandard(inputStr);
-            }
+        if (currentTurnData.validSiglas && currentTurnData.validSiglas.length <= 30) {
+            currentTurnData.validSiglas.forEach(s => {
+                if (s !== sigla) nazioniIgnorateCount[s] = (nazioniIgnorateCount[s] || 0) + 1;
+            });
         }
 
-        function eseguiValidazioneMultipla(isTimeout = false) {
-            inputEl.disabled = true;
-            submitBtn.disabled = true;
-            surrenderBtn.style.display = "none";
+        let lazyMargin = 2; 
+        let applyMalus = (currentLevel >= 1 && currentLevel <= 3) || (currentLevel === 5 && !customConfig.timer);
+        
+        let isLazy = false;
+        if (applyMalus && nazioniUsate.includes(sigla) && currentTurnData.maxPossible > currentTurnData.numReq + lazyMargin) {
+            isLazy = true;
+        }
+        if (!nazioniUsate.includes(sigla)) {
+            nazioniUsate.push(sigla);
+        }
+
+        esatte++;
+        currentStreak++;
+        if (currentStreak > bestStreak) bestStreak = currentStreak;
+
+        let numSoluzioni = currentTurnData.maxPossible;
+        let puntiGuadagnati = (currentLevel === 0) ? 50 : calcolaPuntiDomandaL1_3(currentTurnData.format, numSoluzioni); 
+        
+        let badgeText = "";
+        let badgeColor = "#2a2a2a";
+        let badgeBorder = "#555";
+
+        let virtualLevel = currentLevel;
+        if (currentLevel === 5) {
+            virtualLevel = customConfig.difficolta === 'facile' ? 1 : (customConfig.difficolta === 'medio' ? 2 : 3);
+        }
+
+        if (currentLevel !== 0) {
+            if (virtualLevel < 3 && res.matchedCountry.livello > virtualLevel) { 
+                puntiGuadagnati *= 2; 
+                badgeText += "⭐ OTTIMA SCELTA! (Bonus Audacia x2)<br>";
+                badgeBorder = "#ffd700";
+            }
+
+            if (isLazy) {
+                puntiGuadagnati = Math.floor(puntiGuadagnati / 2);
+                badgeText += "⚠️ DÉJÀ VU! (Malus pigrizia)<br>";
+                badgeBorder = "#ff9800";
+            }
+        }
+        
+        punteggio += puntiGuadagnati;
+
+        let hasWon = false;
+        let isEndlessTrig = false;
+        if (currentLevel === 0 && punteggio >= 1500 && !endlessVittoriaSbloccata) {
+            isEndlessTrig = true;
+            endlessVittoriaSbloccata = true;
+        }
+        else if (currentLevel === 1 && punteggio >= 2500) hasWon = true;
+        else if (currentLevel === 2 && punteggio >= 3500) hasWon = true;
+        else if ((currentLevel === 3 || currentLevel === 4) && punteggio >= 10000 && !endlessVittoriaSbloccata) {
+            isEndlessTrig = true;
+            endlessVittoriaSbloccata = true;
+        }
+
+        let currentMaxVite = customConfig.vite > 5 ? customConfig.vite : maxVite;
+        if (!hasWon && punteggio >= prossimoCuore && vite < currentMaxVite) {
+            vite++;
+            prossimoCuore += 750; 
+            badgeText += "❤️ +1 VITA EXTRA!<br>";
+            badgeBorder = "#f44336";
+        }
+
+        aggiornaUI();
+        inputEl.classList.add(isLazy ? "warning-flash" : "correct-flash");
+        inputEl.disabled = true;
+        submitBtn.disabled = true;
+        surrenderBtn.style.display = "none";
+        
+        let oldGrid = document.getElementById("combo-flags-grid");
+        if (oldGrid) oldGrid.remove();
+
+        if (currentTurnData.format === 9 || currentTurnData.format === 10) {
+            bandieraImg.style.display = "block";
+            bandieraContainer.style.display = "block";
             
-            totalActiveTimeMs += (Date.now() - turnStartTime);
+            if (currentTurnData.isComboInception) {
+                let gridContainer = document.createElement("div");
+                gridContainer.id = "combo-flags-grid";
+                gridContainer.style.display = "flex";
+                gridContainer.style.justifyContent = "center";
+                gridContainer.style.marginTop = "15px";
+
+                let img = document.createElement("img");
+                img.src = "GIF/" + sigla.toLowerCase() + ".jpg";
+                img.style.width = "70px"; 
+                img.style.borderRadius = "4px";
+                img.style.boxShadow = "0 3px 6px rgba(0,0,0,0.6)";
+                img.style.border = "1px solid #444";
+                img.onerror = function() { this.style.display = 'none'; };
+
+                gridContainer.appendChild(img);
+                bandieraContainer.appendChild(gridContainer);
+            }
+        } else if (currentTurnData.format === 13) {
+            bandieraImg.style.display = "none";
+            bandieraContainer.style.display = "none";
+        } else {
+            bandieraImg.onerror = function() { this.style.display = 'none'; };
+            bandieraImg.src = "GIF/" + sigla.toLowerCase() + ".jpg";
+            bandieraImg.style.display = "block";
+            bandieraContainer.style.display = "block";
+        }
+
+        if (hasWon) {
+            inputEl.value = `VITTORIA! Livello Superato! 🏆`;
+            window.pendingVictory = true;
+            submitBtn.style.display = "none";
+            nextBtn.innerText = "VAI AI RISULTATI ➔";
+            nextBtn.style.display = "block";
+        } else {
+            let isCapitalReq = currentTurnData.format === 0 || currentTurnData.format === 6 || currentTurnData.format === 10 || (currentTurnData.format === 12 && currentTurnData.f12AskCapital);
+            let dName = getPrintedName(res.matchedCountry, res.matchedNameStr);
+            let nomeInserito = isCapitalReq ? `${getPrintedCapital(res.matchedCountry, res.matchedCapitalStr)} (${dName})` : dName;
+            let nomePrimario = isCapitalReq ? `${capitalize(res.matchedCountry.capitale)} (${capitalize(res.matchedCountry.nome)})` : capitalize(res.matchedCountry.nome);
             
-            let useTimer = (currentLevel === 4 || (currentLevel === 5 && customConfig.timer));
-            let pct = useTimer ? (activeTimeLeft / activeTimeTotal) * 100 : 100;
-            if (useTimer) stopTimer();
-
-            if (comboInserted.length === 0) {
-                failMulti(isTimeout ? "Tempo scaduto!" : "Errore nella combo!", "");
-                return;
-            }
-
-            let allCorrect = true;
-            let matchedSiglas = [];
-            let matchedCountriesInfos = [];
-
-            for (let ans of comboInserted) {
-                let res = checkSingleAnswer(ans, currentTurnData, currentLevel);
-                if (res.isCorrect) {
-                    if (matchedSiglas.includes(res.matchedCountry.sigla)) {
-                        allCorrect = false; 
-                    } else {
-                        matchedSiglas.push(res.matchedCountry.sigla);
-                        matchedCountriesInfos.push(res);
-                    }
-                } else {
-                    allCorrect = false; 
+            if (currentTurnData.maxPossible > 1) {
+                let rimanenti = currentTurnData.validAnswersCache.filter(v => v !== nomePrimario);
+                if (rimanenti.length > 0) {
+                    comboTracker.style.display = "block";
+                    comboTracker.innerHTML = `<span style="color:#aaa;">Altre risposte valide: ${rimanenti.join(", ")}</span>`;
                 }
             }
 
-            // AGGIORNAMENTO STATISTICHE TOP 5 (Anche se la combo fallisce)
-            matchedCountriesInfos.forEach(info => {
-                nazioniDigitateCount[info.matchedCountry.sigla] = (nazioniDigitateCount[info.matchedCountry.sigla] || 0) + 1;
-            });
-
-            if (!allCorrect) {
-                let wrongStr = comboInserted.map(s => s.toUpperCase()).join(", ");
-                failMulti(isTimeout ? "Tempo scaduto con errori!" : "Errore nella combo!", wrongStr);
-                return;
-            }
-
-            let isGrazia = false;
-            if (isTimeout && comboInserted.length < currentTurnData.numReq) {
-                if (currentTurnData.numReq >= 3 && comboInserted.length >= 2) {
-                    isGrazia = true; 
+            if (isEndlessTrig) {
+                if (currentLevel === 0) {
+                    inputEl.value = `LIVELLO COMPLETATO! 🎓`;
+                    inputEl.style.color = "#4caf50";
+                    document.getElementById("ritirati-btn").innerHTML = "🚪 TERMINA LA SFIDA";
+                    document.getElementById("continua-btn").innerHTML = "🔁 CONTINUA LA SFIDA";
                 } else {
-                    let wrongStr = comboInserted.map(s => s.toUpperCase()).join(", ");
-                    failMulti("Tempo scaduto!", wrongStr);
-                    return;
-                }
-            }
-
-            if (allCorrect || isGrazia) {
-                
-                let comboTime = ((Date.now() - turnStartTime) / 1000).toFixed(1);
-                debugGameLog += `-> ESITO COMBO [${comboTime}s]: ✅ SUPERATA` + (isGrazia ? " CON GRAZIA" : "") + " (Trovate: " + comboInserted.join(", ") + ")\n\n";
-                
-                if (currentTurnData.validSiglas && currentTurnData.validSiglas.length <= 30) {
-                    currentTurnData.validSiglas.forEach(s => {
-                        if (!matchedSiglas.includes(s)) nazioniIgnorateCount[s] = (nazioniIgnorateCount[s] || 0) + 1;
-                    });
-                }
-                
-                let badgeText = "";
-                let badgeBorder = "#555";
-                let badgeBg = "#2a2a2a";
-                let badgeTxtColor = "#fff";
-
-                if (isGrazia) {
-                    grazieRicevuteCount++;
-                    let mancanti = currentTurnData.numReq - comboInserted.length;
-                    badgeText = `🕊️ GRAZIA RICEVUTA! (${mancanti === 1 ? 'Mancava' : 'Mancavano'} ${mancanti} ${mancanti === 1 ? 'risposta' : 'risposte'})<br>`;
-                    badgeBorder = "#ffd700";
-                    badgeBg = "rgba(255, 255, 255, 0.1)"; 
-                    badgeTxtColor = "#ffd700";
-                } else if (pct > 0 && pct <= 25) {
-                    fotofinishCount++;
-                    badgeText += "⏱️ FOTOFINISH! Che salvataggio!<br>";
-                    badgeBorder = "#2196f3";
-                }
-                
-                esatte += comboInserted.length; 
-                currentStreak++;
-                if (currentStreak > bestStreak) bestStreak = currentStreak;
-
-                let basePunti = 0;
-                if ([0, 1, 9, 10].includes(currentTurnData.format) && !currentTurnData.isComboInception) {
-                    basePunti = (currentTurnData.format === 10) ? 20 : 15;
-                } else {
-                    let maxP = currentTurnData.numReq * 100;
-                    let multiplier = currentTurnData.numReq / currentTurnData.maxPossible;
-                    basePunti = Math.round((maxP * multiplier) / 10) * 10;
-                    if (basePunti < 10) basePunti = 10; 
-                }
-
-                let puntiRound = 0;
-                let lazyNames = [];
-                let audaceNames = [];
-                let isL5Relax = (currentLevel === 5 && !customConfig.timer);
-                
-                let virtualLevel = currentLevel;
-                if (currentLevel === 5) {
-                    virtualLevel = customConfig.difficolta === 'facile' ? 1 : (customConfig.difficolta === 'medio' ? 2 : 3);
-                }
-
-                if (isGrazia) {
-                    let mancanti = currentTurnData.numReq - comboInserted.length;
-                    let pRound = Math.round(basePunti / Math.pow(2, mancanti));
-                    puntiRound = Math.round(pRound / 5) * 5; 
-                    if (puntiRound < 5) puntiRound = 5;
-                    
-                    matchedCountriesInfos.forEach(info => {
-                        if (!nazioniUsate.includes(info.matchedCountry.sigla)) nazioniUsate.push(info.matchedCountry.sigla);
-                    });
-                } else {
-                    let pointsPerCountry = basePunti / comboInserted.length;
-                    let lazyMargin = 2;
-                    
-                    matchedCountriesInfos.forEach(info => {
-                        let sigla = info.matchedCountry.sigla;
-                        let dName = capitalize(info.matchedCountry.nome);
-                        let p = pointsPerCountry;
-                        
-                        if (isL5Relax && nazioniUsate.includes(sigla) && currentTurnData.maxPossible > currentTurnData.numReq + lazyMargin) {
-                            p = p / 2;
-                            lazyNames.push(dName);
-                        }
-                        
-                        if (virtualLevel < 3 && info.matchedCountry.livello > virtualLevel) {
-                            p = p * 2;
-                            audaceNames.push(dName);
-                        }
-                        
-                        if (!nazioniUsate.includes(sigla)) nazioniUsate.push(sigla); 
-                        puntiRound += p;
-                    });
-                    
-                    puntiRound = Math.round(puntiRound / 5) * 5; 
-                    if (puntiRound < 5) puntiRound = 5;
-                    
-                    if (audaceNames.length > 0) {
-                        badgeText += `⭐ AUDACIA su ${audaceNames.join(", ")} (x2)<br>`;
-                        if (!isGrazia) badgeBorder = "#ffd700";
-                    }
-                    if (lazyNames.length > 0) {
-                        badgeText += `⚠️ DÉJÀ VU su ${lazyNames.join(", ")} (-50%)<br>`;
-                        if (!isGrazia && audaceNames.length === 0) badgeBorder = "#ff9800";
-                    }
-                }
-                
-                punteggio += puntiRound;
-                
-                punteggio += puntiRound;
-                
-                let currentMaxVite = customConfig.vite > 5 ? customConfig.vite : maxVite;
-                if (punteggio >= prossimoCuore && vite < currentMaxVite) {
-                    vite++; prossimoCuore += 750; 
-                    badgeText += "❤️ +1 VITA EXTRA!<br>";
-                    if (!isGrazia) badgeBorder = "#f44336";
-                }
-
-                aggiornaUI();
-                inputEl.classList.add("correct-flash");
-
-                let oldGrid = document.getElementById("combo-flags-grid");
-                if (oldGrid) oldGrid.remove();
-
-                if (currentTurnData.format === 9 || currentTurnData.format === 10) {
-                    bandieraImg.style.display = "block"; 
-                } else {
-                    bandieraImg.style.display = "none"; 
-                }
-
-                if (currentTurnData.format !== 9 && currentTurnData.format !== 10 || currentTurnData.isComboInception) {
-                    let gridContainer = document.createElement("div");
-                    gridContainer.id = "combo-flags-grid";
-                    gridContainer.style.display = "flex";
-                    gridContainer.style.flexDirection = "column";
-                    gridContainer.style.gap = "10px";
-                    gridContainer.style.alignItems = "center";
-                    gridContainer.style.marginTop = "15px";
-
-                    let row1 = document.createElement("div");
-                    row1.style.display = "flex"; row1.style.gap = "10px"; row1.style.justifyContent = "center";
-                    
-                    let row2 = document.createElement("div");
-                    row2.style.display = "flex"; row2.style.gap = "10px"; row2.style.justifyContent = "center";
-
-                    matchedCountriesInfos.forEach((info, index) => {
-                        let img = document.createElement("img");
-                        img.src = "GIF/" + info.matchedCountry.sigla.toLowerCase() + ".jpg";
-                        img.style.width = "70px"; 
-                        img.style.borderRadius = "4px";
-                        img.style.boxShadow = "0 3px 6px rgba(0,0,0,0.6)";
-                        img.style.border = "1px solid #444";
-                        img.onerror = function() { this.style.display = 'none'; };
-                        
-                        if (matchedCountriesInfos.length === 5) {
-                            if (index < 3) row1.appendChild(img);
-                            else row2.appendChild(img);
-                        } else {
-                            row1.appendChild(img);
-                        }
-                    });
-
-                    gridContainer.appendChild(row1);
-                    if (matchedCountriesInfos.length === 5) gridContainer.appendChild(row2);
-                    
-                    bandieraContainer.appendChild(gridContainer);
-                }
-                bandieraContainer.style.display = "block";
-
-                let arrayNomiTrovati = [];
-                let arrayNomiPrimariTrovati = [];
-                let nomiTrovati = "";
-                let isCapitalRequired = currentTurnData.format === 0 || currentTurnData.format === 6 || currentTurnData.format === 10 || (currentTurnData.format === 12 && currentTurnData.f12AskCapital);
-                if (currentTurnData.isComboInception && (currentTurnData.format === 1 || currentTurnData.format === 9)) {
-                    isCapitalRequired = false; 
-                } else if (currentTurnData.isComboInception && (currentTurnData.format === 0 || currentTurnData.format === 10)) {
-                    isCapitalRequired = true;
-                }
-
-                if (isCapitalRequired) {
-                    arrayNomiTrovati = matchedCountriesInfos.map(info => `${getPrintedCapital(info.matchedCountry, info.matchedCapitalStr)} (${getPrintedName(info.matchedCountry, info.matchedNameStr)})`);
-                    arrayNomiPrimariTrovati = matchedCountriesInfos.map(info => `${capitalize(info.matchedCountry.capitale)} (${capitalize(info.matchedCountry.nome)})`);
-                    nomiTrovati = arrayNomiTrovati.join(", ");
-                } else {
-                    arrayNomiTrovati = matchedCountriesInfos.map(info => getPrintedName(info.matchedCountry, info.matchedNameStr));
-                    arrayNomiPrimariTrovati = matchedCountriesInfos.map(info => capitalize(info.matchedCountry.nome));
-                    nomiTrovati = arrayNomiTrovati.join(", ");
-                }
-
-                let isEndlessTrig = false;
-                if ((currentLevel === 3 || currentLevel === 4) && punteggio >= 10000 && !endlessVittoriaSbloccata) {
-                    isEndlessTrig = true;
-                    endlessVittoriaSbloccata = true;
-                }
-
-                if (currentTurnData.maxPossible > comboInserted.length) {
-                    let rimanenti = [];
-                    currentTurnData.validSiglas.forEach((s, index) => {
-                        if (!matchedSiglas.includes(s)) {
-                            rimanenti.push(currentTurnData.validAnswersCache[index]);
-                        }
-                    });
-                    if (rimanenti.length > 0) {
-                        comboTracker.style.display = "block";
-                        comboTracker.innerHTML = `Altre risposte valide: ${rimanenti.join(", ")}`;
-                    } else {
-                        comboTracker.style.display = "none";
-                    }
-                } else comboTracker.style.display = "none";
-
-                if (isEndlessTrig) {
                     inputEl.value = `VITTORIA! Mi inchino alla tua immensa conoscenza 👑`;
                     inputEl.style.color = "#ffd700";
-                    if (badgeText !== "") {
-                        eventBadge.innerHTML = badgeText; eventBadge.style.backgroundColor = badgeBg;
-                        eventBadge.style.color = badgeTxtColor; eventBadge.style.borderColor = badgeBorder;
-                        eventBadge.style.display = "block";
-                    } else { eventBadge.style.display = "none"; }
-                    submitBtn.style.display = "none";
-                    nextBtn.style.display = "none";
-                    document.getElementById("ritirati-btn").style.display = "block";
-                    document.getElementById("continua-btn").style.display = "block";
-                } else {
-                    if (currentLevel === 0) {
-                        inputEl.value = "Corretto! +" + puntiRound + "pt";
-                    } else {
-                        inputEl.value = "Corretto! +" + puntiRound + "pt - " + nomiTrovati;
-                    }
-                    
-                    if (badgeText !== "") {
-                        eventBadge.innerHTML = badgeText; eventBadge.style.backgroundColor = badgeBg;
-                        eventBadge.style.color = badgeTxtColor; eventBadge.style.borderColor = badgeBorder;
-                        eventBadge.style.display = "block";
-                    } else { eventBadge.style.display = "none"; }
-                    submitBtn.style.display = "none";
-                    nextBtn.style.display = "block";
+                    document.getElementById("ritirati-btn").innerHTML = "🏆 RITIRATI DA LEGGENDA";
+                    document.getElementById("continua-btn").innerHTML = "⚔️ CONTINUA LA SFIDA";
                 }
+                
+                if (badgeText !== "") {
+                    eventBadge.innerHTML = badgeText; 
+                    eventBadge.style.borderColor = badgeBorder;
+                    eventBadge.style.display = "block";
+                } else { eventBadge.style.display = "none"; }
+                
+                submitBtn.style.display = "none";
+                nextBtn.style.display = "none";
+                document.getElementById("ritirati-btn").style.display = "block";
+                document.getElementById("continua-btn").style.display = "block";
+            } else {
+                let msg = `Corretto! +${puntiGuadagnati}pt`;
+                
+                if (currentLevel === 0) {
+                    badgeText = `<span style="color:#4caf50; font-size:18px;">✅ ${msg}</span><br>` + badgeText;
+                    eventBadge.innerHTML = badgeText;
+                    eventBadge.style.borderColor = "#4caf50";
+                    eventBadge.style.display = "block";
+                } else {
+                    inputEl.value = `${msg} - ${nomeInserito}`; 
+                    if (badgeText !== "") { 
+                        eventBadge.innerHTML = badgeText; 
+                        eventBadge.style.borderColor = badgeBorder; 
+                        eventBadge.style.display = "block"; 
+                    } else { 
+                        eventBadge.style.display = "none"; 
+                    }
+                }
+                
+                submitBtn.style.display = "none";
+                nextBtn.innerText = "PROSSIMA DOMANDA ➔";
+                nextBtn.style.display = "block"; 
             }
         }
+    } else {
+        if (useTimer) stopTimer();
+        triggerVibration([100, 50, 100]);
+        failStandard(inputStr);
+    }
+}
+
+        function eseguiValidazioneMultipla(isTimeout = false) {
+    inputEl.disabled = true;
+    submitBtn.disabled = true;
+    surrenderBtn.style.display = "none";
+    
+    totalActiveTimeMs += (Date.now() - turnStartTime);
+    
+    let useTimer = (currentLevel === 4 || (currentLevel === 5 && customConfig.timer));
+    let pct = useTimer ? (activeTimeLeft / activeTimeTotal) * 100 : 100;
+    if (useTimer) stopTimer();
+
+    if (comboInserted.length === 0) {
+        triggerVibration([100, 50, 100]);
+        failMulti(isTimeout ? "Tempo scaduto!" : "Errore nella combo!", "");
+        return;
+    }
+
+    let allCorrect = true;
+    let matchedSiglas = [];
+    let matchedCountriesInfos = [];
+
+    for (let ans of comboInserted) {
+        let res = checkSingleAnswer(ans, currentTurnData, currentLevel);
+        if (res.isCorrect) {
+            if (matchedSiglas.includes(res.matchedCountry.sigla)) {
+                allCorrect = false; 
+            } else {
+                matchedSiglas.push(res.matchedCountry.sigla);
+                matchedCountriesInfos.push(res);
+            }
+        } else {
+            allCorrect = false; 
+        }
+    }
+
+    matchedCountriesInfos.forEach(info => {
+        nazioniDigitateCount[info.matchedCountry.sigla] = (nazioniDigitateCount[info.matchedCountry.sigla] || 0) + 1;
+    });
+
+    if (!allCorrect) {
+        triggerVibration([100, 50, 100]);
+        let wrongStr = comboInserted.map(s => s.toUpperCase()).join(", ");
+        failMulti(isTimeout ? "Tempo scaduto con errori!" : "Errore nella combo!", wrongStr);
+        return;
+    }
+
+    let isGrazia = false;
+    if (isTimeout && comboInserted.length < currentTurnData.numReq) {
+        if (currentTurnData.numReq >= 3 && comboInserted.length >= 2) {
+            isGrazia = true; 
+        } else {
+            triggerVibration([100, 50, 100]);
+            let wrongStr = comboInserted.map(s => s.toUpperCase()).join(", ");
+            failMulti("Tempo scaduto!", wrongStr);
+            return;
+        }
+    }
+
+    if (allCorrect || isGrazia) {
+        triggerVibration(30);
+        
+        let comboTime = ((Date.now() - turnStartTime) / 1000).toFixed(1);
+        debugGameLog += `-> ESITO COMBO [${comboTime}s]: ✅ SUPERATA` + (isGrazia ? " CON GRAZIA" : "") + " (Trovate: " + comboInserted.join(", ") + ")\n\n";
+        
+        if (currentTurnData.validSiglas && currentTurnData.validSiglas.length <= 30) {
+            currentTurnData.validSiglas.forEach(s => {
+                if (!matchedSiglas.includes(s)) nazioniIgnorateCount[s] = (nazioniIgnorateCount[s] || 0) + 1;
+            });
+        }
+        
+        let badgeText = "";
+        let badgeBorder = "#555";
+        let badgeBg = "#2a2a2a";
+        let badgeTxtColor = "#fff";
+
+        if (isGrazia) {
+            grazieRicevuteCount++;
+            let mancanti = currentTurnData.numReq - comboInserted.length;
+            badgeText = `🕊️ GRAZIA RICEVUTA! (${mancanti === 1 ? 'Mancava' : 'Mancavano'} ${mancanti} ${mancanti === 1 ? 'risposta' : 'risposte'})<br>`;
+            badgeBorder = "#ffd700";
+            badgeBg = "rgba(255, 255, 255, 0.1)"; 
+            badgeTxtColor = "#ffd700";
+        } else if (pct > 0 && pct <= 25) {
+            fotofinishCount++;
+            badgeText += "⏱️ FOTOFINISH! Che salvataggio!<br>";
+            badgeBorder = "#2196f3";
+        }
+        
+        esatte += comboInserted.length; 
+        currentStreak++;
+        if (currentStreak > bestStreak) bestStreak = currentStreak;
+
+        let basePunti = 0;
+        if ([0, 1, 9, 10].includes(currentTurnData.format) && !currentTurnData.isComboInception) {
+            basePunti = (currentTurnData.format === 10) ? 20 : 15;
+        } else {
+            let maxP = currentTurnData.numReq * 100;
+            let multiplier = currentTurnData.numReq / currentTurnData.maxPossible;
+            basePunti = Math.round((maxP * multiplier) / 10) * 10;
+            if (basePunti < 10) basePunti = 10; 
+        }
+
+        let puntiRound = 0;
+        let lazyNames = [];
+        let audaceNames = [];
+        let isL5Relax = (currentLevel === 5 && !customConfig.timer);
+        
+        let virtualLevel = currentLevel;
+        if (currentLevel === 5) {
+            virtualLevel = customConfig.difficolta === 'facile' ? 1 : (customConfig.difficolta === 'medio' ? 2 : 3);
+        }
+
+        if (isGrazia) {
+            let mancanti = currentTurnData.numReq - comboInserted.length;
+            let pRound = Math.round(basePunti / Math.pow(2, mancanti));
+            puntiRound = Math.round(pRound / 5) * 5; 
+            if (puntiRound < 5) puntiRound = 5;
+            
+            matchedCountriesInfos.forEach(info => {
+                if (!nazioniUsate.includes(info.matchedCountry.sigla)) nazioniUsate.push(info.matchedCountry.sigla);
+            });
+        } else {
+            let pointsPerCountry = basePunti / comboInserted.length;
+            let lazyMargin = 2;
+            
+            matchedCountriesInfos.forEach(info => {
+                let sigla = info.matchedCountry.sigla;
+                let dName = capitalize(info.matchedCountry.nome);
+                let p = pointsPerCountry;
+                
+                if (isL5Relax && nazioniUsate.includes(sigla) && currentTurnData.maxPossible > currentTurnData.numReq + lazyMargin) {
+                    p = p / 2;
+                    lazyNames.push(dName);
+                }
+                
+                if (virtualLevel < 3 && info.matchedCountry.livello > virtualLevel) {
+                    p = p * 2;
+                    audaceNames.push(dName);
+                }
+                
+                if (!nazioniUsate.includes(sigla)) nazioniUsate.push(sigla); 
+                puntiRound += p;
+            });
+            
+            puntiRound = Math.round(puntiRound / 5) * 5; 
+            if (puntiRound < 5) puntiRound = 5;
+            
+            if (audaceNames.length > 0) {
+                badgeText += `⭐ AUDACIA su ${audaceNames.join(", ")} (x2)<br>`;
+                if (!isGrazia) badgeBorder = "#ffd700";
+            }
+            if (lazyNames.length > 0) {
+                badgeText += `⚠️ DÉJÀ VU su ${lazyNames.join(", ")} (-50%)<br>`;
+                if (!isGrazia && audaceNames.length === 0) badgeBorder = "#ff9800";
+            }
+        }
+        
+        punteggio += puntiRound;
+        
+        let currentMaxVite = customConfig.vite > 5 ? customConfig.vite : maxVite;
+        if (punteggio >= prossimoCuore && vite < currentMaxVite) {
+            vite++; prossimoCuore += 750; 
+            badgeText += "❤️ +1 VITA EXTRA!<br>";
+            if (!isGrazia) badgeBorder = "#f44336";
+        }
+
+        aggiornaUI();
+        inputEl.classList.add("correct-flash");
+
+        let oldGrid = document.getElementById("combo-flags-grid");
+        if (oldGrid) oldGrid.remove();
+
+        if (currentTurnData.format === 9 || currentTurnData.format === 10) {
+            bandieraImg.style.display = "block"; 
+        } else {
+            bandieraImg.style.display = "none"; 
+        }
+
+        if (currentTurnData.format !== 9 && currentTurnData.format !== 10 || currentTurnData.isComboInception) {
+            let gridContainer = document.createElement("div");
+            gridContainer.id = "combo-flags-grid";
+            gridContainer.style.display = "flex";
+            gridContainer.style.flexDirection = "column";
+            gridContainer.style.gap = "10px";
+            gridContainer.style.alignItems = "center";
+            gridContainer.style.marginTop = "15px";
+
+            let row1 = document.createElement("div");
+            row1.style.display = "flex"; row1.style.gap = "10px"; row1.style.justifyContent = "center";
+            
+            let row2 = document.createElement("div");
+            row2.style.display = "flex"; row2.style.gap = "10px"; row2.style.justifyContent = "center";
+
+            matchedCountriesInfos.forEach((info, index) => {
+                let img = document.createElement("img");
+                img.src = "GIF/" + info.matchedCountry.sigla.toLowerCase() + ".jpg";
+                img.style.width = "70px"; 
+                img.style.borderRadius = "4px";
+                img.style.boxShadow = "0 3px 6px rgba(0,0,0,0.6)";
+                img.style.border = "1px solid #444";
+                img.onerror = function() { this.style.display = 'none'; };
+                
+                if (matchedCountriesInfos.length === 5) {
+                    if (index < 3) row1.appendChild(img);
+                    else row2.appendChild(img);
+                } else {
+                    row1.appendChild(img);
+                }
+            });
+
+            gridContainer.appendChild(row1);
+            if (matchedCountriesInfos.length === 5) gridContainer.appendChild(row2);
+            
+            bandieraContainer.appendChild(gridContainer);
+        }
+        bandieraContainer.style.display = "block";
+
+        let arrayNomiTrovati = [];
+        let arrayNomiPrimariTrovati = [];
+        let nomiTrovati = "";
+        let isCapitalRequired = currentTurnData.format === 0 || currentTurnData.format === 6 || currentTurnData.format === 10 || (currentTurnData.format === 12 && currentTurnData.f12AskCapital);
+        if (currentTurnData.isComboInception && (currentTurnData.format === 1 || currentTurnData.format === 9)) {
+            isCapitalRequired = false; 
+        } else if (currentTurnData.isComboInception && (currentTurnData.format === 0 || currentTurnData.format === 10)) {
+            isCapitalRequired = true;
+        }
+
+        if (isCapitalRequired) {
+            arrayNomiTrovati = matchedCountriesInfos.map(info => `${getPrintedCapital(info.matchedCountry, info.matchedCapitalStr)} (${getPrintedName(info.matchedCountry, info.matchedNameStr)})`);
+            arrayNomiPrimariTrovati = matchedCountriesInfos.map(info => `${capitalize(info.matchedCountry.capitale)} (${capitalize(info.matchedCountry.nome)})`);
+            nomiTrovati = arrayNomiTrovati.join(", ");
+        } else {
+            arrayNomiTrovati = matchedCountriesInfos.map(info => getPrintedName(info.matchedCountry, info.matchedNameStr));
+            arrayNomiPrimariTrovati = matchedCountriesInfos.map(info => capitalize(info.matchedCountry.nome));
+            nomiTrovati = arrayNomiTrovati.join(", ");
+        }
+
+        let isEndlessTrig = false;
+        if ((currentLevel === 3 || currentLevel === 4) && punteggio >= 10000 && !endlessVittoriaSbloccata) {
+            isEndlessTrig = true;
+            endlessVittoriaSbloccata = true;
+        }
+
+        if (currentTurnData.maxPossible > comboInserted.length) {
+            let rimanenti = currentTurnData.validAnswersCache.filter(v => !arrayNomiPrimariTrovati.includes(v));
+            if (rimanenti.length > 0) {
+                comboTracker.style.display = "block";
+                comboTracker.innerHTML = `<span style="color:#aaa;">Altre risposte valide: ${rimanenti.join(", ")}</span>`;
+            } else comboTracker.style.display = "none";
+        } else comboTracker.style.display = "none";
+
+        if (isEndlessTrig) {
+            inputEl.value = `VITTORIA! Mi inchino alla tua immensa conoscenza 👑`;
+            inputEl.style.color = "#ffd700";
+            if (badgeText !== "") {
+                eventBadge.innerHTML = badgeText; eventBadge.style.backgroundColor = badgeBg;
+                eventBadge.style.color = badgeTxtColor; eventBadge.style.borderColor = badgeBorder;
+                eventBadge.style.display = "block";
+            } else { eventBadge.style.display = "none"; }
+            submitBtn.style.display = "none";
+            nextBtn.style.display = "none";
+            document.getElementById("ritirati-btn").style.display = "block";
+            document.getElementById("continua-btn").style.display = "block";
+        } else {
+            if (currentLevel === 0) {
+                inputEl.value = "Corretto! +" + puntiRound + "pt";
+            } else {
+                inputEl.value = "Corretto! +" + puntiRound + "pt - " + nomiTrovati;
+            }
+            
+            if (badgeText !== "") {
+                eventBadge.innerHTML = badgeText; eventBadge.style.backgroundColor = badgeBg;
+                eventBadge.style.color = badgeTxtColor; eventBadge.style.borderColor = badgeBorder;
+                eventBadge.style.display = "block";
+            } else { eventBadge.style.display = "none"; }
+            submitBtn.style.display = "none";
+            nextBtn.style.display = "block";
+        }
+    }
+}
 
         function failStandard(wrongInput) {
             let failTime = ((Date.now() - turnStartTime) / 1000).toFixed(1);
