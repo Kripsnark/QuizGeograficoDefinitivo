@@ -17,19 +17,28 @@
         let vibrationEnabled = true;
 
 ​function toggleVibration() {
-    vibrationEnabled = !vibrationEnabled;
-    let btn = document.getElementById("vibe-toggle");
-    if (btn) btn.innerText = vibrationEnabled ? "📳" : "📴";
-    saveStats();
-    if (vibrationEnabled) triggerVibration(300); // Test lungo per svegliare l'hardware
+    try {
+        vibrationEnabled = !vibrationEnabled;
+        let btn = document.getElementById("vibe-toggle");
+        if (btn) btn.innerText = vibrationEnabled ? "📳" : "📴";
+        saveStats();
+        if (vibrationEnabled) triggerVibration(300);
+    } catch (errore) {
+        console.log("Errore ignorato nel toggle.");
+    }
 }
 
 function triggerVibration(pattern) {
-    if (vibrationEnabled && navigator.vibrate) {
-        console.log("Comando vibrazione inviato:", pattern);
-        navigator.vibrate(pattern);
+    try {
+        // Controlla che il browser supporti la funzione prima di lanciarla
+        if (vibrationEnabled && 'vibrate' in navigator) {
+            navigator.vibrate(pattern);
+        }
+    } catch (errore) {
+        console.log("Vibrazione bloccata dal sistema hardware.");
     }
 }
+
 
 // --- SISTEMA DI SALVATAGGIO LOCALE (LOCALSTORAGE) E BACKUP ---
         let allTimeBestScore = 0; let allTimeBestStreak = 0;
