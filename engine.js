@@ -17,26 +17,15 @@
         let vibrationEnabled = true;
 
 ​function toggleVibration() {
-    try {
-        vibrationEnabled = !vibrationEnabled;
-        let btn = document.getElementById("vibe-toggle");
-        if (btn) btn.innerText = vibrationEnabled ? "📳" : "📴";
-        saveStats();
-        if (vibrationEnabled) triggerVibration(300);
-    } catch (errore) {
-        console.log("Errore ignorato nel toggle.");
-    }
+vibrationEnabled = !vibrationEnabled;
+document.getElementById("vibe-toggle").innerText = vibrationEnabled ? "📳" : "📴";
+saveStats();
+if (vibrationEnabled) triggerVibration(30);
 }
-
-function triggerVibration(pattern) {
-    try {
-        // Controlla che il browser supporti la funzione prima di lanciarla
-        if (vibrationEnabled && 'vibrate' in navigator) {
-            navigator.vibrate(pattern);
-        }
-    } catch (errore) {
-        console.log("Vibrazione bloccata dal sistema hardware.");
-    }
+​function triggerVibration(pattern) {
+if (vibrationEnabled && navigator.vibrate) {
+navigator.vibrate(pattern);
+}
 }
 
 
