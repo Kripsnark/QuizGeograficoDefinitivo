@@ -16,19 +16,6 @@
         
         let vibrationEnabled = true;
 
-		let customConfig = {
-    difficolta: 'facile',
-    continenti: ['europa', 'asia', 'africa', 'americhe', 'oceania'],
-    stati: true,
-    capitali: true,
-    bandiere: true,
-    timer: false,
-    maxCombo: 1,
-    vite: 3
-};
-
-let vibrationEnabled = true;
-
 function toggleVibration() {
     vibrationEnabled = !vibrationEnabled;
     let btn = document.getElementById("vibe-toggle");
