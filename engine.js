@@ -16,18 +16,21 @@
         
         let vibrationEnabled = true;
 
-​function toggleVibration() {
-vibrationEnabled = !vibrationEnabled;
-document.getElementById("vibe-toggle").innerText = vibrationEnabled ? "📳" : "📴";
-saveStats();
-if (vibrationEnabled) triggerVibration(30);
-}
-​function triggerVibration(pattern) {
-if (vibrationEnabled && navigator.vibrate) {
-navigator.vibrate(pattern);
-}
+​let vibrationEnabled = true;
+
+function toggleVibration() {
+    vibrationEnabled = !vibrationEnabled;
+    let btn = document.getElementById("vibe-toggle");
+    if (btn) btn.innerText = vibrationEnabled ? "📳" : "📴";
+    saveStats();
+    if (vibrationEnabled) triggerVibration(30);
 }
 
+function triggerVibration(pattern) {
+    if (vibrationEnabled && navigator.vibrate) {
+        navigator.vibrate(pattern);
+    }
+}
 
 // --- SISTEMA DI SALVATAGGIO LOCALE (LOCALSTORAGE) E BACKUP ---
         let allTimeBestScore = 0; let allTimeBestStreak = 0;
