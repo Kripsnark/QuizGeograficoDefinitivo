@@ -1,4 +1,4 @@
-const CACHE_NAME = 'geoquiz-v2.1.0.8';
+const CACHE_NAME = 'geoquiz-v2.1.0.81';
 
 self.addEventListener('install', (event) => {
     event.waitUntil(
