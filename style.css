@@ -275,7 +275,7 @@
         }
         
         #vibe-toggle {
-    	position: absolute;
+    	position: fixed;
     	right: 15px;
  	    top: 15px;
  	    background: transparent;
