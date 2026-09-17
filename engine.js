@@ -22,6 +22,7 @@ const EffettiSonori = {
     esatto: new Audio("suoni/esatto.mp3"),
     errore: new Audio("suoni/errore.mp3"),
     battito: new Audio("suoni/battito.mp3"),
+    sconfitta: new Audio("suoni/sconfitta.mp3")
     vittoria: new Audio("suoni/vittoria.mp3")
 };
 
@@ -1644,14 +1645,14 @@ function triggerVibration(pattern) {
             
             const checkInitAny = (country, req) => {
                 if (!req) return true;
-                let cNames = [country.nome.toLowerCase(), ...country.alias_paese];
+                let cNames = [country.nome.toLowerCase(), ...country.alias_paese_ufficiali];
                 return cNames.some(n => n.startsWith(req.toLowerCase()));
             };
             
             const checkCapInitAny = (country, req) => {
                 if (!req) return true;
                 if (!country.capitale) return false;
-                let cCaps = [country.capitale.toLowerCase(), ...country.alias_capitale];
+                let cCaps = [country.capitale.toLowerCase(), ...country.alias_capitale_ufficiali];
                 return cCaps.some(c => c.startsWith(req.toLowerCase()));
             };
 
@@ -3108,7 +3109,7 @@ function triggerVibration(pattern) {
                 document.getElementById("stat-grazie-row").style.display = "none";
             }
 
-            const titleEl = document.getElementById("game-over-title");
+            const titleEl = document.getElementById("game-over-tcheck itle");
             const msgEl = document.getElementById("game-over-msg");
             
             if (isVictory) {
@@ -3144,7 +3145,14 @@ function triggerVibration(pattern) {
                 return { nome: n.nome, count: nazioniDigitateCount[sigla], sigla: sigla };
             }).sort((a, b) => b.count - a.count).slice(0, 5);
 
-            let sortedIgnorate = Object.keys(nazioniIgnorateCount).map(sigla => {
+            // Filtro: Pulisce le ignorate se la nazione è stata effettivamente usata
+            for (let sigla in nazioniIgnorateCount) {
+                if (nazioniDigitateCount[sigla] && nazioniDigitateCount[sigla] > 0) {
+                    delete nazioniIgnorateCount[sigla];
+                }
+            }
+
+	    let sortedIgnorate = Object.keys(nazioniIgnorateCount).map(sigla => {
                 let n = globalDb.find(c => c.sigla === sigla);
                 return { nome: n.nome, count: nazioniIgnorateCount[sigla], sigla: sigla };
             }).sort((a, b) => b.count - a.count).slice(0, 5);

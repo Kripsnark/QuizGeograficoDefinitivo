@@ -61,7 +61,7 @@ SV	El Salvador		San Salvador	s salvador	honduras, guatemala, mare	Nord America, 
 AE	Emirati Arabi Uniti	Emirati Arabi, Emirati	Abu Dhabi	Abu Dabi	arabia saudita, oman, mare	Asia, Medio Oriente, Penisola Arabica	rosso, verde, bianco, nero					1
 ER	Eritrea		Asmara		sudan, gibuti, etiopia, mare	africa, africa centrale	rosso, verde, azzurro	giallo	emblema nazionale			2
 EE	Estonia		Tallinn		lettonia, russia, mare	Europa, paesi baltici	azzurro, nero, bianco				strisce orizzontali	1
-SZ	eSwatini	*Swatziland	Mbabane		sudafrica, mozambico	africa, africa meridionale	azzurro, giallo, rosso, nero, bianco		lancia, arma, scudo		strisce orizzontali	2
+SZ	eSwatini	*Swaziland	Mbabane		sudafrica, mozambico	africa, africa meridionale	azzurro, giallo, rosso, nero, bianco		lancia, arma, scudo		strisce orizzontali	2
 ET	Etiopia		Addis Abeba		somalia, kenya, sudan del sud, sudan, eritrea, gibuti	africa, africa centrale	verde, giallo, rosso	blu, giallo	emblema nazionale, stella		strisce orizzontali, stella gialla	1
 FJ	Figi		Suva			Oceania	azzurro		emblema nazionale, union jack			2
 PH	Filippine		Manila			Asia, Sud-Est Asiatico	bianco, rosso, blu	giallo	emblema nazionale, stella, sole		triangolo a sinistra bianco, stella gialla	1
