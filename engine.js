@@ -1693,7 +1693,7 @@ function triggerVibration(pattern) {
                 
                 if (td.negBorders && td.negBorders.length > 0) {
                     let hasNegBorder = false;
-                    let cNames = [country.nome.toLowerCase(), ...country.alias_paese];
+                    let cNames = [country.nome.toLowerCase(), ...country.alias_paese_ufficiali];
                     for (let nb of td.negBorders) {
                         if (country.confini.includes(nb) || cNames.includes(nb)) { hasNegBorder = true; break; }
                     }
@@ -1710,7 +1710,7 @@ function triggerVibration(pattern) {
                 if (td.isComboInception) {
                     let targetConfini = td.targetNode.confini;
                     let m = false;
-                    let countryNames = [country.nome.toLowerCase(), ...country.alias_paese];
+                    let countryNames = [country.nome.toLowerCase(), ...country.alias_paese_ufficiali];
                     for (let name of countryNames) {
                         if (targetConfini.includes(name)) { m = true; break; }
                     }
@@ -1908,7 +1908,7 @@ function triggerVibration(pattern) {
                 
                 if (td.negBorders && td.negBorders.length > 0) {
                     let hasNegBorder = false;
-                    let cNames = [country.nome.toLowerCase(), ...country.alias_paese];
+                    let cNames = [country.nome.toLowerCase(), ...country.alias_paese_ufficiali];
                     for (let nb of td.negBorders) {
                         if (country.confini.includes(nb) || cNames.includes(nb)) { hasNegBorder = true; break; }
                     }
@@ -1919,7 +1919,8 @@ function triggerVibration(pattern) {
                 if (td.negGeo && country.tipoGeo === td.negGeo) continue;
                 
                 if (td.negInit) {
-                    if (country.nome.toLowerCase().startsWith(td.negInit.toLowerCase())) continue;
+                    let cNamesOff = [country.nome.toLowerCase(), ...country.alias_paese_ufficiali];
+                    if (cNamesOff.some(n => n.startsWith(td.negInit.toLowerCase()))) continue;
                 }
 
                 let validNames = [country.nome.toLowerCase(), ...country.alias_paese];
@@ -1960,7 +1961,7 @@ function triggerVibration(pattern) {
 
                 if (td.isComboInception) {
                     let targetConfini = td.targetNode.confini;
-                    let cNames = [country.nome.toLowerCase(), ...country.alias_paese];
+                    let cNames = [country.nome.toLowerCase(), ...country.alias_paese_ufficiali];
                     let isBordering = cNames.some(n => targetConfini.includes(n));
                     
                     if (isBordering && country.indipendente) {
