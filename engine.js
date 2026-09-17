@@ -1014,14 +1014,27 @@ function triggerVibration(pattern) {
 
             let format = availableFormats[Math.floor(Math.random() * availableFormats.length)];
             
-            // --- SISTEMA DI MEMORIA A BREVE TERMINE (Evita ripetizioni per 15 turni) ---
-            let availableDb = levelDb.filter(n => !recentTargets.includes(n.sigla));
-            if (availableDb.length === 0) availableDb = levelDb; // Se finiscono le nazioni, resetta la memoria
+            // --- SISTEMA DI MEMORIA INTELLIGENTE GLOBALE (Anti-Doppione) ---
+            // Filtra: cerca nazioni NON ancora uscite con questo specifico formato
+            let availableDb = levelDb.filter(function(n) {
+                return !recentTargets.includes(n.sigla + "-" + format);
+            });
+            
+            // LA VALVOLA DEL GIOCATORE SADICO (Domanda 751+)
+            if (availableDb.length === 0) {
+                // Se hai esaurito le nazioni per questo formato, svuota la memoria SOLO per questo formato
+                recentTargets = recentTargets.filter(function(item) {
+                    return !item.endsWith("-" + format);
+                });
+                availableDb = levelDb; 
+            }
             
             let nazioneEstratta = availableDb[Math.floor(Math.random() * availableDb.length)];
             
-            recentTargets.push(nazioneEstratta.sigla);
-            if (recentTargets.length > 15) recentTargets.shift(); // Ricorda solo le ultime 15
+            // Memorizza la coppia Nazione-Formato (Es. "IT-0")
+            recentTargets.push(nazioneEstratta.sigla + "-" + format);
+            
+            // Rimosso il limite di 15 turni! La memoria ora è illimitata.
             
             let td = { format: format, targetNode: nazioneEstratta, numVariables: 1, isComboInception: false };
             
