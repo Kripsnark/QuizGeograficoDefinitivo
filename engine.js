@@ -1759,7 +1759,8 @@ function triggerVibration(pattern) {
                         let capPaese = country.capitale ? country.capitale.toLowerCase() : "";
                         if (capPaese && country.aree.includes(td.selectedArea)) {
                             let textMatch = false;
-                            let cCaps = [country.capitale.toLowerCase(), ...country.alias_capitale];
+                            // FIX: Guarda SOLO il nome principale e gli alias con asterisco
+                            let cCaps = [country.capitale.toLowerCase(), ...country.alias_capitale_ufficiali];
                             for (let cn of cCaps) {
                                 if (td.varEnigmistica === 0 && cn.startsWith(td.reqCapInit.toLowerCase())) textMatch = true;
                                 if (td.varEnigmistica === 1 && cn.endsWith(td.reqCapFin.toLowerCase())) textMatch = true;
