@@ -2364,6 +2364,7 @@ function triggerVibration(pattern) {
             let mcContainer = document.getElementById("mc-container");
             if (currentLevel === 0) {
                 inputEl.style.display = "none";
+                submitBtn.style.display = "none"; // Nasconde il tasto INVIA al Livello 0
                 mcContainer.style.display = "none"; // FIX: Parte invisibile per dare respiro
                 mcContainer.innerHTML = "";
                 let opzioni = generaDistrattori(currentTurnData);
@@ -2427,6 +2428,7 @@ function triggerVibration(pattern) {
                 
             } else {
                 inputEl.style.display = "block";
+                submitBtn.style.display = "block"; // Riaccende INVIA per tutti gli altri livelli
                 mcContainer.style.display = "none";
             }
         }
