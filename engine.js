@@ -14,6 +14,41 @@
             vite: 3
         };
         
+// Stato dell'audio
+let suoniAttivi = true;
+
+// Pre-carichiamo i suoni in memoria così non c'è lag quando si gioca
+const EffettiSonori = {
+    esatto: new Audio("suoni/esatto.mp3"),
+    errore: new Audio("suoni/errore.mp3"),
+    battito: new Audio("suoni/battito.mp3"),
+    vittoria: new Audio("suoni/vittoria.mp3")
+};
+
+// Funzione per riprodurre un suono
+function playSound(nomeSuono) {
+    if (!suoniAttivi) return;
+    
+    // Riporta l'audio a zero. Utile se il giocatore risponde a raffica
+    EffettiSonori[nomeSuono].currentTime = 0; 
+    
+    // Il catch serve per evitare errori del browser se blocca l'autoplay
+    EffettiSonori[nomeSuono].play().catch(err => console.log("Audio bloccato dal browser"));
+}
+
+// Funzione per il bottone on/off
+function toggleSuoni() {
+    suoniAttivi = !suoniAttivi;
+    let btnSuono = document.getElementById("sound-toggle");
+    if (suoniAttivi) {
+        btnSuono.innerText = "🔊";
+        btnSuono.style.opacity = "0.5";
+    } else {
+        btnSuono.innerText = "🔇";
+        btnSuono.style.opacity = "0.2";
+    }
+}
+
 let vibrationEnabled = true;
 
 function toggleVibration() {
@@ -2096,6 +2131,7 @@ function triggerVibration(pattern) {
                 if (window.lastVibeSecond !== currentSecondInt) {
                     window.lastVibeSecond = currentSecondInt;
                     triggerVibration([40, 60, 40]);
+		    playSound("battito");
                 }
             } else if (pct < 50) {
                 timerBar.style.backgroundColor = "#ff9800"; 
@@ -2404,6 +2440,7 @@ function triggerVibration(pattern) {
 
     if (res.isCorrect) {
         triggerVibration(30);
+	playSound("esatto");
         if (useTimer) stopTimer();
         
         let sigla = res.matchedCountry.sigla;
@@ -2590,6 +2627,7 @@ function triggerVibration(pattern) {
     } else {
         if (useTimer) stopTimer();
         triggerVibration([100, 50, 100]);
+	playSound("errore");
         failStandard(inputStr);
     }
 }
@@ -2991,7 +3029,8 @@ function triggerVibration(pattern) {
 
         function popolaGameOver(isVictory = false) {
             if (gameOverScreen.style.display === "flex") return; // BLOCCO DOPPIO LOG E SCHERMATA
-            document.getElementById("header").style.display = "none";
+	    if (isVictory) playSound("vittoria"); else playSound("sconfitta");
+	    document.getElementById("header").style.display = "none";
             document.getElementById("question").style.display = "none";
             document.getElementById("input-area").style.display = "none";
             bandieraContainer.style.display = "none";
