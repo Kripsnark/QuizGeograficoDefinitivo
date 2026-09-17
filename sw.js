@@ -13,6 +13,7 @@ self.addEventListener('install', (event) => {
                 './suoni/esatto.mp3',
                 './suoni/errore.mp3',
                 './suoni/battito.mp3',
+                './suoni/sconfitta.mp3',
                 './suoni/vittoria.mp3'
             ]);
         })

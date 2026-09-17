@@ -22,7 +22,7 @@ const EffettiSonori = {
     esatto: new Audio("suoni/esatto.mp3"),
     errore: new Audio("suoni/errore.mp3"),
     battito: new Audio("suoni/battito.mp3"),
-    sconfitta: new Audio("suoni/sconfitta.mp3")
+    sconfitta: new Audio("suoni/sconfitta.mp3"),
     vittoria: new Audio("suoni/vittoria.mp3")
 };
 
@@ -343,9 +343,17 @@ function triggerVibration(pattern) {
         const errTitle = document.getElementById("error-feedback-title");
         const errText = document.getElementById("error-feedback-text");
 
-        const normalizzaTesto = (str) => str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
-
-        // --- GESTIONE PWA BACK BUTTON ---
+	const normalizzaTesto = function(str) {
+	    if (!str) return "";
+	    return str.toLowerCase()
+              .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+           .replace(/['’`´]/g, " ") // Converte tutti gli apostrofi in spazi
+              .replace(/[^a-z0-9\s]/g, "") // Mantiene gli spazi
+              .trim()
+              .replace(/\s+/g, " "); // Evita di creare doppi spazi
+	};
+        
+	// --- GESTIONE PWA BACK BUTTON ---
         window.addEventListener('popstate', function(event) {
             if (document.getElementById("game-over-screen").style.display === "flex") {
                  // Lascia scorrere
@@ -359,19 +367,28 @@ function triggerVibration(pattern) {
             }
         });
 		
-		// --- BLOCCO SWIPE-TO-REFRESH SU MOBILE DURANTE LA PARTITA ---
+		// --- BLOCCO SWIPE-TO-REFRESH INTELLIGENTE (Permette lo scorrimento!) ---
+        let touchStartY = 0;
+        document.addEventListener('touchstart', function(e) {
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+
         document.addEventListener('touchmove', function(e) {
-            // Se la home page è visibile (start-screen), permetti lo swipe-to-refresh
-            if (document.getElementById("start-screen").style.display === "flex") {
-                return; 
-            }
-            // Se siamo nel database, nelle classifiche o nel log errori, permetti lo scorrimento
+            if (document.getElementById("start-screen").style.display === "flex") return; 
+            
             if (e.target.closest('.db-table-container') || e.target.closest('#modal-body') || e.target.closest('#error-log') || e.target.closest('#top5-nations')) {
                 return;
             }
-            // In tutti gli altri casi (durante la partita), blocca lo scroll verticale che causa il refresh
-            e.preventDefault();
+            
+            let touchY = e.touches[0].clientY;
+            let isSwipingDown = (touchY - touchStartY) > 0;
+
+            // Blocca il refresh SOLO se si scorre verso il basso E ci si trova esattamente in cima alla pagina
+            if (isSwipingDown && window.scrollY <= 0) {
+                e.preventDefault();
+            }
         }, { passive: false });
+
         function getLevenshteinTolerance(word, level) {
             if (word.length <= 3) return 0;
             let tolerance = 0;
@@ -3109,7 +3126,7 @@ function triggerVibration(pattern) {
                 document.getElementById("stat-grazie-row").style.display = "none";
             }
 
-            const titleEl = document.getElementById("game-over-tcheck itle");
+            const titleEl = document.getElementById("game-over-title");
             const msgEl = document.getElementById("game-over-msg");
             
             if (isVictory) {
