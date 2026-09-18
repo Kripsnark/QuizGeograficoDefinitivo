@@ -1,4 +1,5 @@
-        const rawData = `AF	Afghanistan	Afganistan	Kabul		iran, turkmenistan, uzbekistan, tagikistan, cina, pakistan	Asia	rosso, nero, verde	bianco	scritta		strisce verticali	1
+        const rawData = `Sigla	Paese	Alias - paese	Capitale	Alias - capitale	Confini	Continente/Area geografica	Colore bandiera base	Colore emblema	simboli bandiera	dipendente	Caratteristiche bandiera	Livello
+AF	Afghanistan	Afganistan	Kabul		iran, turkmenistan, uzbekistan, tagikistan, cina, pakistan	Asia	rosso, nero, verde	bianco	scritta		strisce verticali	1
 AL	Albania		Tirana		Montenegro, Kosovo, Macedonia del Nord, grecia, mare	Europa, Mediterraneo, Balcani	rosso, nero	nero	aquila		lenzuolo rosso	1
 DZ	Algeria		Algeri		marocco, tunisia, libia, niger, mali, mauritania, mare	Africa, Africa settentrionale, Mediterraneo	verde, bianco	rosso	mezzaluna, stella		strisce verticali, mezzaluna rossa, stella rossa	1
 AD	Andorra		Andorra la Vella	La Vella	francia, spagna	Europa	blu, giallo, rosso		emblema nazionale		strisce verticali	2
@@ -15,7 +16,7 @@ AT	Austria		Vienna		cechia, slovacchia, ungheria, slovenia, italia, liechtenstei
 AZ	Azerbaigian		Baku		russia, georgia, armenia, iran, turchia	Asia	azzurro, rosso, verde, giallo	bianco	mezzaluna, stella		strisce orizzontali, mezzaluna bianca, stella bianca	2
 BS	Bahamas		Nassau			Nord America, caraibi	nero, azzurro, giallo				triangolo a sinistra nero	2
 BH	Bahrein	Barein, Bahrain	Manama		arabia saudita, mare	Asia, Medio Oriente, Penisola Arabica	bianco, rosso					2
-JE	Baliato di Jersey		Saint Helier			Europa	bianco, rosso			x	croce di Sant'Andrea (X)	3
+JE	Baliato di Jersey	Jersey	Saint Helier	S Helier		Europa	bianco, rosso			x	croce di Sant'Andrea (X)	3
 BD	Bangladesh		Dacca		india, myanmar, mare	Asia, Subcontinente indiano	verde, rosso	rosso	cerchio		cerchio rosso, lenzuolo verde	2
 BB	Barbados		Bridgetown			Nord America, caraibi	blu, giallo	nero	tridente		strisce verticali	2
 BE	Belgio		Bruxelles		paesi bassi, germania, lussemburgo, francia, mare	europa	nero, giallo, rosso				strisce verticali	1
@@ -173,7 +174,7 @@ PA	Panama		Panama	Panama city, città di Panama	costa rica, colombia, mare	nord 
 PG	Papua Nuova Guinea	Nuova Guinea	Port Moresby		indonesia, mare	Oceania	rosso, nero	giallo, bianco	uccello, animale, stella, croce del sud		stella bianca	2
 PY	Paraguay		Asunciòn		bolivia, brasile, argentina	Sud America	rosso, bianco, blu		emblema nazionale, scritta		strisce orizzontali	2
 PE	Perù		Lima		ecuador, colombia, brasile, bolivia, cile, mare	Sud America, Ande, Amazzonia	rosso, bianco				strisce verticali	1
-PF	Polinesia francese		Papeete			Oceania	rosso, bianco		emblema nazionale	x	strisce orizzontali	3
+PF	Polinesia francese	Polinesia	Papeete			Oceania	rosso, bianco		emblema nazionale	x	strisce orizzontali	3
 PL	Polonia		Varsavia		lituania, russia, bielorussia, ucraina, slovacchia, cechia, germania, mare	europa	bianco, rosso				strisce orizzontali	1
 PR	Porto Rico		San Juan			Nord America, caraibi	blu, rosso, bianco	bianco	stella, 	x	triangolo a sinistra blu, stella bianca	3
 PT	Portogallo		Lisbona		spagna, mare	europa	verde, rosso	giallo	emblema nazionale			1
@@ -232,12 +233,12 @@ TL	Timor Est		Dili		indonesia, mare	Asia, Sud-Est Asiatico	nero, giallo, rosso	b
 TG	Togo		Lomé		ghana, burkina faso, benin, mare	africa, africa centrale, Golfo di Guinea	rosso, verde, giallo	bianco	stella		stella bianca	2
 TK	Tokelau		Fakaofo			Oceania	blu, giallo	bianco	stella, croce del sud	x	stella bianca, lenzuolo blu	3
 TO	Tonga		Nuku'Alofa	Nuku alofa		Oceania	rosso, bianco	rosso	croce simmetrica			2
-TT	Trinidad e Tobago		Port of Spain			Nord America, caraibi	rosso, bianco, nero					2
-TA	Tristan da Cunha		Edinburgh of the Seven Seas	Edimburgh		africa	blu		emblema nazionale, animale, union jack	x	strisce orizzontali	3
+TT	Trinidad e Tobago	Trinidad, Tobago	Port of Spain			Nord America, caraibi	rosso, bianco, nero					2
+TA	Tristan da Cunha	Tristan	Edinburgh of the Seven Seas	Edimburgh		africa	blu		emblema nazionale, animale, union jack	x	strisce orizzontali	3
 TN	Tunisia		Tunisi		algeria, libia, mare	Africa, Africa settentrionale, Mediterraneo	rosso, bianco	rosso, bianco	mezzaluna, stella, cerchio		cerchio bianco, mezzaluna rossa, stella rossa, lenzuolo rosso	1
 TR	Turchia		Ankara		azerbaigian, grecia, bulgaria, georgia, armenia, iran, iraq, siria, mare	Asia, mediterraneo	rosso, bianco	bianco	mezzaluna, stella		mezzaluna bianca, stella bianca, lenzuolo rosso	1
 TM	Turkmenistan		Ashgabat		kazakistan, uzbekistan, afghanistan, iran	Asia	verde, rosso	bianco	mezzaluna, stella		mezzaluna bianca, stella bianca	2
-TC	Turks e Caicos		Cockburn Town			nord america, caraibi	blu		emblema nazionale, union jack	x		3
+TC	Turks e Caicos	Turks, Caicos	Cockburn Town			nord america, caraibi	blu		emblema nazionale, union jack	x		3
 TV	Tuvalu		Funafuti			Oceania	azzurro	giallo	stella, union jack		stella gialla	2
 UA	Ucraina		Kiev		russia, moldavia, romania, ungheria, slovacchia, polonia, bielorussia, mare	europa	blu, giallo				strisce orizzontali	1
 UG	Uganda		Kampala		kenya, tanzania, ruanda, repubblica democratica del congo, sudan del sud	africa, africa centrale	nero, giallo, rosso	bianco	uccello, animale, cerchio		strisce orizzontali	2

@@ -400,7 +400,7 @@ function triggerVibration(pattern) {
             let tolerance = 0;
             if (word.length >= 5 && word.length <= 8) tolerance = 1;
             if (word.length >= 9) tolerance = 2;
-            if (level === 1) tolerance += 1; 
+            if (level === 1 || level === 6) tolerance += 1; 
             return tolerance;
         }
 
@@ -760,7 +760,21 @@ function triggerVibration(pattern) {
                     html += "<div style='display:flex; justify-content:space-between; align-items:center; background:#2a2a2a; margin-bottom:6px; padding:8px 12px; border-radius:6px; border:1px solid #444;'>";
                     html += "<div style='display:flex; flex-direction:column; gap:2px;'>";
                     html += "<span style='color:#ccc; font-size:11px;'>" + game.date + "</span>";
-                    html += "<span style='color:#fff; font-size:13px; font-weight:bold;'>Punti: <span style='color:#4caf50;'>" + game.punteggio + "</span> | Esatte: " + game.esatte + "</span>";
+                    
+                    if (lvl === 6) {
+                        // Calcola la percentuale estraendo il totale dal file di log (se esiste), altrimenti stima 193
+                        let totalTarget = 193; 
+                        if (game.log) {
+                            let match = game.log.match(/su (\d+)/);
+                            if (match) totalTarget = parseInt(match[1]);
+                        }
+                        let pctProgresso = ((game.esatte / totalTarget) * 100).toFixed(1);
+                        
+                        html += "<span style='color:#fff; font-size:13px; font-weight:bold;'>Progresso: <span style='color:#ffd700;'>" + pctProgresso + "%</span> | Esatte: <span style='color:#4caf50;'>" + game.esatte + "</span></span>";
+                    } else {
+                        html += "<span style='color:#fff; font-size:13px; font-weight:bold;'>Punti: <span style='color:#4caf50;'>" + game.punteggio + "</span> | Esatte: " + game.esatte + "</span>";
+                    }
+                    
                     html += "</div>";
                     html += "<button onclick='downloadSpecificLog(" + lvl + ", " + idx + ")' style='background:#2196f3; color:#fff; border:none; border-radius:4px; padding:6px 12px; font-size:11px; font-weight:bold; cursor:pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.3); display:flex; align-items:center; gap:4px;'>📥</button>";
                     html += "</div>";
@@ -2642,7 +2656,7 @@ function triggerVibration(pattern) {
         }
 
         let currentMaxVite = customConfig.vite > 5 ? customConfig.vite : maxVite;
-        if (!hasWon && punteggio >= prossimoCuore && vite < currentMaxVite) {
+        if (currentLevel !== 6 && !hasWon && punteggio >= prossimoCuore && vite < currentMaxVite) {
             vite++;
             prossimoCuore += 750; 
             badgeText += "❤️ +1 VITA EXTRA!<br>";
@@ -2691,7 +2705,12 @@ function triggerVibration(pattern) {
         }
 
         if (hasWon) {
-            inputEl.value = `VITTORIA! Livello Superato! 🏆`;
+            if (currentLevel === 6) {
+                inputEl.value = `INUMANO! HAI COMPLETATO IL DATABASE! 🏆`;
+                inputEl.style.color = "#ffd700";
+            } else {
+                inputEl.value = `VITTORIA! Livello Superato! 🏆`;
+            }
             window.pendingVictory = true;
             submitBtn.style.display = "none";
             nextBtn.innerText = "VAI AI RISULTATI ➔";
@@ -2937,7 +2956,7 @@ function triggerVibration(pattern) {
         punteggio += puntiRound;
         
         let currentMaxVite = customConfig.vite > 5 ? customConfig.vite : maxVite;
-        if (punteggio >= prossimoCuore && vite < currentMaxVite) {
+        if (currentLevel !== 6 && punteggio >= prossimoCuore && vite < currentMaxVite) {
             vite++; prossimoCuore += 750; 
             badgeText += "❤️ +1 VITA EXTRA!<br>";
             if (!isGrazia) badgeBorder = "#f44336";
@@ -3141,11 +3160,17 @@ function triggerVibration(pattern) {
         }
         
         function aggiornaUI() {
+            // Cambia l'etichetta testuale "Punti:" in "Progresso:" solo per il L6
+            if (puntiEl.parentNode.childNodes[0].nodeType === 3) {
+                puntiEl.parentNode.childNodes[0].nodeValue = (currentLevel === 6) ? "Progresso: " : "Punti: ";
+            }
+
             if (currentLevel === 6) {
                 heartsEl.style.fontSize = "16px";
                 heartsEl.innerText = "💀 MORTE IMPROVVISA";
                 esatteEl.innerText = esatte + " / " + levelDb.length;
-                puntiEl.innerText = "-";
+                let pct = levelDb.length > 0 ? ((esatte / levelDb.length) * 100).toFixed(1) : 0;
+                puntiEl.innerText = pct + "%";
                 return;
             }
 
@@ -3281,9 +3306,15 @@ function triggerVibration(pattern) {
             const msgEl = document.getElementById("game-over-msg");
             
             if (isVictory) {
-                titleEl.innerText = "VITTORIA!";
-                titleEl.style.color = "#4caf50"; 
-                msgEl.innerText = "Sei troppo bravo per questo livello, passa al prossimo!";
+                if (currentLevel === 6) {
+                    titleEl.innerText = "LEGGENDA VIVENTE!";
+                    titleEl.style.color = "#ffd700"; 
+                    msgEl.innerHTML = "Hai conquistato la Morte Improvvisa!<br>La tua conoscenza geografica è assoluta.";
+                } else {
+                    titleEl.innerText = "VITTORIA!";
+                    titleEl.style.color = "#4caf50"; 
+                    msgEl.innerText = "Sei troppo bravo per questo livello, passa al prossimo!";
+                }
             } else {
                 titleEl.innerText = "GAME OVER";
                 titleEl.style.color = "#f44336";
@@ -3366,7 +3397,11 @@ function triggerVibration(pattern) {
             // FIX: Testo differenziato per il Log nel Livello 6
             if (currentLevel === 6) {
                 let pct = levelDb.length > 0 ? ((esatte / levelDb.length) * 100).toFixed(1) : 0;
-                debugGameLog += "Esatte: " + esatte + " su " + levelDb.length + " (" + pct + "%)\n";
+                if (isVictory) {
+                     debugGameLog += "Esatte: COMPLETAMENTO TOTALE (" + esatte + " su " + levelDb.length + ")\n";
+                } else {
+                     debugGameLog += "Esatte: " + esatte + " su " + levelDb.length + " (" + pct + "%)\n";
+                }
             } else {
                 debugGameLog += "Punteggio: " + punteggio + " | Esatte: " + esatte + " su " + logQuestionCounter + " | Serie Max: " + bestStreak + "\n";
             }
