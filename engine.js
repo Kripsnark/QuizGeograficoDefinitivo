@@ -19,8 +19,8 @@ let suoniAttivi = true;
 
 // Pre-carichiamo i suoni in memoria così non c'è lag quando si gioca
 const EffettiSonori = {
-    esatto: new Audio("suoni/esatto.mp3"),
-    errore: new Audio("suoni/errore.mp3"),
+    esatto: new Audio("suoni/esatto.wav"),
+    errore: new Audio("suoni/errore.wav"),
     battito: new Audio("suoni/battito.mp3"),
     sconfitta: new Audio("suoni/sconfitta.mp3"),
     vittoria: new Audio("suoni/vittoria.mp3")
