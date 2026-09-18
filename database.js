@@ -165,7 +165,7 @@ NO	Norvegia		Oslo		svezia, finlandia, russia, mare	Europa, paesi baltici	rosso, 
 NC	Nuova Caledonia	Caledonia	Nouméa	Numea		Oceania	rosso, blu, verde, giallo	giallo, nero	cerchio	x	strisce orizzontali, cerchio giallo	3
 NZ	Nuova Zelanda		Wellington			Oceania	blu	rosso, bianco	stella, croce del sud, union jack		stella rossa	1
 OM	Oman		Mascate		arabia saudita, emirati arabi uniti, yemen, mare	Asia, Medio Oriente, Penisola Arabica	bianco, rosso, verde		emblema nazionale			2
-NL	Paesi Bassi	*Olanda	Amsterdam		belgio, germania, mare	europa	rosso, bianco, blu	bianco			strisce orizzontali	1
+NL	Paesi Bassi	*Olanda	Amsterdam		belgio, germania, mare	europa	rosso, bianco, blu				strisce orizzontali	1
 PK	Pakistan		Islamabad		iran, afghanistan, cina, india, mare	Asia, Subcontinente indiano	bianco, verde	bianco	mezzaluna, stella		mezzaluna bianca, stella bianca	1
 PW	Palau		Ngerulmud			Oceania	azzurro, giallo	giallo	cerchio		cerchio giallo, lenzuolo azzurro	2
 PS	Palestina		Ramallah		israele, giordania, egitto, mare	Asia, medio oriente	rosso, nero, bianco, verde			x	triangolo a sinistra rosso	3

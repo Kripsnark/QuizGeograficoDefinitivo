@@ -73,7 +73,7 @@ function triggerVibration(pattern) {
         let allTimeNazioniCount = {}; let allTimeNazioniIgnorate = {}; 
         let allTimeBestAvgTime = 0;
         let globalPlays = 0;
-        let recentGamesHistory = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [] };
+        let recentGamesHistory = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
 
         let statsByLevel = {
             0: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 },
@@ -81,7 +81,8 @@ function triggerVibration(pattern) {
             2: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 },
             3: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 },
             4: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0, fotofinish: 0, grazie: 0 },
-            5: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0, fotofinish: 0, grazie: 0 }
+            5: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0, fotofinish: 0, grazie: 0 },
+            6: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0, fotofinish: 0, grazie: 0 }
         };
 
         function loadStats() {
@@ -97,7 +98,11 @@ function triggerVibration(pattern) {
         allTimeBestAvgTime = data.bestAvgTime || 0; 
         if (data.statsByLevel) { statsByLevel = Object.assign({}, statsByLevel, data.statsByLevel); }
         globalPlays = data.globalPlays || 0;
-        if (data.recentGamesHistory) { recentGamesHistory = data.recentGamesHistory; }
+        if (data.recentGamesHistory) { 
+ 	   recentGamesHistory = data.recentGamesHistory; 
+    // FIX ANTI-CRASH: Se la memoria vecchia non ha il livello 6, crealo!
+ 	   if (!recentGamesHistory[6]) recentGamesHistory[6] = []; 
+	}
         if (data.vibrationEnabled !== undefined) {
             vibrationEnabled = data.vibrationEnabled;
         }
@@ -158,14 +163,15 @@ function triggerVibration(pattern) {
                 allTimeNazioniCount = {}; allTimeNazioniIgnorate = {}; 
                 allTimeBestAvgTime = 0;
                 globalPlays = 0;
-                recentGamesHistory = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [] };
+                recentGamesHistory = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
                 statsByLevel = {
                     0: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 },
                     1: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 },
                     2: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 },
                     3: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 },
                     4: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0, fotofinish: 0, grazie: 0 },
-                    5: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0, fotofinish: 0, grazie: 0 }
+                    5: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0, fotofinish: 0, grazie: 0 },
+                    6: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0, fotofinish: 0, grazie: 0 }
                 };
                 alert("✅ Dati eliminati con successo.");
                 closeModal(); 
@@ -678,10 +684,74 @@ function triggerVibration(pattern) {
         document.getElementById("start-screen").style.display = "flex";
     }
 
+// --- VARIABILI E FUNZIONI UI PER IL LIVELLO 6 ---
+    let configL6 = {
+        bacino: 1, // 1 = Livello 1 (ONU 193), 3 = Livello 3 (Totale)
+        formato: 9 // Default: 9 = Bandiere, 1 = Capitale->Stato, 0 = Stato->Capitale
+    };
+
+    function openLevel6Setup() {
+        document.getElementById("start-screen").style.display = "none";
+        document.getElementById("level6-setup-screen").style.display = "flex";
+    }
+    
+    function closeLevel6Setup() {
+        document.getElementById("level6-setup-screen").style.display = "none";
+        document.getElementById("start-screen").style.display = "flex";
+    }
+
+    function setL6Bacino(val) {
+        configL6.bacino = val;
+        document.getElementById("l6-bacino-1").classList.toggle("selected", val === 1);
+        document.getElementById("l6-bacino-3").classList.toggle("selected", val === 3);
+    }
+
+    function setL6Mode(val) {
+        configL6.formato = val;
+        document.getElementById("l6-mode-9").classList.toggle("selected", val === 9);
+        document.getElementById("l6-mode-1").classList.toggle("selected", val === 1);
+        document.getElementById("l6-mode-0").classList.toggle("selected", val === 0);
+    }
+
+    function startLevel6Game() {
+        document.body.style.overscrollBehavior = "none";
+        currentLevel = 6;
+        
+        // Il bottone 1 (ONU) corrisponde al livello <= 2 del DB
+        let targetLivello = configL6.bacino === 1 ? 2 : 3;
+        levelDb = globalDb.filter(n => n.livello <= targetLivello);
+        
+        vite = 1;
+        punteggio = 0;
+        esatte = 0;
+        erroriCommessi = [];
+        comboInserted = [];
+        nazioniUsate = [];
+        logQuestionCounter = 0;
+        recentTargets = [];
+        turnStartTime = Date.now();
+        
+        debugGameLog = "=== GEOQUIZ DEBUG LOG ===\nData: " + new Date().toLocaleString() + "\nLivello Giocato: 6 (Morte Improvvisa)\n";
+        debugGameLog += "Bacino: " + (configL6.bacino === 1 ? "ONU" : "Totale") + " | Formato: " + configL6.formato + "\n\n";
+
+        document.getElementById("start-screen").style.display = "none";
+        document.getElementById("level6-setup-screen").style.display = "none";
+        document.getElementById("header").style.display = "flex";
+        document.getElementById("question").style.display = "block";
+        document.getElementById("input-area").style.display = "flex";
+        homeBtn.style.display = "block"; 
+        
+        history.pushState(null, null, window.location.href);
+
+        aggiornaUI();
+        playTurn();
+    }
+    // ------------------------------------------------
+
     window.openGamesHistory = function() {
         let html = "<div style='max-height: 70vh; overflow-y: auto; padding-right: 5px;'>";
-        for(let lvl = 0; lvl <= 5; lvl++) {
-            let lvlName = lvl === 0 ? "Livello 0" : (lvl === 5 ? "Personalizzata" : "Livello " + lvl);
+        for(let lvl = 0; lvl <= 6; lvl++) {
+            let lvlName = lvl === 0 ? "Livello 0" : (lvl === 5 ? "Personalizzata" : (lvl === 6 ? "Morte Improvvisa" : "Livello " + lvl));
             html += "<h3 style='color:#ffd700; border-bottom:1px solid #444; padding-bottom:3px; margin-top:10px; margin-bottom:5px; font-size:14px; text-transform:uppercase;'>" + lvlName + "</h3>";
             if (recentGamesHistory[lvl].length === 0) {
                 html += "<p style='color:#888; font-size:12px; font-style:italic; margin: 0 0 15px 0;'>Nessuna partita registrata.</p>";
@@ -1001,6 +1071,8 @@ function triggerVibration(pattern) {
             
             if (currentLevel === 0) {
                 availableFormats = [0, 1, 7, 9, 13];
+            } else if (currentLevel === 6) {
+                availableFormats = [configL6.formato]; // Forza il formato scelto!
             } else if (currentLevel === 5) {
                 if (customConfig.stati) availableFormats.push(2, 3, 4, 5, 7, 8);
                 if (customConfig.capitali) availableFormats.push(0, 1, 6, 10);
@@ -2123,55 +2195,74 @@ function triggerVibration(pattern) {
             timerContainer.style.display = "block";
             timerBar.style.transition = "none";
             timerBar.style.width = "100%";
-            timerBar.style.backgroundColor = "#2196f3"; 
-            timerStatus.innerText = "TREGUA LETTURA (5s)";
             
             clearTimeout(readingTimeout);
             clearInterval(mainTimerInterval);
             
-            readingTimeout = setTimeout(() => {
-                if(timerState === "reading") activateMainTimer();
-            }, 5000);
+            if (currentLevel === 6) {
+                // LIVELLO 6: Salta la tregua e innesca il timer all'istante!
+                activateMainTimer();
+            } else {
+                // LIVELLI 4-5: Tregua Lettura di 5 secondi
+                timerBar.style.backgroundColor = "#2196f3"; 
+                timerStatus.innerText = "TREGUA LETTURA (5s)";
+                readingTimeout = setTimeout(() => {
+                    if(timerState === "reading") activateMainTimer();
+                }, 5000);
+            }
         }
 
         function activateMainTimer() {
-    if(timerState === "active") return;
-    timerState = "active";
-    clearTimeout(readingTimeout);
-    window.lastVibeSecond = null;
-    
-    timerBar.style.backgroundColor = "#4caf50";
-    timerStatus.innerText = `TEMPO CALCOLATO: ${activeTimeTotal}s`;
-    
-    let lastUpdate = Date.now();
-    mainTimerInterval = setInterval(() => {
-        let now = Date.now();
-        let dt = (now - lastUpdate) / 1000;
-        lastUpdate = now;
-        activeTimeLeft -= dt;
+            if(timerState === "active") return;
+            timerState = "active";
+            clearTimeout(readingTimeout);
+            window.lastVibeSecond = null;
+            
+            timerBar.style.backgroundColor = "#4caf50";
+            
+            // Personalizziamo la scritta per renderla più ansiogena
+            if (currentLevel === 6) {
+                timerStatus.innerText = `MORTE IMPROVVISA! (10s)`;
+            } else {
+                timerStatus.innerText = `TEMPO CALCOLATO: ${activeTimeTotal}s`;
+            }
+            
+            let lastUpdate = Date.now();
+            mainTimerInterval = setInterval(() => {
+                let now = Date.now();
+                let dt = (now - lastUpdate) / 1000;
+                lastUpdate = now;
+                activeTimeLeft -= dt;
 
-        if (activeTimeLeft <= 0) {
-            activeTimeLeft = 0;
-            stopTimer();
-            timerBar.style.width = "0%";
-            eseguiValidazioneMultipla(true); 
-        } else {
-            let pct = (activeTimeLeft / activeTimeTotal) * 100;
-            timerBar.style.width = pct + "%";
-            if (pct < 25) {
-                timerBar.style.backgroundColor = "#f44336";
-                let currentSecondInt = Math.ceil(activeTimeLeft);
-                if (window.lastVibeSecond !== currentSecondInt) {
-                    window.lastVibeSecond = currentSecondInt;
-                    triggerVibration([40, 60, 40]);
-		    playSound("battito");
+                if (activeTimeLeft <= 0) {
+                    activeTimeLeft = 0;
+                    stopTimer();
+                    timerBar.style.width = "0%";
+                    
+                    // FIX: Capisce se sei in una Combo o in una Morte Improvvisa
+                    let isMulti = (currentLevel === 4 || (currentLevel === 5 && currentTurnData.numReq > 1));
+                    if (isMulti) {
+                        eseguiValidazioneMultipla(true); 
+                    } else {
+                        failStandard(""); // Ti uccide "normalmente" se scade il tempo
+                    }
+                } else {
+                    let pct = (activeTimeLeft / activeTimeTotal) * 100;
+                    timerBar.style.width = pct + "%";
+                    if (pct < 25) {
+                        timerBar.style.backgroundColor = "#f44336";
+                        let currentSecondInt = Math.ceil(activeTimeLeft);
+                        if (window.lastVibeSecond !== currentSecondInt) {
+                            window.lastVibeSecond = currentSecondInt;
+                            triggerVibration([40, 60, 40]);
+                            playSound("battito");
+                        }
+                    } else if (pct < 50) {
+                        timerBar.style.backgroundColor = "#ff9800"; 
+                    } 
                 }
-            } else if (pct < 50) {
-                timerBar.style.backgroundColor = "#ff9800"; 
-            } 
+            }, 50);
         }
-    }, 50);
-}
 
         function stopTimer() {
             timerState = "stopped";
@@ -2264,7 +2355,7 @@ function triggerVibration(pattern) {
     let surrTime = ((Date.now() - turnStartTime) / 1000).toFixed(1);
     debugGameLog += `-> ESITO [${surrTime}s]: 🏳️ RESA\n\n`;
     
-    if (currentLevel === 4 || (currentLevel === 5 && customConfig.timer)) stopTimer();
+    if (currentLevel === 4 || currentLevel === 6 || (currentLevel === 5 && customConfig.timer)) stopTimer();
     
     vite--;
     currentStreak = 0;
@@ -2342,7 +2433,7 @@ function triggerVibration(pattern) {
             surrenderBtn.style.display = "block";
             
             let isMulti = (currentLevel === 4 || (currentLevel === 5 && currentTurnData.numReq > 1));
-            let useTimer = (currentLevel === 4 || (currentLevel === 5 && customConfig.timer));
+            let useTimer = (currentLevel === 4 || currentLevel === 6 || (currentLevel === 5 && customConfig.timer));
 
             if (isMulti) {
                 comboInserted = [];
@@ -2351,7 +2442,10 @@ function triggerVibration(pattern) {
                 comboTracker.style.display = "none";
             }
 
-            if (useTimer) {
+            if (currentLevel === 6) {
+                timerContainer.style.display = "block";
+                startTimerSandboxOrL4(10); // 10 SECONDI FISSI E LETALI
+            } else if (useTimer) {
                 let mathTime = 15 * (currentTurnData.numReq + currentTurnData.numVariables - 1);
                 if (mathTime < 15) mathTime = 15; 
                 startTimerSandboxOrL4(mathTime);
@@ -2438,7 +2532,7 @@ function triggerVibration(pattern) {
     if (!inputStr) return;
 
     let isMulti = (currentLevel === 4 || (currentLevel === 5 && currentTurnData.numReq > 1));
-    let useTimer = (currentLevel === 4 || (currentLevel === 5 && customConfig.timer));
+    let useTimer = (currentLevel === 4 || currentLevel === 6 || (currentLevel === 5 && customConfig.timer));
 
     if (useTimer && timerState === "reading") activateMainTimer();
 
@@ -2532,7 +2626,11 @@ function triggerVibration(pattern) {
 
         let hasWon = false;
         let isEndlessTrig = false;
-        if (currentLevel === 0 && punteggio >= 1500 && !endlessVittoriaSbloccata) {
+        
+        if (currentLevel === 6 && esatte >= levelDb.length) {
+            hasWon = true; // Hai indovinato TUTTE le 193 nazioni!
+        }
+        else if (currentLevel === 0 && punteggio >= 1500 && !endlessVittoriaSbloccata) {
             isEndlessTrig = true;
             endlessVittoriaSbloccata = true;
         }
@@ -2626,8 +2724,8 @@ function triggerVibration(pattern) {
                 }
                 
                 if (badgeText !== "") {
-                    eventBadge.innerHTML = badgeText; 
-                    eventBadge.style.borderColor = badgeBorder;
+                    eventBadge.innerHTML = badgeText; eventBadge.style.backgroundColor = badgeBg;
+                    eventBadge.style.color = badgeTxtColor; eventBadge.style.borderColor = badgeBorder;
                     eventBadge.style.display = "block";
                 } else { eventBadge.style.display = "none"; }
                 
@@ -2644,7 +2742,11 @@ function triggerVibration(pattern) {
                     eventBadge.style.borderColor = "#4caf50";
                     eventBadge.style.display = "block";
                 } else {
-                    inputEl.value = `${msg} - ${nomeInserito}`; 
+                    if (currentLevel === 6) {
+                         inputEl.value = `Esatto! - ${nomeInserito}`; 
+                    } else {
+                         inputEl.value = `${msg} - ${nomeInserito}`; 
+                    }
                     if (badgeText !== "") { 
                         eventBadge.innerHTML = badgeText; 
                         eventBadge.style.borderColor = badgeBorder; 
@@ -2660,10 +2762,18 @@ function triggerVibration(pattern) {
             }
         }
     } else {
-        if (useTimer) stopTimer();
-        triggerVibration([100, 50, 100]);
-	playSound("errore");
-        failStandard(inputStr);
+        if (currentLevel === 6) {
+            // MODALITÀ SPAM LIVELLO 6: Sbagli? Pulisce e trema, ma NON muori! Puoi ritentare finché non scade il tempo.
+            inputEl.classList.add("shake", "wrong-flash");
+            setTimeout(() => inputEl.classList.remove("shake", "wrong-flash"), 400);
+            inputEl.value = "";
+        } else {
+            // COMPORTAMENTO NORMALE PER I LIVELLI 0-5 (Errore = Schermata rossa e perdi una vita)
+            if (useTimer) stopTimer();
+            triggerVibration([100, 50, 100]);
+            playSound("errore");
+            failStandard(inputStr);
+        }
     }
 }
 
@@ -2674,7 +2784,7 @@ function triggerVibration(pattern) {
     
     totalActiveTimeMs += (Date.now() - turnStartTime);
     
-    let useTimer = (currentLevel === 4 || (currentLevel === 5 && customConfig.timer));
+    let useTimer = (currentLevel === 4 || currentLevel === 6 || (currentLevel === 5 && customConfig.timer));
     let pct = useTimer ? (activeTimeLeft / activeTimeTotal) * 100 : 100;
     if (useTimer) stopTimer();
 
@@ -2927,22 +3037,6 @@ function triggerVibration(pattern) {
                 eventBadge.style.display = "block";
             } else { eventBadge.style.display = "none"; }
             submitBtn.style.display = "none";
-            nextBtn.style.display = "none";
-            document.getElementById("ritirati-btn").style.display = "block";
-            document.getElementById("continua-btn").style.display = "block";
-        } else {
-            if (currentLevel === 0) {
-                inputEl.value = "Corretto! +" + puntiRound + "pt";
-            } else {
-                inputEl.value = "Corretto! +" + puntiRound + "pt - " + nomiTrovati;
-            }
-            
-            if (badgeText !== "") {
-                eventBadge.innerHTML = badgeText; eventBadge.style.backgroundColor = badgeBg;
-                eventBadge.style.color = badgeTxtColor; eventBadge.style.borderColor = badgeBorder;
-                eventBadge.style.display = "block";
-            } else { eventBadge.style.display = "none"; }
-            submitBtn.style.display = "none";
             nextBtn.style.display = "block";
         }
     }
@@ -3047,6 +3141,14 @@ function triggerVibration(pattern) {
         }
         
         function aggiornaUI() {
+            if (currentLevel === 6) {
+                heartsEl.style.fontSize = "16px";
+                heartsEl.innerText = "💀 MORTE IMPROVVISA";
+                esatteEl.innerText = esatte + " / " + levelDb.length;
+                puntiEl.innerText = "-";
+                return;
+            }
+
             let cuoriStringa = "";
             let currentMaxVite = customConfig.vite > 5 ? customConfig.vite : maxVite;
             
@@ -3064,8 +3166,10 @@ function triggerVibration(pattern) {
 
         function popolaGameOver(isVictory = false) {
             if (gameOverScreen.style.display === "flex") return; // BLOCCO DOPPIO LOG E SCHERMATA
-	    if (isVictory) playSound("vittoria"); else playSound("sconfitta");
-	    document.getElementById("header").style.display = "none";
+            
+            playSound(isVictory ? "vittoria" : "sconfitta");
+            
+            document.getElementById("header").style.display = "none";
             document.getElementById("question").style.display = "none";
             document.getElementById("input-area").style.display = "none";
             bandieraContainer.style.display = "none";
@@ -3077,6 +3181,7 @@ function triggerVibration(pattern) {
             gameOverScreen.style.display = "flex";
             
             let avgTime = totalAnswersSubmitted > 0 ? (totalActiveTimeMs / totalAnswersSubmitted / 1000).toFixed(1) : "0.0";
+            let avgTimeFloat = parseFloat(avgTime);
             document.getElementById("final-avg-time").innerText = avgTime + "s";
             
             globalPlays++;
@@ -3090,9 +3195,9 @@ function triggerVibration(pattern) {
             if (bestStreak > statsByLevel[currentLevel].bestStreak) statsByLevel[currentLevel].bestStreak = bestStreak;
             
             // FIX RECORD TEMPO: Evita i record falsati. Si aggiorna solo se fai almeno 5 risposte esatte.
-            if (parseFloat(avgTime) > 0 && esatte >= 5) {
-                if (statsByLevel[currentLevel].bestAvgTime === 0 || parseFloat(avgTime) < statsByLevel[currentLevel].bestAvgTime) {
-                    statsByLevel[currentLevel].bestAvgTime = parseFloat(avgTime);
+            if (avgTimeFloat > 0 && esatte >= 5) {
+                if (statsByLevel[currentLevel].bestAvgTime === 0 || avgTimeFloat < statsByLevel[currentLevel].bestAvgTime) {
+                    statsByLevel[currentLevel].bestAvgTime = avgTimeFloat;
                 }
             }
             
@@ -3108,7 +3213,7 @@ function triggerVibration(pattern) {
                 recentGamesHistory[currentLevel].pop(); // Mantiene solo le ultime 5
             }
             
-            if (currentLevel >= 4 || currentLevel === 5) { 
+            if (currentLevel === 4 || currentLevel === 5) { 
                 statsByLevel[currentLevel].fotofinish += fotofinishCount;
                 statsByLevel[currentLevel].grazie += grazieRicevuteCount;
             }
@@ -3129,12 +3234,41 @@ function triggerVibration(pattern) {
 
             saveStats(); 
 
-            document.getElementById("final-score").innerText = punteggio;
-            document.getElementById("final-esatte").innerText = esatte;
-            document.getElementById("final-streak").innerText = bestStreak;
+            // Calcolo tempo totale per UI
+            let tTimeSecUI = totalActiveTimeMs / 1000;
+            let minAttivi = Math.floor(tTimeSecUI / 60);
+            let secAttivi = (tTimeSecUI % 60).toFixed(1);
+            let strTempoTotale = minAttivi > 0 ? `${minAttivi}m ${secAttivi}s` : `${secAttivi}s`;
+
+            // Creiamo o aggiorniamo la riga del tempo totale
+            let rowTempoTot = document.getElementById("stat-tempo-totale");
+            if (!rowTempoTot) {
+                rowTempoTot = document.createElement("div");
+                rowTempoTot.id = "stat-tempo-totale";
+                rowTempoTot.style.fontSize = "16px";
+                document.getElementById("game-over-stats").appendChild(rowTempoTot);
+            }
+            rowTempoTot.innerHTML = `⏳ Tempo totale: <strong style="color:#ffd700;">${strTempoTotale}</strong>`;
+
+            let statRow = document.getElementById("game-over-stats").firstElementChild;
+            let streakRow = document.getElementById("final-streak").parentNode;
+
+            // Personalizzazione testo risultati per il Livello 6
+            if (currentLevel === 6) {
+                let pct = levelDb.length > 0 ? ((esatte / levelDb.length) * 100).toFixed(1) : 0;
+                statRow.innerHTML = `Hai indovinato <strong class="score-highlight">${esatte}</strong> nazioni su <strong class="score-highlight">${levelDb.length}</strong> (${pct}%).`;
+                streakRow.style.display = "none"; // Nasconde Serie Migliore
+                rowTempoTot.style.display = "block"; // Mostra Tempo Totale
+            } else {
+                statRow.innerHTML = `Hai totalizzato <strong class="score-highlight" id="final-score">${punteggio}</strong> punti con <strong id="final-esatte">${esatte}</strong> risposte esatte.`;
+                streakRow.style.display = "block"; // Mostra Serie Migliore
+                document.getElementById("final-streak").innerText = bestStreak;
+                rowTempoTot.style.display = "none"; // Nasconde Tempo Totale
+            }
+
             document.getElementById("final-fotofinish").innerText = fotofinishCount;
             document.getElementById("final-grazie").innerText = grazieRicevuteCount;
-			// FIX: Mostra Fotofinish e Grazie solo nei livelli 4 e 5
+            // FIX: Mostra Fotofinish e Grazie solo nei livelli 4 e 5
             if (currentLevel === 4 || currentLevel === 5) {
                 document.getElementById("stat-fotofinish-row").style.display = "block";
                 document.getElementById("stat-grazie-row").style.display = "block";
@@ -3186,7 +3320,7 @@ function triggerVibration(pattern) {
                 }
             }
 
-	    let sortedIgnorate = Object.keys(nazioniIgnorateCount).map(sigla => {
+            let sortedIgnorate = Object.keys(nazioniIgnorateCount).map(sigla => {
                 let n = globalDb.find(c => c.sigla === sigla);
                 return { nome: n.nome, count: nazioniIgnorateCount[sigla], sigla: sigla };
             }).sort((a, b) => b.count - a.count).slice(0, 5);
@@ -3206,7 +3340,8 @@ function triggerVibration(pattern) {
                 return h + `</div>`;
             };
 
-            if (currentLevel !== 0 && (sortedUsate.length > 0 || sortedIgnorate.length > 0)) {
+            // FIX: Mostra Top 5 solo se NON siamo nel livello 0 e NON nel livello 6
+            if (currentLevel !== 0 && currentLevel !== 6 && (sortedUsate.length > 0 || sortedIgnorate.length > 0)) {
                 let html = `<div style="display:flex; gap:15px; margin-top:10px;">
                                 <div style="flex:1;">
                                     <h3 style="color:#4caf50; margin:0 0 10px 0; font-size:14px; text-transform:uppercase; text-align:center;">Top 5 Usate</h3>
@@ -3223,43 +3358,47 @@ function triggerVibration(pattern) {
                 top5Container.style.display = "none";
             }
 
-                        // --- AGGIUNTA DELLE STATISTICHE AL FILE DI LOG ---
-            let tTimeSec = totalActiveTimeMs / 1000;
-            let minutiAttivi = Math.floor(tTimeSec / 60);
-            let secondiAttivi = (tTimeSec % 60).toFixed(1);
-            let tempoAttivoString = minutiAttivi > 0 ? `${minutiAttivi}m ${secondiAttivi}s` : `${secondiAttivi}s`;
-
+            // --- AGGIUNTA DELLE STATISTICHE AL FILE DI LOG ---
             debugGameLog += "========================================\n";
             debugGameLog += "[STATISTICHE FINALI PARTITA]\n";
             debugGameLog += "Esito: " + (isVictory ? "🏆 VITTORIA" : "💀 GAME OVER") + "\n";
-            debugGameLog += "Punteggio: " + punteggio + " | Esatte: " + esatte + " su " + logQuestionCounter + " | Serie Max: " + bestStreak + "\n";
-            debugGameLog += "Tempo Medio di Risposta: " + avgTime + "s | Tempo di Gioco Attivo: " + tempoAttivoString + "\n";
-            if (currentLevel >= 4 || currentLevel === 5) {
+            
+            // FIX: Testo differenziato per il Log nel Livello 6
+            if (currentLevel === 6) {
+                let pct = levelDb.length > 0 ? ((esatte / levelDb.length) * 100).toFixed(1) : 0;
+                debugGameLog += "Esatte: " + esatte + " su " + levelDb.length + " (" + pct + "%)\n";
+            } else {
+                debugGameLog += "Punteggio: " + punteggio + " | Esatte: " + esatte + " su " + logQuestionCounter + " | Serie Max: " + bestStreak + "\n";
+            }
+            
+            debugGameLog += "Tempo Medio di Risposta: " + avgTime + "s | Tempo di Gioco Attivo: " + strTempoTotale + "\n";
+            if (currentLevel === 4 || currentLevel === 5) {
                 debugGameLog += "Salvataggi al Fotofinish: " + fotofinishCount + " | Grazie Ricevute: " + grazieRicevuteCount + "\n";
             }
-            if (currentLevel !== 0) {
+            // Nasconde Top 5 dal log se si gioca a L0 o L6
+            if (currentLevel !== 0 && currentLevel !== 6) {
                 debugGameLog += "Top 5 Usate: " + (sortedUsate.length > 0 ? sortedUsate.map(u => u.nome + " (" + u.count + ")").join(", ") : "Nessuna") + "\n";
                 debugGameLog += "Top 5 Ignorate: " + (sortedIgnorate.length > 0 ? sortedIgnorate.map(i => i.nome + " (" + i.count + ")").join(", ") : "Nessuna") + "\n";
             }
             debugGameLog += "========================================\n";
         }
 
-        document.addEventListener("keydown", function(event) {
+	document.addEventListener("keydown", function(event) {
             if (document.getElementById("input-area").style.display !== "flex") return;
 
             if (event.key === "Enter") {
-            if (document.getElementById("continua-btn").style.display === "block") {
-                continuaSfida();
-                event.preventDefault();
-            } else if (nextBtn.style.display === "block") {
-                nextTurnMulti(); 
-                event.preventDefault(); 
-            } else if (!inputEl.disabled && errPanel.style.display !== "flex") {
-                processaRisposta(); 
-                event.preventDefault();
+                if (document.getElementById("continua-btn").style.display === "block") {
+                    continuaSfida();
+                    event.preventDefault();
+                } else if (nextBtn.style.display === "block") {
+                    nextTurnMulti(); 
+                    event.preventDefault(); 
+                } else if (!inputEl.disabled && errPanel.style.display !== "flex") {
+                    processaRisposta(); 
+                    event.preventDefault();
+                }
+                return;
             }
-            return;
-        }
 
             if (event.key.length === 1 && !event.ctrlKey && !event.altKey && !event.metaKey && !inputEl.disabled) {
                 if (document.activeElement !== inputEl) {
@@ -3271,7 +3410,7 @@ function triggerVibration(pattern) {
 	function terminaPartitaVolontaria() {
             let conf = confirm("Vuoi davvero terminare la partita e salvare i tuoi record?");
             if (conf) {
-                if (currentLevel === 4 || (currentLevel === 5 && customConfig.timer)) stopTimer();
+                if (currentLevel === 4 || currentLevel === 6 || (currentLevel === 5 && customConfig.timer)) stopTimer();
                 inputEl.disabled = true;
                 popolaGameOver(false); 
                 document.getElementById("game-over-title").innerText = "PARTITA CONCLUSA";
