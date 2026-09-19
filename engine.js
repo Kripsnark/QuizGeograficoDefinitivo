@@ -2856,6 +2856,7 @@ function triggerVibration(pattern) {
 
     if (allCorrect || isGrazia) {
         triggerVibration(30);
+        playSound("esatto"); // <--- IL SUONO ORA PARTE!
         
         let comboTime = ((Date.now() - turnStartTime) / 1000).toFixed(1);
         debugGameLog += `-> ESITO COMBO [${comboTime}s]: ✅ SUPERATA` + (isGrazia ? " CON GRAZIA" : "") + " (Trovate: " + comboInserted.join(", ") + ")\n\n";
@@ -3120,6 +3121,7 @@ function triggerVibration(pattern) {
         }
 
         function failMulti(reason, wrongInput) {
+            playSound("errore"); // <--- IL SUONO ORA PARTE!
             let failTime = ((Date.now() - turnStartTime) / 1000).toFixed(1);
             debugGameLog += `-> ESITO [${failTime}s]: ❌ FALLIMENTO COMBO (` + reason + ") (Input: " + (wrongInput || "Nessuno") + ")\n\n";
             vite--;
