@@ -17,6 +17,7 @@
 // Stato dell'audio
 let suoniAttivi = true;
 
+// Pre-carichiamo i suoni in memoria così non c'è lag quando si gioca
 const EffettiSonori = {
     esatto: new Audio("suoni/esatto.wav"),
     errore: new Audio("suoni/errore.wav"),
@@ -3056,6 +3057,27 @@ function triggerVibration(pattern) {
             } else { eventBadge.style.display = "none"; }
             submitBtn.style.display = "none";
             nextBtn.style.display = "block";
+        } else {
+            // IL BLOCCO SCOMPARSO È TORNATO!
+            if (currentLevel === 0) {
+                inputEl.value = "Corretto! +" + puntiRound + "pt";
+            } else {
+                inputEl.value = "Corretto! +" + puntiRound + "pt - " + nomiTrovati;
+            }
+            
+            if (badgeText !== "") {
+                eventBadge.innerHTML = badgeText; 
+                eventBadge.style.backgroundColor = badgeBg;
+                eventBadge.style.color = badgeTxtColor; 
+                eventBadge.style.borderColor = badgeBorder;
+                eventBadge.style.display = "block";
+            } else { 
+                eventBadge.style.display = "none"; 
+            }
+            
+            submitBtn.style.display = "none";
+            nextBtn.innerText = "PROSSIMA DOMANDA ➔";
+            nextBtn.style.display = "block"; 
         }
     }
 }

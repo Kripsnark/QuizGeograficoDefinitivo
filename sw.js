@@ -1,4 +1,4 @@
-const CACHE_NAME = 'geoquiz-v2.1.1.3';
+const CACHE_NAME = 'geoquiz-v2.1.1.4';
 
 self.addEventListener('install', (event) => {
     event.waitUntil(
@@ -10,9 +10,9 @@ self.addEventListener('install', (event) => {
                 './engine.js',
                 './manifest.json',
                 './icon.png',
-                './suoni/esatto.wav',
-                './suoni/errore.wav',
-                './suoni/battito.wav',
+                './suoni/esatto.mp3',
+                './suoni/errore.mp3',
+                './suoni/battito.mp3',
                 './suoni/sconfitta.mp3',
                 './suoni/vittoria.mp3'
             ]);
