@@ -10,9 +10,9 @@ self.addEventListener('install', (event) => {
                 './engine.js',
                 './manifest.json',
                 './icon.png',
-                './suoni/esatto.mp3',
-                './suoni/errore.mp3',
-                './suoni/battito.mp3',
+                './suoni/esatto.wav',
+                './suoni/errore.wav',
+                './suoni/battito.wav',
                 './suoni/sconfitta.mp3',
                 './suoni/vittoria.mp3'
             ]);
