@@ -3266,8 +3266,8 @@ function triggerVibration(pattern) {
                 statsByLevel[currentLevel].grazie += grazieRicevuteCount;
             }
 
-            // Statistiche Globali Legacy - Aggiunte solo se non siamo nel Livello 5 Sandbox o Livello 0
-            if (currentLevel !== 5 && currentLevel !== 0) {
+            // Statistiche Globali Legacy - Esclusi Livello 0, Livello 5 (Sandbox) e Livello 6
+            if (currentLevel !== 0 && currentLevel !== 5 && currentLevel !== 6) {
                 if (punteggio > allTimeBestScore) allTimeBestScore = punteggio;
                 if (bestStreak > allTimeBestStreak) allTimeBestStreak = bestStreak;
                 allTimeFotofinish += fotofinishCount;
