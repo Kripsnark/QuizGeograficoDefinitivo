@@ -68,7 +68,7 @@ FJ	Figi		Suva			Oceania	azzurro		emblema nazionale, union jack			2
 PH	Filippine		Manila			Asia, Sud-Est Asiatico	bianco, rosso, blu	giallo	emblema nazionale, stella, sole		triangolo a sinistra bianco, stella gialla	1
 FI	Finlandia		Helsinki		svezia, norvegia, russia, mare	Europa, paesi baltici	bianco, blu		croce scandinava			1
 FR	Francia		Parigi		spagna, andorra, principato di monaco, italia, svizzera, lussemburgo, belgio, germania, mare	Europa, Mediterraneo	blu, bianco, rosso				strisce verticali	1
-GA	Gabon		Libreville		guinea equatoriale, camerun, congo, mare	africa, africa centrale, Golfo di Guinea	verde, giallo, azzurro				strisce orizzontali	2
+GA	Gabon		Libreville		guinea equatoriale, camerun, congo, mare	africa, africa centrale, Golfo di Guinea	verde, giallo, blu				strisce orizzontali	2
 GB-WLS	Galles		Cardiff		inghilterra, mare	europa	bianco, verde, rosso	rosso	drago	x		3
 GM	Gambia		Banjul	Bangiul	senegal, mare	africa, africa centrale	rosso, blu, verde, bianco				strisce orizzontali	2
 GE	Georgia		Tbilisi		russia, turchia, armenia, azerbaigian, mare	Asia	bianco, rosso		croce simmetrica			2

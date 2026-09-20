@@ -245,7 +245,7 @@ function triggerVibration(pattern) {
                 });
                 nazione.confini = landBorders; 
                 
-                let eccezioniIsole = ["GL", "HT", "DO", "MF", "SX"];
+                let eccezioniIsole = ["GL", "HT", "DO", "MF", "SX", "BH", "SG"];
                 if (landBorders.length === 0 || eccezioniIsole.includes(nazione.sigla)) nazione.tipoGeo = "isola"; 
                 else if (hasSea) nazione.tipoGeo = "costiera";
                 else nazione.tipoGeo = "interna"; 
@@ -350,13 +350,14 @@ function triggerVibration(pattern) {
         const errText = document.getElementById("error-feedback-text");
 
 	const normalizzaTesto = function(str) {
-	    if (!str) return "";
-	    return str.toLowerCase()
-              .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-           .replace(/['’`´]/g, " ") // Converte tutti gli apostrofi in spazi
-              .replace(/[^a-z0-9\s]/g, "") // Mantiene gli spazi
-              .trim()
-              .replace(/\s+/g, " "); // Evita di creare doppi spazi
+    	if (!str) return "";
+   	return str.toLowerCase()
+          .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+          .replace(/[-_.,;:]/g, " ") // Converte trattini e punti in spazi
+          .replace(/['’`´]/g, " ") // Converte tutti gli apostrofi in spazi
+          .replace(/[^a-z0-9\s]/g, "") // Mantiene gli spazi
+          .trim()
+          .replace(/\s+/g, " "); // Evita di creare doppi spazi
 	};
         
 	// --- GESTIONE PWA BACK BUTTON ---
@@ -405,18 +406,19 @@ function triggerVibration(pattern) {
         }
 
         function isDoppelganger(input, target) {
-            if (!input || !target) return false;
-            let iAlpha = input.toLowerCase().replace(/[^a-z]/g, "");
-            let tAlpha = target.toLowerCase().replace(/[^a-z]/g, "");
-            
-            if ((iAlpha === "kingston" && tAlpha === "kingstown") || (iAlpha === "kingstown" && tAlpha === "kingston")) return true;
-            if (iAlpha === "basseterre" && tAlpha === "basseterre") {
-                let hasSeparatorInput = input.includes("-") || input.includes(" ");
-                let hasSeparatorTarget = target.includes("-") || target.includes(" ");
-                if (hasSeparatorInput !== hasSeparatorTarget) return true; 
-            }
-            return false;
-        }
+    if (!input || !target) return false;
+    let iAlpha = input.toLowerCase().replace(/[^a-z]/g, "");
+    let tAlpha = target.toLowerCase().replace(/[^a-z]/g, "");
+    
+    if ((iAlpha === "kingston" && tAlpha === "kingstown") || (iAlpha === "kingstown" && tAlpha === "kingston")) return true;
+    
+    if ((iAlpha === "basseterre" && tAlpha === "basseterre") || (iAlpha === "georgetown" && tAlpha === "georgetown")) {
+        let hasSeparatorInput = input.includes("-") || input.includes(" ");
+        let hasSeparatorTarget = target.includes("-") || target.includes(" ");
+        if (hasSeparatorInput !== hasSeparatorTarget) return true; 
+    }
+    return false;
+}
 
         function levenshteinDistance(a, b) {
             let aNorm = normalizzaTesto(a);
@@ -745,6 +747,11 @@ function triggerVibration(pattern) {
 
         aggiornaUI();
         playTurn();
+
+	setTimeout(() => {
+            inputEl.focus();
+            inputEl.click();
+        }, 100);
     }
     // ------------------------------------------------
 
@@ -1566,10 +1573,14 @@ function triggerVibration(pattern) {
                     let base = finalQ.slice(0, -1);
                     
                     let extraNegs = [];
+                    let isCap = (format === 6 || (format === 12 && td.f12AskCapital));
+                    let sS = isCap ? "di uno Stato che" : "che";
+                    let sP = isCap ? "di Stati che" : "che";
+                    
                     if (td.negGeo) {
-                        if (td.negGeo === 'isola') extraNegs.push(num === 1 ? "che <span class='negative-constraint'>NON</span> sia insulare" : "che <span class='negative-constraint'>NON</span> siano insulari");
-                        else if (td.negGeo === 'costiera') extraNegs.push(num === 1 ? "che <span class='negative-constraint'>NON</span> sia continentale costiero" : "che <span class='negative-constraint'>NON</span> siano continentali costieri");
-                        else if (td.negGeo === 'interna') extraNegs.push(num === 1 ? "che abbia sbocchi sul mare" : "che abbiano sbocchi sul mare");
+                        if (td.negGeo === 'isola') extraNegs.push(num === 1 ? `${sS} <span class='negative-constraint'>NON</span> sia insulare` : `${sP} <span class='negative-constraint'>NON</span> siano insulari`);
+                        else if (td.negGeo === 'costiera') extraNegs.push(num === 1 ? `${sS} <span class='negative-constraint'>NON</span> sia continentale costiero` : `${sP} <span class='negative-constraint'>NON</span> siano continentali costieri`);
+                        else if (td.negGeo === 'interna') extraNegs.push(num === 1 ? `${sS} abbia sbocchi sul mare` : `${sP} abbiano sbocchi sul mare`);
                     }
                     if (td.negArea) {
                         extraNegs.push(getPreposizioneAreaNegativa(td.negArea, num));
@@ -2360,6 +2371,11 @@ function triggerVibration(pattern) {
             submitBtn.style.display = "block";
             submitBtn.disabled = false;
             playTurn();
+
+	setTimeout(() => {
+            inputEl.focus();
+            inputEl.click();
+        }, 100);
         }
 
         function surrenderTurn() {
@@ -2567,6 +2583,27 @@ function triggerVibration(pattern) {
     }
 
     let res = checkSingleAnswer(inputStr, currentTurnData, currentLevel);
+	if (res.isCorrect && !isMulti && nazioniUsate.includes(res.matchedCountry.sigla)) {
+        let hasAltreOpzioni = currentTurnData.validSiglas.some(s => !nazioniUsate.includes(s));
+        
+        if (hasAltreOpzioni || currentLevel === 6) {
+            inputEl.classList.add("warning-flash", "shake");
+            setTimeout(() => {
+                inputEl.classList.remove("warning-flash", "shake");
+                inputEl.focus(); 
+            }, 400);
+            inputEl.value = "";
+            
+            let oldPlaceholder = inputEl.placeholder;
+            inputEl.placeholder = "L'hai già usata, CAMBIA!";
+            setTimeout(() => { 
+                if (inputEl.placeholder === "L'hai già usata, CAMBIA!") inputEl.placeholder = oldPlaceholder; 
+            }, 1500);
+            
+            return; 
+        }
+    }
+
     inputEl.classList.remove("shake", "correct-flash", "wrong-flash", "warning-flash");
     void inputEl.offsetWidth; 
 
@@ -3360,24 +3397,27 @@ function triggerVibration(pattern) {
                 errorLogEl.innerHTML = errorHtml;
             }
 
-            // Top 5 Usate e Ignorate
-            let top5Container = document.getElementById("top5-nations");
-            let sortedUsate = Object.keys(nazioniDigitateCount).map(sigla => {
+            let allUsate = Object.keys(nazioniDigitateCount).map(sigla => {
                 let n = globalDb.find(c => c.sigla === sigla);
                 return { nome: n.nome, count: nazioniDigitateCount[sigla], sigla: sigla };
-            }).sort((a, b) => b.count - a.count).slice(0, 5);
-
-            // Filtro: Pulisce le ignorate se la nazione è stata effettivamente usata
+            }).sort((a, b) => b.count - a.count);
+            
+            let sortedUsate = allUsate.slice(0, 5); // UI
+            let logUsate = allUsate.slice(0, 20);   // LOG
+            
             for (let sigla in nazioniIgnorateCount) {
                 if (nazioniDigitateCount[sigla] && nazioniDigitateCount[sigla] > 0) {
                     delete nazioniIgnorateCount[sigla];
                 }
             }
-
-            let sortedIgnorate = Object.keys(nazioniIgnorateCount).map(sigla => {
+            
+            let allIgnorate = Object.keys(nazioniIgnorateCount).map(sigla => {
                 let n = globalDb.find(c => c.sigla === sigla);
                 return { nome: n.nome, count: nazioniIgnorateCount[sigla], sigla: sigla };
-            }).sort((a, b) => b.count - a.count).slice(0, 5);
+            }).sort((a, b) => b.count - a.count);
+            
+            let sortedIgnorate = allIgnorate.slice(0, 5); // UI
+            let logIgnorate = allIgnorate.slice(0, 20);   // LOG
 
             const buildMiniList = (arr, color) => {
                 if (arr.length === 0) return `<p style="font-size:13px; color:#888;">Nessun dato</p>`;
@@ -3435,8 +3475,8 @@ function triggerVibration(pattern) {
             }
             // Nasconde Top 5 dal log se si gioca a L0 o L6
             if (currentLevel !== 0 && currentLevel !== 6) {
-                debugGameLog += "Top 5 Usate: " + (sortedUsate.length > 0 ? sortedUsate.map(u => u.nome + " (" + u.count + ")").join(", ") : "Nessuna") + "\n";
-                debugGameLog += "Top 5 Ignorate: " + (sortedIgnorate.length > 0 ? sortedIgnorate.map(i => i.nome + " (" + i.count + ")").join(", ") : "Nessuna") + "\n";
+                debugGameLog += "Top 20 Usate: " + (logUsate.length > 0 ? logUsate.map(u => u.nome + " (" + u.count + ")").join(", ") : "Nessuna") + "\n";
+                debugGameLog += "Top 20 Ignorate: " + (logIgnorate.length > 0 ? logIgnorate.map(i => i.nome + " (" + i.count + ")").join(", ") : "Nessuna") + "\n";
             }
             debugGameLog += "========================================\n";
         }
