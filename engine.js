@@ -3397,23 +3397,27 @@ function triggerVibration(pattern) {
                 errorLogEl.innerHTML = errorHtml;
             }
 
-            let allUsate = Object.keys(nazioniDigitateCount).map(sigla => {
-                let n = globalDb.find(c => c.sigla === sigla);
-                return { nome: n.nome, count: nazioniDigitateCount[sigla], sigla: sigla };
+            // 1. Pulisce le ignorate
+            for (let chiave in nazioniIgnorateCount) {
+                if (nazioniDigitateCount[chiave] && nazioniDigitateCount[chiave] > 0) {
+                    delete nazioniIgnorateCount[chiave];
+                }
+            }
+
+            // 2. Calcola Usate (Anti-crash)
+            let allUsate = Object.keys(nazioniDigitateCount).map(chiave => {
+                let n = globalDb.find(c => c.sigla === chiave || c.nome === chiave);
+                // Passiamo anche la sigla così le tue bandierine in buildMiniList continuano a funzionare!
+                return { nome: n ? n.nome : chiave, count: nazioniDigitateCount[chiave], sigla: n ? n.sigla : chiave };
             }).sort((a, b) => b.count - a.count);
             
             let sortedUsate = allUsate.slice(0, 5); // UI
             let logUsate = allUsate.slice(0, 20);   // LOG
             
-            for (let sigla in nazioniIgnorateCount) {
-                if (nazioniDigitateCount[sigla] && nazioniDigitateCount[sigla] > 0) {
-                    delete nazioniIgnorateCount[sigla];
-                }
-            }
-            
-            let allIgnorate = Object.keys(nazioniIgnorateCount).map(sigla => {
-                let n = globalDb.find(c => c.sigla === sigla);
-                return { nome: n.nome, count: nazioniIgnorateCount[sigla], sigla: sigla };
+            // 3. Calcola Ignorate (Anti-crash)
+            let allIgnorate = Object.keys(nazioniIgnorateCount).map(chiave => {
+                let n = globalDb.find(c => c.sigla === chiave || c.nome === chiave);
+                return { nome: n ? n.nome : chiave, count: nazioniIgnorateCount[chiave], sigla: n ? n.sigla : chiave };
             }).sort((a, b) => b.count - a.count);
             
             let sortedIgnorate = allIgnorate.slice(0, 5); // UI
@@ -3433,6 +3437,9 @@ function triggerVibration(pattern) {
                 });
                 return h + `</div>`;
             };
+
+            // FIX: Recupera il contenitore HTML che era andato perso!
+            let top5Container = document.getElementById("top5-nations");
 
             // FIX: Mostra Top 5 solo se NON siamo nel livello 0 e NON nel livello 6
             if (currentLevel !== 0 && currentLevel !== 6 && (sortedUsate.length > 0 || sortedIgnorate.length > 0)) {
