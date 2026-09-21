@@ -349,6 +349,44 @@ function triggerVibration(pattern) {
         const errTitle = document.getElementById("error-feedback-title");
         const errText = document.getElementById("error-feedback-text");
 
+// NUOVA FUNZIONE: Lightbox Bandiere a tutto schermo
+        window.openFlagModal = function(src) {
+            let overlay = document.getElementById("flag-lightbox");
+            
+            if (!overlay) {
+                overlay = document.createElement("div");
+                overlay.id = "flag-lightbox";
+                overlay.style.cssText = "display:flex; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:10000; justify-content:center; align-items:center; flex-direction:column; opacity:0; transition: opacity 0.2s;";
+                
+                // Quando clicchi ovunque sul nero, la finestra si chiude
+                overlay.onclick = function() { 
+                    this.style.opacity = "0"; 
+                    setTimeout(() => { this.style.display = 'none'; }, 200); 
+                };
+                
+                let img = document.createElement("img");
+                img.id = "flag-lightbox-img";
+                img.style.cssText = "max-width:90%; max-height:80%; border-radius:8px; box-shadow:0 4px 15px rgba(0,0,0,0.7); border:2px solid #fff; transform: scale(0.9); transition: transform 0.2s;";
+                
+                overlay.appendChild(img);
+                document.body.appendChild(overlay);
+            }
+            
+            let imgEl = document.getElementById("flag-lightbox-img");
+            imgEl.src = src;
+            overlay.style.display = "flex";
+            
+            // Piccolo delay per l'animazione di comparsa morbida
+            setTimeout(() => {
+                overlay.style.opacity = "1";
+                imgEl.style.transform = "scale(1)";
+            }, 10);
+        };
+
+        // Rende cliccabile e zoomabile la bandiera principale della domanda!
+        bandieraImg.style.cursor = "pointer";
+        bandieraImg.onclick = function() { window.openFlagModal(this.src); };
+
 	const normalizzaTesto = function(str) {
     	if (!str) return "";
    	return str.toLowerCase()
@@ -543,7 +581,8 @@ function triggerVibration(pattern) {
                 tableHTML += `<tr>
                     <td style="text-align:center;">
                         <img src="GIF/${n.sigla.toLowerCase()}.jpg" 
-                             style="width:40px; border-radius:2px; border:1px solid #444;" 
+                             onclick="window.openFlagModal(this.src)"
+                             style="width:40px; border-radius:2px; border:1px solid #444; cursor:pointer;" 
                              onerror="this.onerror=null; this.alt='❌ ERR'; this.style.border='2px solid #f44336'; this.style.padding='2px';">
                     </td>
                     <td>${n.sigla.toUpperCase()}</td>
@@ -579,7 +618,7 @@ function triggerVibration(pattern) {
                 h += "<div style='display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding: 3px 0; height: 22px;'>";
                 h += "<div style='display:flex; align-items:center; gap:5px; flex:1; min-width:0; padding-right:5px;'>";
                 h += "<span style='color:#777; font-weight:bold; font-size:10px; width:14px; text-align:right; flex-shrink:0;'>" + (idx + 1) + ".</span>";
-                h += "<img src='GIF/" + sn.sigla.toLowerCase() + ".jpg' style='width:16px; height:11px; border-radius:2px; flex-shrink:0; object-fit:cover;' onerror='this.style.display=\"none\"'>";
+                h += "<img src='GIF/" + sn.sigla.toLowerCase() + ".jpg' onclick='window.openFlagModal(this.src)' style='width:16px; height:11px; border-radius:2px; flex-shrink:0; object-fit:cover; cursor:pointer;' onerror='this.style.display=\"none\"'>";
                 h += "<span style='color:#ccc; font-weight:bold; font-size:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; flex:1;'>" + sn.nome.toUpperCase() + "</span>";
                 h += "</div>";
                 h += "<span style='color:" + color + "; font-weight:bold; font-size:11px; flex-shrink:0; width:15px; text-align:right;'>" + sn.count + "</span>";
@@ -2324,7 +2363,7 @@ function triggerVibration(pattern) {
                     if (matchedCountry) {
                         htmlStr += `<div style="display:flex; flex-direction:column; align-items:center; background:#1a1a1a; padding:6px; border-radius:6px; border:1px solid #444; width:65px; height:70px; justify-content:flex-end;">
                             <div style="flex-grow:1; display:flex; align-items:center; justify-content:center; width:100%;">
-                                <img src="GIF/${matchedCountry.sigla.toLowerCase()}.jpg" style="max-width:45px; max-height:35px; border-radius:3px; box-shadow:0 2px 4px rgba(0,0,0,0.5);" onerror="this.style.display='none'">
+                                <img src="GIF/${matchedCountry.sigla.toLowerCase()}.jpg" onclick="window.openFlagModal(this.src)" style="max-width:45px; max-height:35px; border-radius:3px; box-shadow:0 2px 4px rgba(0,0,0,0.5); cursor:pointer;" onerror="this.style.display='none'">
                             </div>
                             <span style="font-size:10px; color:#ffd700; font-weight:bold; letter-spacing:0.5px; text-align:center; width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:4px;">${ans.toUpperCase()}</span>
                         </div>`;
@@ -2548,7 +2587,7 @@ function triggerVibration(pattern) {
                         mcContainer.style.display = "flex";
                         mcContainer.style.animation = "fadeIn 0.3s"; // Piccolo effetto comparsa!
                     }
-                }, 500);
+                }, 250);
                 
             } else {
                 inputEl.style.display = "block";
@@ -2743,6 +2782,10 @@ function triggerVibration(pattern) {
                 img.style.borderRadius = "4px";
                 img.style.boxShadow = "0 3px 6px rgba(0,0,0,0.6)";
                 img.style.border = "1px solid #444";
+                
+                img.style.cursor = "pointer";
+                img.onclick = function() { window.openFlagModal(this.src); };
+                
                 img.onerror = function() { this.style.display = 'none'; };
 
                 gridContainer.appendChild(img);
@@ -3052,6 +3095,10 @@ function triggerVibration(pattern) {
                 img.style.borderRadius = "4px";
                 img.style.boxShadow = "0 3px 6px rgba(0,0,0,0.6)";
                 img.style.border = "1px solid #444";
+                
+                img.style.cursor = "pointer"; // <-- AGGIUNTA
+                img.onclick = function() { window.openFlagModal(this.src); }; // <-- AGGIUNTA
+                
                 img.onerror = function() { this.style.display = 'none'; };
                 
                 if (matchedCountriesInfos.length === 5) {
@@ -3449,7 +3496,7 @@ function triggerVibration(pattern) {
                 arr.forEach((sn, idx) => {
                     h += `<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; height:40px;">
                             <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:0; padding-right:8px;">
-                                <img src="GIF/${sn.sigla.toLowerCase()}.jpg" style="width:16px; border-radius:2px; flex-shrink:0;" onerror="this.style.display='none'">
+                                <img src="GIF/${sn.sigla.toLowerCase()}.jpg" onclick="window.openFlagModal(this.src)" style="width:16px; border-radius:2px; flex-shrink:0; cursor:pointer;" onerror="this.style.display='none'">
                                 <span style="color:#ccc; font-size:12px; line-height:1.2; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; text-overflow:ellipsis;">${sn.nome.toUpperCase()}</span>
                             </div>
                             <span style="color:${color}; font-weight:bold; font-size:13px; flex-shrink:0;">${sn.count}</span>
