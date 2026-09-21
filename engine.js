@@ -2383,7 +2383,7 @@ function triggerVibration(pattern) {
     
     triggerVibration([100, 50, 100]);
     let surrTime = ((Date.now() - turnStartTime) / 1000).toFixed(1);
-    debugGameLog += `-> ESITO [${surrTime}s]: 🏳️ RESA\n\n`;
+    debugGameLog += `-> ESITO [${surrTime}s] [0pti]: 🏳️ RESA\n\n`;
     
     if (currentLevel === 4 || currentLevel === 6 || (currentLevel === 5 && customConfig.timer)) stopTimer();
     
@@ -2583,25 +2583,41 @@ function triggerVibration(pattern) {
     }
 
     let res = checkSingleAnswer(inputStr, currentTurnData, currentLevel);
-	if (res.isCorrect && !isMulti && nazioniUsate.includes(res.matchedCountry.sigla)) {
-        let hasAltreOpzioni = currentTurnData.validSiglas.some(s => !nazioniUsate.includes(s));
+    
+    // FIX: Blocco "L'hai già usata" con PAUSA TIMER di 3 secondi (Solo Livello 6)
+    if (currentLevel === 6 && res.isCorrect && !isMulti && nazioniUsate.includes(res.matchedCountry.sigla)) {
         
-        if (hasAltreOpzioni || currentLevel === 6) {
-            inputEl.classList.add("warning-flash", "shake");
+        // 1. Ferma il timer per dare respiro
+        let wasActive = (timerState === "active");
+        let currentQ = logQuestionCounter; // Memorizza a quale domanda siamo
+        
+        if (wasActive) {
+            stopTimer(); // Blocca il conto alla rovescia
+            timerBar.style.backgroundColor = "#ff9800"; // Barra arancione di avviso
+            
+            // 2. Riattiva il timer dopo 3 secondi (solo se non hai già risposto nel frattempo)
             setTimeout(() => {
-                inputEl.classList.remove("warning-flash", "shake");
-                inputEl.focus(); 
-            }, 400);
-            inputEl.value = "";
-            
-            let oldPlaceholder = inputEl.placeholder;
-            inputEl.placeholder = "L'hai già usata, CAMBIA!";
-            setTimeout(() => { 
-                if (inputEl.placeholder === "L'hai già usata, CAMBIA!") inputEl.placeholder = oldPlaceholder; 
-            }, 1500);
-            
-            return; 
+                if (logQuestionCounter === currentQ && !inputEl.disabled) {
+                    activateMainTimer();
+                }
+            }, 3000);
         }
+
+        // 3. Effetti visivi e di testo
+        inputEl.classList.add("warning-flash", "shake");
+        setTimeout(() => {
+            inputEl.classList.remove("warning-flash", "shake");
+            inputEl.focus(); 
+        }, 400);
+        inputEl.value = "";
+        
+        let oldPlaceholder = inputEl.placeholder;
+        inputEl.placeholder = "L'hai già usata, CAMBIA!";
+        setTimeout(() => { 
+            if (inputEl.placeholder === "L'hai già usata, CAMBIA!") inputEl.placeholder = oldPlaceholder; 
+        }, 1500);
+        
+        return; 
     }
 
     inputEl.classList.remove("shake", "correct-flash", "wrong-flash", "warning-flash");
@@ -2614,8 +2630,6 @@ function triggerVibration(pattern) {
     if (isMulti) {
         if(res.isCorrect) debugGameLog += `-> INPUT COMBO PARZIALE [${actionTime}s]: ` + inputStr + " (Riconosciuto: " + res.matchedCountry.nome + ")\n";
         else debugGameLog += `-> INPUT COMBO ERRATO [${actionTime}s]: ` + inputStr + "\n";
-    } else {
-        if(res.isCorrect) debugGameLog += `-> ESITO [${actionTime}s]: ✅ CORRETTO (Input: ` + inputStr + " -> Riconosciuto: " + res.matchedCountry.nome + ")\n\n";
     }
 
     if (res.isCorrect) {
@@ -2674,6 +2688,9 @@ function triggerVibration(pattern) {
         }
         
         punteggio += puntiGuadagnati;
+	if (!isMulti) {
+             debugGameLog += `-> ESITO [${actionTime}s] [${puntiGuadagnati}pti]: ✅ CORRETTO (Input: ` + inputStr + " -> Riconosciuto: " + res.matchedCountry.nome + ")\n\n";
+        }
 
         let hasWon = false;
         let isEndlessTrig = false;
@@ -2894,10 +2911,7 @@ function triggerVibration(pattern) {
     if (allCorrect || isGrazia) {
         triggerVibration(30);
         playSound("esatto"); // <--- IL SUONO ORA PARTE!
-        
-        let comboTime = ((Date.now() - turnStartTime) / 1000).toFixed(1);
-        debugGameLog += `-> ESITO COMBO [${comboTime}s]: ✅ SUPERATA` + (isGrazia ? " CON GRAZIA" : "") + " (Trovate: " + comboInserted.join(", ") + ")\n\n";
-        
+               
         if (currentTurnData.validSiglas && currentTurnData.validSiglas.length <= 30) {
             currentTurnData.validSiglas.forEach(s => {
                 if (!matchedSiglas.includes(s)) nazioniIgnorateCount[s] = (nazioniIgnorateCount[s] || 0) + 1;
@@ -2922,7 +2936,7 @@ function triggerVibration(pattern) {
             badgeBorder = "#2196f3";
         }
         
-        esatte += comboInserted.length; 
+        esatte ++; 
         currentStreak++;
         if (currentStreak > bestStreak) bestStreak = currentStreak;
 
@@ -2993,7 +3007,11 @@ function triggerVibration(pattern) {
         
         punteggio += puntiRound;
         
-        let currentMaxVite = customConfig.vite > 5 ? customConfig.vite : maxVite;
+        let comboTimeNum = (Date.now() - turnStartTime) / 1000;
+        let timePerRisp = (comboTimeNum / comboInserted.length).toFixed(1);
+        debugGameLog += `-> ESITO COMBO [${comboTimeNum.toFixed(1)}s tot | ${timePerRisp}s/risp] [${puntiRound}pti]: ✅ SUPERATA` + (isGrazia ? " CON GRAZIA" : "") + " (Trovate: " + comboInserted.join(", ") + ")\n\n";
+
+	let currentMaxVite = customConfig.vite > 5 ? customConfig.vite : maxVite;
         if (currentLevel !== 6 && punteggio >= prossimoCuore && vite < currentMaxVite) {
             vite++; prossimoCuore += 750; 
             badgeText += "❤️ +1 VITA EXTRA!<br>";
@@ -3122,7 +3140,7 @@ function triggerVibration(pattern) {
 
         function failStandard(wrongInput) {
             let failTime = ((Date.now() - turnStartTime) / 1000).toFixed(1);
-            debugGameLog += `-> ESITO [${failTime}s]: ❌ ERRORE (Input: ` + (wrongInput || "Nessuno") + ")\n\n";
+            debugGameLog += `-> ESITO [${failTime}s] [0pti]: ❌ ERRORE (Input: ` + (wrongInput || "Nessuno") + ")\n\n";
             vite--;
             currentStreak = 0;
             aggiornaUI();
@@ -3158,9 +3176,11 @@ function triggerVibration(pattern) {
         }
 
         function failMulti(reason, wrongInput) {
-            playSound("errore"); // <--- IL SUONO ORA PARTE!
-            let failTime = ((Date.now() - turnStartTime) / 1000).toFixed(1);
-            debugGameLog += `-> ESITO [${failTime}s]: ❌ FALLIMENTO COMBO (` + reason + ") (Input: " + (wrongInput || "Nessuno") + ")\n\n";
+            playSound("errore"); 
+            let failTimeNum = (Date.now() - turnStartTime) / 1000;
+            let numRisp = comboInserted.length > 0 ? comboInserted.length : 1; 
+            let timePerRisp = (failTimeNum / numRisp).toFixed(1);
+            debugGameLog += `-> ESITO [${failTimeNum.toFixed(1)}s tot | ${timePerRisp}s/risp] [0pti]: ❌ FALLIMENTO COMBO (` + reason + ") (Input: " + (wrongInput || "Nessuno") + ")\n\n";
             vite--;
             currentStreak = 0;
             aggiornaUI();

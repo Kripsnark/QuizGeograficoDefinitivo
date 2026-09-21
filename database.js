@@ -83,7 +83,7 @@ JO	Giordania		Amman		israele, siria, iraq, arabia saudita, mare	Asia, medio orie
 GR	Grecia		Atene		albania, macedonia del nord, bulgaria, turchia, mare	Europa, Mediterraneo, Balcani	bianco, azzurro		croce simmetrica			1
 GD	Grenada		Saint George's	s george's, s george, saint george		nord america, caraibi	rosso, giallo, verde	rosso, giallo	stella, cerchio		cerchio rosso, stella gialla	2
 GL	Groenlandia		Nuuk		canada, mare	nord america	rosso, bianco		cerchio	x		3
-GP	Guadalupa		Basse-Terre			nord america, caraibi	blu, giallo, nero, verde		sole	x		3
+GP	Guadalupa		Basse-Terre			nord america, caraibi	blu, giallo, nero, verde		emblema nazionale, sole	x		3
 GU	Guam		Hagåtña			Asia	blu, rosso		emblema nazionale	x		3
 GT	Guatemala		Città del Guatemala	Guatemala	messico, belize, honduras, el salvador, mare	nord america, america centrale	azzurro, bianco		emblema nazionale		strisce verticali	2
 GG	Guernsey		Saint Peter Port	Porto di San Pietro		europa	bianco, rosso, giallo		croce simmetrica	x		3
