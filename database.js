@@ -137,7 +137,7 @@ LT	Lituania		Vilnius		russia, lettonia, bielorussia, polonia, mare	Europa, paesi
 LU	Lussemburgo		Lussemburgo		belgio, germania, francia	europa	azzurro, bianco, rosso				strisce orizzontali	2
 MO	Macao		Macao		cina, mare	Asia	verde	bianco, giallo	stella	x	stella gialla, lenzuolo verde	3
 MK	Macedonia del Nord	Macedonia	Skopje	Skopie	albania, grecia, bulgaria, serbia, kosovo	europa, Balcani	rosso, giallo		sole			2
-MG	Madagascar		Antananarivo			africa	bianco, rosso, verde					1
+MG	Madagascar		Antananarivo			africa, africa meridionale	bianco, rosso, verde					1
 MW	Malawi		Lilongwe		tanzania, mozambico, zambia	africa, africa meridionale	nero, rosso, verde	rosso	sole		strisce orizzontali	2
 MY	Malaysia	Malesia	Kuala Lumpur		thailandia, singapore, brunei, indonesia, mare	Asia, Sud-Est Asiatico, Penisola indocinese	blu, rosso, bianco	giallo	mezzaluna, stella		mezzaluna gialla, stella gialla	1
 MV	Maldive		Malé			Asia, Subcontinente indiano	rosso, verde	bianco	mezzaluna		mezzaluna bianca	2
@@ -200,7 +200,7 @@ WS	Samoa		Apia			Oceania	rosso, blu	bianco	stella, croce del sud		stella bianca	
 AS	Samoa Americane		Pago Pago			Oceania	blu, bianco, rosso		aquila, uccello, animale, emblema nazionale, arma	x		3
 SM	San Marino	*Repubblica di San Marino	Città di San Marino	San Marino	Italia	europa	bianco, azzurro		emblema nazionale, corona		strisce orizzontali	2
 SH	Sant'Elena		Jamestown			africa	blu		uccello, animale, emblema nazionale, union jack	x		3
-ST	São Tomé e Príncipe	Sao Tome	São Tomé	Sao Tome		africa, Golfo di Guinea	verde, giallo, rosso	nero	stella, 		triangolo a sinistra rosso, stella nera	2
+ST	São Tomé e Príncipe	Sao Tome	São Tomé	Sao Tome		africa, africa centrale, Golfo di Guinea	verde, giallo, rosso	nero	stella, 		triangolo a sinistra rosso, stella nera	2
 GB-SCT	Scozia		Glasgow		inghilterra, mare	europa	bianco, azzurro			x	croce di Sant'Andrea (X)	3
 SN	Senegal		Dakar		mauritania, mali, guinea, guinea-bissau, gambia, mare	africa, africa centrale	verde, giallo, rosso	verde	stella		strisce verticali, stella verde	1
 RS	Serbia		Belgrado		kosovo, montenegro, bosnia ed erzegovina, croazia, ungheria, romania, bulgaria, macedonia del nord	europa, Balcani	rosso, blu, bianco		aquila, corona, emblema nazionale		strisce orizzontali	1

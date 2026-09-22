@@ -1010,7 +1010,23 @@ function triggerVibration(pattern) {
             document.getElementById("top5-nations").style.display = "none";
 
             aggiornaUI();
+
         }
+
+        window.playAgain = function() {
+            let lvlToRestart = currentLevel; 
+            resetGame(); 
+            
+            setTimeout(() => {
+                if (lvlToRestart === 5) {
+                    startCustomGame();
+                } else if (lvlToRestart === 6) {
+                    startLevel6Game();
+                } else {
+                    startGame(lvlToRestart); 
+                }
+            }, 50);
+        };
 
         function getPreposizioneArea(area) {
             if (!area) return "";
@@ -2805,13 +2821,22 @@ function triggerVibration(pattern) {
             if (currentLevel === 6) {
                 inputEl.value = `INUMANO! HAI COMPLETATO IL DATABASE! 🏆`;
                 inputEl.style.color = "#ffd700";
+                badgeText = `<span style="color:#ffd700; font-size:16px;">🏆 INUMANO! DATABASE COMPLETATO!</span><br>` + badgeText;
+                badgeBorder = "#ffd700";
             } else {
                 inputEl.value = `VITTORIA! Livello Superato! 🏆`;
+                badgeText = `<span style="color:#4caf50; font-size:16px;">🏆 VITTORIA! Livello Superato!</span><br>` + badgeText;
+                badgeBorder = "#4caf50";
             }
             window.pendingVictory = true;
             submitBtn.style.display = "none";
             nextBtn.innerText = "VAI AI RISULTATI ➔";
             nextBtn.style.display = "block";
+            
+            // FORZA L'APPARIZIONE DEL BADGE
+            eventBadge.innerHTML = badgeText; 
+            eventBadge.style.borderColor = badgeBorder; 
+            eventBadge.style.display = "block"; 
         } else {
             let isCapitalReq = currentTurnData.format === 0 || currentTurnData.format === 6 || currentTurnData.format === 10 || (currentTurnData.format === 12 && currentTurnData.f12AskCapital);
             let dName = getPrintedName(res.matchedCountry, res.matchedNameStr);
@@ -2832,18 +2857,20 @@ function triggerVibration(pattern) {
                     inputEl.style.color = "#4caf50";
                     document.getElementById("ritirati-btn").innerHTML = "🚪 TERMINA LA SFIDA";
                     document.getElementById("continua-btn").innerHTML = "🔁 CONTINUA LA SFIDA";
+                    badgeText = `<span style="color:#4caf50; font-size:16px;">🎓 LIVELLO COMPLETATO! Scegli se continuare:</span><br>` + badgeText;
+                    badgeBorder = "#4caf50";
                 } else {
                     inputEl.value = `VITTORIA! Mi inchino alla tua immensa conoscenza 👑`;
                     inputEl.style.color = "#ffd700";
                     document.getElementById("ritirati-btn").innerHTML = "🏆 RITIRATI DA LEGGENDA";
                     document.getElementById("continua-btn").innerHTML = "⚔️ CONTINUA LA SFIDA";
+                    badgeText = `<span style="color:#ffd700; font-size:16px;">👑 VITTORIA! Sei una Leggenda! Scegli se continuare:</span><br>` + badgeText;
+                    badgeBorder = "#ffd700";
                 }
                 
-                if (badgeText !== "") {
-                    eventBadge.innerHTML = badgeText; eventBadge.style.backgroundColor = badgeBg;
-                    eventBadge.style.color = badgeTxtColor; eventBadge.style.borderColor = badgeBorder;
-                    eventBadge.style.display = "block";
-                } else { eventBadge.style.display = "none"; }
+                eventBadge.innerHTML = badgeText; 
+                eventBadge.style.borderColor = badgeBorder;
+                eventBadge.style.display = "block";
                 
                 submitBtn.style.display = "none";
                 nextBtn.style.display = "none";
@@ -3153,13 +3180,22 @@ function triggerVibration(pattern) {
         if (isEndlessTrig) {
             inputEl.value = `VITTORIA! Mi inchino alla tua immensa conoscenza 👑`;
             inputEl.style.color = "#ffd700";
-            if (badgeText !== "") {
-                eventBadge.innerHTML = badgeText; eventBadge.style.backgroundColor = badgeBg;
-                eventBadge.style.color = badgeTxtColor; eventBadge.style.borderColor = badgeBorder;
-                eventBadge.style.display = "block";
-            } else { eventBadge.style.display = "none"; }
+            
+            badgeText = `<span style="color:#ffd700; font-size:16px;">👑 VITTORIA! Sei una Leggenda! Scegli se continuare:</span><br>` + badgeText;
+            badgeBorder = "#ffd700";
+            
+            eventBadge.innerHTML = badgeText; 
+            eventBadge.style.backgroundColor = badgeBg;
+            eventBadge.style.color = badgeTxtColor; 
+            eventBadge.style.borderColor = badgeBorder;
+            eventBadge.style.display = "block";
+            
             submitBtn.style.display = "none";
-            nextBtn.style.display = "block";
+            nextBtn.style.display = "none";
+            document.getElementById("ritirati-btn").innerHTML = "🏆 RITIRATI DA LEGGENDA";
+            document.getElementById("continua-btn").innerHTML = "⚔️ CONTINUA LA SFIDA";
+            document.getElementById("ritirati-btn").style.display = "block";
+            document.getElementById("continua-btn").style.display = "block";
         } else {
             // IL BLOCCO SCOMPARSO È TORNATO!
             if (currentLevel === 0) {
