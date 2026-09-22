@@ -194,7 +194,7 @@ KN	Saint Kitts e Nevis	Saint Kitts, S Kitts, Nevis	Basseterre			nord america, ca
 LC	Saint Lucia	S Lucia	Castries			nord america, caraibi	azzurro, nero, giallo	bianco, nero, giallo			lenzuolo azzurro	2
 VC	Saint Vincent e Grenadine	S Vincent, Grenadine, Saint Vincent	Kingstown			nord america, caraibi	blu, giallo, verde	verde			strisce verticali	2
 BL	Saint-Barthélemy	San Bartolomeo, St Barthelemy, Saint Barthelemy	Gustavia			nord america, caraibi	bianco		emblema nazionale, scritta	x	lenzuolo bianco	3
-MF	Saint-Martin	Saint Martin, S Martin	Marigot		sint maarten, mare	nord america, caraibi	bianco, rosso, blu			x	strisce verticali	3
+MF	Saint-Martin	Saint Martin, S Martin	Marigot		sint maarten, mare	nord america, caraibi	bianco, rosso, blu			x	strisce verticali, bandiera francese	3
 PM	Saint-Pierre e Miquelon	Saint Pierre, S Pierre, Miquelon	Saint-Pierre	Saint Pierre, S Pierre		nord america	rosso, bianco, azzurro, giallo	giallo	nave	x		3
 WS	Samoa		Apia			Oceania	rosso, blu	bianco	stella, croce del sud		stella bianca	2
 AS	Samoa Americane		Pago Pago			Oceania	blu, bianco, rosso		aquila, uccello, animale, emblema nazionale, arma	x		3
