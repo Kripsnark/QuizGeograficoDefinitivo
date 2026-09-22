@@ -3632,6 +3632,14 @@ function triggerVibration(pattern) {
 
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js').then(reg => {
+                
+                // 1. IL FIX: Se c'è GIÀ un aggiornamento bloccato in attesa da una sessione precedente, mostra subito il banner!
+                if (reg.waiting) {
+                    newWorker = reg.waiting;
+                    document.getElementById('update-banner').style.display = 'block';
+                }
+
+                // 2. Se invece sta scaricando un aggiornamento ora, fai come sempre:
                 reg.addEventListener('updatefound', () => {
                     newWorker = reg.installing;
                     newWorker.addEventListener('statechange', () => {
