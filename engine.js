@@ -2863,8 +2863,6 @@ td.buildQuestionText = (num) => {
                     inputEl.style.color = "#4caf50";
                     document.getElementById("ritirati-btn").innerHTML = "🚪 TERMINA LA SFIDA";
                     document.getElementById("continua-btn").innerHTML = "🔁 CONTINUA LA SFIDA";
-                    badgeText = `<span style="color:#4caf50; font-size:16px;">🎓 LIVELLO COMPLETATO! Scegli se continuare:</span><br>` + badgeText;
-                    badgeBorder = "#4caf50";
                 } else {
                     inputEl.value = `VITTORIA! Mi inchino alla tua immensa conoscenza 👑`;
                     inputEl.style.color = "#ffd700";
