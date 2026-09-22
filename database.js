@@ -248,7 +248,7 @@ UZ	Uzbekistan		Tashkent		kazakistan, kirghizistan, tagikistan, afghanistan, turk
 VU	Vanuatu		Port Vila			Oceania	rosso, verde, nero, giallo	giallo				2
 VE	Venezuela		Caracas		colombia, brasile, guyana, mare	Sud America, Ande, Amazzonia	giallo, blu, rosso	bianco	stella		strisce orizzontali, stella bianca	1
 VN	Vietnam		Ha Noi		cambogia, laos, cina, mare	Asia, Sud-Est Asiatico, Penisola indocinese	rosso, giallo	giallo	stella		stella gialla, lenzuolo rosso	1
-WF	Wallis e Futuna		Mata-Utu			Oceania	rosso, bianco	bianco	bandiera francese	x		3
+WF	Wallis e Futuna	Wallis, Futuna	Mata-Utu			Oceania	rosso, bianco	bianco	bandiera francese	x		3
 YE	Yemen		Sana'a	Sanaa	arabia saudita, oman, mare	Asia, Medio Oriente, Penisola Arabica	rosso, bianco, nero				strisce orizzontali	2
 ZM	Zambia		Lusaka		angola, repubblica democratica del congo, tanzania, malawi, mozambico, zimbabwe, botswana, namibia	africa, africa meridionale	verde, rosso, nero, arancione	arancione	uccello, animale			2
 ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa meridionale	verde, giallo, rosso, nero, bianco	rosso, giallo	stella		triangolo a sinistra bianco, stella rossa	1`;

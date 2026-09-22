@@ -1354,7 +1354,7 @@ function triggerVibration(pattern) {
                 td.numVariables = 2;
             }
 
-            td.buildQuestionText = (num) => {
+td.buildQuestionText = (num) => {
                 let areaP = td.selectedArea ? getPreposizioneArea(td.selectedArea) : "";
                 
                 let nI = "<span class='target-highlight'>NAZIONE INDIPENDENTE</span>";
@@ -1363,8 +1363,10 @@ function triggerVibration(pattern) {
                 let sT_p = `<span class='target-highlight'>${num} STATI O TERRITORI</span>`;
                 let sTI = "<span class='target-highlight'>STATO O TERRITORIO</span> <strong>INSULARE</strong>";
                 let sTI_p = `<span class='target-highlight'>${num} STATI O TERRITORI</span> <strong>INSULARI</strong>`;
-                let cS = "<span class='target-highlight'>CAPITALE</span>";
-                let cS_p = `<span class='target-highlight'>${num} CAPITALI</span>`;
+                
+                // ECCO LE DUE RIGHE MODIFICATE CON L'AZZURRO:
+                let cS = "<span class='target-highlight' style='color:#2196f3;'>CAPITALE</span>";
+                let cS_p = `<span class='target-highlight' style='color:#2196f3;'>${num} CAPITALI</span>`;
 
                 let cloneHint = "";
                 if (format === 9 || format === 10) {
@@ -1783,7 +1785,7 @@ function triggerVibration(pattern) {
                 }
             });
 
-            td.maxPossible = typeableSet.size; 
+            td.maxPossible = typeableSet.size; // RESTA GLOBALE: Salva il calcolo dei punti (es. 5 confini)
 
             td.validAnswersCache = tempValid;
             td.numReq = 1;
@@ -1793,17 +1795,21 @@ function triggerVibration(pattern) {
                 if ([0, 1, 9, 10].includes(format) && !td.isComboInception) {
                     td.numReq = 1; 
                 } else {
-                    let maxR = Math.min(limitCombo, td.maxPossible); 
+                    // CONTA QUANTE DELLE RISPOSTE VALIDE SONO PRESENTI NELLA TUA DIFFICOLTÀ
+                    let localCount = 0;
+                    td.validSiglas.forEach(s => {
+                        if (levelDb.some(n => n.sigla === s)) localCount++;
+                    });
+                    if (localCount === 0) localCount = 1; // Sicurezza anti-crash
+                    
+                    // IL LIMITE DELLA RICHIESTA USA localCount, MA maxPossible RESTA GLOBALE!
+                    let maxR = Math.min(limitCombo, localCount); 
                     td.numReq = Math.floor(Math.random() * maxR) + 1;
                 }
             }
 
             td.questionText = td.buildQuestionText(td.numReq);
             return td;
-        }
-
-        function getAnswerPool(level) {
-            return level === 5 ? levelDb : globalDb;
         }
 
 	function getAnswerPool(level) {
