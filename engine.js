@@ -311,6 +311,11 @@ function triggerVibration(pattern) {
         
         function getPrintedName(country, matchedNameStr) {
             if (matchedNameStr && country.alias_paese_ufficiali.map(a=>a.toLowerCase()).includes(matchedNameStr.toLowerCase())) {
+                // SE C'È UN PALETTO DI INIZIALE E L'ALIAS NON LO RISPETTA, FORZA IL NOME PRIMARIO
+                if (currentTurnData && currentTurnData.reqInit && !matchedNameStr.toLowerCase().startsWith(currentTurnData.reqInit.toLowerCase())) {
+                    let offAlias = country.alias_paese_ufficiali.find(a => a.toLowerCase().startsWith(currentTurnData.reqInit.toLowerCase()));
+                    return offAlias ? capitalize(offAlias) : capitalize(country.nome);
+                }
                 return capitalize(matchedNameStr);
             }
             return capitalize(country.nome);
@@ -318,6 +323,11 @@ function triggerVibration(pattern) {
 
         function getPrintedCapital(country, matchedCapStr) {
             if (matchedCapStr && country.alias_capitale_ufficiali.map(a=>a.toLowerCase()).includes(matchedCapStr.toLowerCase())) {
+                // SE C'È UN PALETTO DI INIZIALE CAPITALE E L'ALIAS NON LO RISPETTA, FORZA IL NOME PRIMARIO
+                if (currentTurnData && currentTurnData.reqCapInit && !matchedCapStr.toLowerCase().startsWith(currentTurnData.reqCapInit.toLowerCase())) {
+                    let offAlias = country.alias_capitale_ufficiali.find(a => a.toLowerCase().startsWith(currentTurnData.reqCapInit.toLowerCase()));
+                    return offAlias ? capitalize(offAlias) : capitalize(country.capitale);
+                }
                 return capitalize(matchedCapStr);
             }
             return capitalize(country.capitale);
@@ -572,6 +582,7 @@ function triggerVibration(pattern) {
                     <th>Confini</th>
                     <th>Aree</th>
                     <th>Colori Base</th>
+                    <th>Colori Emblema</th>
                     <th>Simboli</th>
                     <th>Formato Bandiera</th>
                     <th>Livello Base</th>
@@ -591,6 +602,7 @@ function triggerVibration(pattern) {
                     <td>${n.confini.map(capitalize).join(', ')}</td>
                     <td>${n.aree.map(capitalize).join(', ')}</td>
                     <td>${n.colori_base.map(capitalize).join(', ')}</td>
+                    <td>${n.colori_emblema.map(capitalize).join(', ')}</td>
                     <td>${n.simboli.map(capitalize).join(', ')}</td>
                     <td>${n.formati_bandiera.map(capitalize).join(', ')}</td>
                     <td>${n.livello}</td>
@@ -1053,9 +1065,13 @@ function triggerVibration(pattern) {
             return "che <span class='negative-constraint'>NON</span> " + verbo + " in <strong>" + a + "</strong>";
         }
         
-        function calcolaPuntiDomandaL1_3(format, numSoluzioni) {
-            if (format === 10) return 90; 
-            if (format === 0 || format === 1 || format === 9) return 50;
+        function calcolaPuntiDomandaL1_3(format, numSoluzioni, isComboInception = false) {
+            // Se NON è una domanda di confini derivata, dai il punteggio fisso
+            if (!isComboInception) {
+                if (format === 10) return 90; 
+                if (format === 0 || format === 1 || format === 9) return 50;
+            }
+            // Altrimenti calcola in base a quanto era facile/difficile!
             if (numSoluzioni === 1) return 150;
             if (numSoluzioni === 2) return 120;
             if (numSoluzioni === 3) return 90;
@@ -1833,15 +1849,13 @@ td.buildQuestionText = (num) => {
             
             const checkInitAny = (country, req) => {
                 if (!req) return true;
-                let cNames = [country.nome.toLowerCase(), ...country.alias_paese_ufficiali];
-                return cNames.some(n => n.startsWith(req.toLowerCase()));
+                return country.nome.toLowerCase().startsWith(req.toLowerCase());
             };
             
             const checkCapInitAny = (country, req) => {
                 if (!req) return true;
                 if (!country.capitale) return false;
-                let cCaps = [country.capitale.toLowerCase(), ...country.alias_capitale_ufficiali];
-                return cCaps.some(c => c.startsWith(req.toLowerCase()));
+                return country.capitale.toLowerCase().startsWith(req.toLowerCase());
             };
 
             for (let country of getAnswerPool(level)) {
@@ -1917,14 +1931,10 @@ td.buildQuestionText = (num) => {
                         let capPaese = country.capitale ? country.capitale.toLowerCase() : "";
                         if (capPaese && country.aree.includes(td.selectedArea)) {
                             let textMatch = false;
-                            // FIX: Guarda SOLO il nome principale e gli alias con asterisco
-                            let cCaps = [country.capitale.toLowerCase(), ...country.alias_capitale_ufficiali];
-                            for (let cn of cCaps) {
-                                if (td.varEnigmistica === 0 && cn.startsWith(td.reqCapInit.toLowerCase())) textMatch = true;
-                                if (td.varEnigmistica === 1 && cn.endsWith(td.reqCapFin.toLowerCase())) textMatch = true;
-                                if (td.varEnigmistica === 2 && cn.startsWith(td.reqCapInit.toLowerCase()) && cn.endsWith(td.reqCapFin.toLowerCase())) textMatch = true;
-                                if (textMatch) break;
-                            }
+                            let cn = capPaese;
+                            if (td.varEnigmistica === 0 && cn.startsWith(td.reqCapInit.toLowerCase())) textMatch = true;
+                            if (td.varEnigmistica === 1 && cn.endsWith(td.reqCapFin.toLowerCase())) textMatch = true;
+                            if (td.varEnigmistica === 2 && cn.startsWith(td.reqCapInit.toLowerCase()) && cn.endsWith(td.reqCapFin.toLowerCase())) textMatch = true;
                             if (textMatch) match = true;
                         }
                     }
@@ -2723,7 +2733,7 @@ td.buildQuestionText = (num) => {
         if (currentStreak > bestStreak) bestStreak = currentStreak;
 
         let numSoluzioni = currentTurnData.maxPossible;
-        let puntiGuadagnati = (currentLevel === 0) ? 50 : calcolaPuntiDomandaL1_3(currentTurnData.format, numSoluzioni); 
+        let puntiGuadagnati = (currentLevel === 0) ? 50 : calcolaPuntiDomandaL1_3(currentTurnData.format, numSoluzioni, currentTurnData.isComboInception); 
         
         let badgeText = "";
         let badgeColor = "#2a2a2a";
@@ -3158,14 +3168,53 @@ td.buildQuestionText = (num) => {
         }
 
         if (isCapitalRequired) {
-            arrayNomiTrovati = matchedCountriesInfos.map(info => `${getPrintedCapital(info.matchedCountry, info.matchedCapitalStr)} (${getPrintedName(info.matchedCountry, info.matchedNameStr)})`);
-            arrayNomiPrimariTrovati = matchedCountriesInfos.map(info => `${capitalize(info.matchedCountry.capitale)} (${capitalize(info.matchedCountry.nome)})`);
-            nomiTrovati = arrayNomiTrovati.join(", ");
-        } else {
-            arrayNomiTrovati = matchedCountriesInfos.map(info => getPrintedName(info.matchedCountry, info.matchedNameStr));
-            arrayNomiPrimariTrovati = matchedCountriesInfos.map(info => capitalize(info.matchedCountry.nome));
-            nomiTrovati = arrayNomiTrovati.join(", ");
+    arrayNomiTrovati = matchedCountriesInfos.map(info => `${getPrintedCapital(info.matchedCountry, info.matchedCapitalStr)} (${getPrintedName(info.matchedCountry, info.matchedNameStr)})`);
+    
+    arrayNomiPrimariTrovati = matchedCountriesInfos.map(info => {
+        let country = info.matchedCountry;
+        let pNameBase = capitalize(country.nome);
+        
+        if (currentTurnData.reqInit && !country.nome.toLowerCase().startsWith(currentTurnData.reqInit.toLowerCase())) {
+            let offAlias = country.alias_paese_ufficiali.find(a => a.toLowerCase().startsWith(currentTurnData.reqInit.toLowerCase()));
+            if (offAlias) pNameBase = capitalize(offAlias);
         }
+        
+        let cName = capitalize(country.capitale);
+        let textMatchBase = false;
+        let cnLower = country.capitale ? country.capitale.toLowerCase() : "";
+        
+        if (currentTurnData.reqCapInit && cnLower.startsWith(currentTurnData.reqCapInit.toLowerCase())) textMatchBase = true;
+        if (currentTurnData.format === 6 && cnLower) {
+            let starts = currentTurnData.reqCapInit ? cnLower.startsWith(currentTurnData.reqCapInit.toLowerCase()) : true;
+            let ends = currentTurnData.reqCapFin ? cnLower.endsWith(currentTurnData.reqCapFin.toLowerCase()) : true;
+            if (starts && ends) textMatchBase = true;
+        }
+        
+        if (!textMatchBase && country.alias_capitale_ufficiali) {
+            let offCapAlias = country.alias_capitale_ufficiali.find(c => {
+                let cLow = c.toLowerCase();
+                let s = currentTurnData.reqCapInit ? cLow.startsWith(currentTurnData.reqCapInit.toLowerCase()) : true;
+                let e = currentTurnData.reqCapFin ? cLow.endsWith(currentTurnData.reqCapFin.toLowerCase()) : true;
+                return s && e;
+            });
+            if (offCapAlias) cName = capitalize(offCapAlias);
+        }
+        
+        return `${cName} (${pNameBase})`;
+    });
+    nomiTrovati = arrayNomiTrovati.join(", ");
+} else {
+    arrayNomiTrovati = matchedCountriesInfos.map(info => getPrintedName(info.matchedCountry, info.matchedNameStr));
+    arrayNomiPrimariTrovati = matchedCountriesInfos.map(info => {
+        let pNameBase = capitalize(info.matchedCountry.nome);
+        if (currentTurnData.reqInit && !info.matchedCountry.nome.toLowerCase().startsWith(currentTurnData.reqInit.toLowerCase())) {
+            let offAlias = info.matchedCountry.alias_paese_ufficiali.find(a => a.toLowerCase().startsWith(currentTurnData.reqInit.toLowerCase()));
+            if (offAlias) pNameBase = capitalize(offAlias);
+        }
+        return pNameBase;
+    });
+    nomiTrovati = arrayNomiTrovati.join(", ");
+}
 
         let isEndlessTrig = false;
         if ((currentLevel === 3 || currentLevel === 4) && punteggio >= 10000 && !endlessVittoriaSbloccata) {

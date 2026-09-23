@@ -1,5 +1,5 @@
         const rawData = `Sigla	Paese	Alias - paese	Capitale	Alias - capitale	Confini	Continente/Area geografica	Colore bandiera base	Colore emblema	simboli bandiera	dipendente	Caratteristiche bandiera	Livello
-AF	Afghanistan	Afganistan	Kabul		iran, turkmenistan, uzbekistan, tagikistan, cina, pakistan	Asia	rosso, nero, verde	bianco	scritta		strisce verticali	1
+AF	Afghanistan	Afganistan	Kabul		iran, turkmenistan, uzbekistan, tagikistan, cina, pakistan	Asia	rosso, nero, verde	bianco	scritta, emblema nazionale		strisce verticali	1
 AL	Albania		Tirana		Montenegro, Kosovo, Macedonia del Nord, grecia, mare	Europa, Mediterraneo, Balcani	rosso, nero	nero	aquila		lenzuolo rosso	1
 DZ	Algeria		Algeri		marocco, tunisia, libia, niger, mali, mauritania, mare	Africa, Africa settentrionale, Mediterraneo	verde, bianco	rosso	mezzaluna, stella		strisce verticali, mezzaluna rossa, stella rossa	1
 AD	Andorra		Andorra la Vella	La Vella	francia, spagna	Europa	blu, giallo, rosso		emblema nazionale		strisce verticali	2
@@ -112,7 +112,7 @@ CC	Isole Cocos	Cocos, Keeling	West Island			Oceania	verde, giallo	giallo	mezzalu
 CK	Isole Cook	Cook	Avarua			Oceania	blu	bianco	stella, union jack	x	stella bianca	3
 FK	Isole Falkland	Falkland	Stanley			Sud America	blu		emblema nazionale, animale, union jack	x		3
 FO	Isole Faroe	Faroer	Tórshavn			Europa, paesi baltici	bianco, rosso, blu		croce scandinava	x		3
-MP	Isole Marianne Settentrionali	Marianne Settentrionali, Marianne, Isole Marianne	Saipan			Asia	blu, bianco		emblema nazionale, stella	x	stella bianca, lenzuolo blu	3
+MP	Isole Marianne Settentrionali	*Marianne Settentrionali, Marianne, Isole Marianne	Saipan	*Capitol Hill		Asia	blu, bianco		emblema nazionale, stella	x	stella bianca, lenzuolo blu	3
 MH	Isole Marshall	Marshall	Majuro			Oceania	blu, bianco, arancione		stella		stella bianca	2
 PN	Isole Pitcairn	Pitcairn	Adamstown			Oceania	blu		emblema nazionale, union jack	x		3
 SB	Isole Salomone	Salomone	Honiara			Oceania	azzurro, giallo, verde	bianco	stella		stella bianca	2
