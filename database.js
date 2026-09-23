@@ -183,6 +183,7 @@ QA	Qatar		Doha		arabia saudita, mare	Asia, Medio Oriente, Penisola Arabica	bianc
 GB	Regno Unito	*Gran Bretagna, UK, GB	Londra		irlanda, mare	Europa	blu, rosso, bianco		union jack			1
 CF	Repubblica Centrafricana	Rep Centrafricana	Bangui		ciad, sudan, sudan del sud, repubblica democratica del congo, congo, camerun	africa, africa centrale	blu, bianco, verde, giallo, rosso	giallo	stella		stella gialla	2
 CD	Repubblica Democratica del Congo	Rep Dem Congo, Rep democratica Congo, Repubblica democratica Congo	Kinshasa		congo, repubblica centrafricana, sudan del sud, uganda, ruanda, burundi, tanzania, zambia, angola, mare	africa, africa centrale	azzurro, giallo, rosso	giallo	stella		stella gialla	1
+SM	Repubblica di San Marino	*San Marino	Città di San Marino	San Marino	Italia	europa	bianco, azzurro		emblema nazionale, corona		strisce orizzontali	2
 DO	Repubblica Dominicana	Rep Dominicana	Santo Domingo		haiti, mare	Nord America, caraibi	blu, bianco, rosso		emblema nazionale			1
 RE	Riunione	Reunion	Saint-Denis	S Denis, Saint Denis, San Denis		africa	blu, rosso, giallo			x		3
 RO	Romania		Bucarest		moldavia, ucraina, bulgaria, serbia, ungheria, mare	europa, Balcani	blu, giallo, rosso				strisce verticali	1
@@ -198,7 +199,6 @@ MF	Saint-Martin	Saint Martin, S Martin	Marigot		sint maarten, mare	nord america,
 PM	Saint-Pierre e Miquelon	Saint Pierre, S Pierre, Miquelon	Saint-Pierre	Saint Pierre, S Pierre		nord america	rosso, bianco, azzurro, giallo	giallo	nave	x		3
 WS	Samoa		Apia			Oceania	rosso, blu	bianco	stella, croce del sud		stella bianca	2
 AS	Samoa Americane		Pago Pago			Oceania	blu, bianco, rosso		aquila, uccello, animale, emblema nazionale, arma	x		3
-SM	San Marino	*Repubblica di San Marino	Città di San Marino	San Marino	Italia	europa	bianco, azzurro		emblema nazionale, corona		strisce orizzontali	2
 SH	Sant'Elena		Jamestown			africa	blu		uccello, animale, emblema nazionale, union jack	x		3
 ST	São Tomé e Príncipe	Sao Tome	São Tomé	Sao Tome		africa, africa centrale, Golfo di Guinea	verde, giallo, rosso	nero	stella, 		triangolo a sinistra rosso, stella nera	2
 GB-SCT	Scozia		Glasgow		inghilterra, mare	europa	bianco, azzurro			x	croce di Sant'Andrea (X)	3
