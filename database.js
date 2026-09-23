@@ -37,7 +37,7 @@ BI	Burundi		Gitega		repubblica democratica del congo, ruanda, tanzania	africa, a
 KH	Cambogia		Phnom Penh	Pnom Pen	Thailandia, laos, vietnam, mare	Asia, Sud-Est Asiatico, Penisola indocinese	rosso, blu, bianco	bianco	edificio		strisce orizzontali	1
 CM	Camerun	cameroon	Yaoundé	Yaundé	guinea equatoriale, gabon, congo, repubblica centrafricana, ciad, nigeria, mare	africa, africa centrale, Golfo di Guinea	verde, rosso, giallo	giallo	stella		strisce verticali, stella gialla	1
 CA	Canada		Ottawa		Stati uniti d'America, Groenlandia, mare	Nord America	rosso, bianco	rosso	foglia		strisce verticali	1
-CV	Capo Verde		Praia			Africa	blu, bianco, giallo, rosso				strisce orizzontali, stella gialla	2
+CV	Capo Verde		Praia			Africa	blu, bianco, giallo, rosso		stella		strisce orizzontali, stella gialla	2
 CZ	Cechia	Repubblica Ceca, Rep Ceca	Praga		polonia, slovacchia, austria, germania	europa	blu, bianco, rosso				triangolo a sinistra blu	1
 TD	Ciad		Ndjamena		camerun, repubblica centrafricana, sudan, libia, niger, nigeria	africa, africa centrale	blu, giallo, rosso				strisce verticali	2
 CL	Cile		Santiago del Cile	Santiago, Santhiago, Santhiago del cile	argentina, bolivia, perù, mare	Sud America, Ande	blu, bianco, rosso	bianco	stella		stella bianca	1
