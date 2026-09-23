@@ -3,12 +3,12 @@ AF	Afghanistan	Afganistan	Kabul		iran, turkmenistan, uzbekistan, tagikistan, cin
 AL	Albania		Tirana		Montenegro, Kosovo, Macedonia del Nord, grecia, mare	Europa, Mediterraneo, Balcani	rosso, nero	nero	aquila		lenzuolo rosso	1
 DZ	Algeria		Algeri		marocco, tunisia, libia, niger, mali, mauritania, mare	Africa, Africa settentrionale, Mediterraneo	verde, bianco	rosso	mezzaluna, stella		strisce verticali, mezzaluna rossa, stella rossa	1
 AD	Andorra		Andorra la Vella	La Vella	francia, spagna	Europa	blu, giallo, rosso		emblema nazionale		strisce verticali	2
-AO	Angola		Luanda		namibia, zambia, repubblica democratica del congo, congo, mare	Africa, Africa meridionale	rosso, nero,	giallo	machete, arma, ruota dentata, stella		strisce orizzontali, stella gialla	2
+AO	Angola		Luanda		namibia, zambia, repubblica democratica del congo, congo, mare	Africa, Africa meridionale	rosso, nero	giallo	machete, arma, ruota dentata, stella		strisce orizzontali, stella gialla	2
 AI	Anguilla		The Valley			Nord America, caraibi	blu		emblema nazionale, delfino, animale, union jack	x		3
 AG	Antigua e Barbuda	Antigua, Barbuda	Saint John's	St John's, Saint Johns, St. Johns		Nord America, caraibi	rosso, nero, giallo, blu, bianco		sole			2
 SA	Arabia Saudita	Saudi Arabia, Arabia	Riyad	Riad	giordania, iraq, kuwait, qatar, emirati arabi uniti, oman, yemen, Bahrein, mare	Asia, Medio Oriente, Penisola Arabica	verde	bianco	scritta, arma, spada		lenzuolo verde	1
 AR	Argentina		Buenos Aires		uruguay, brasile, paraguay, bolivia, cile, mare	Sud America, Ande	azzurro, bianco	giallo	sole		strisce orizzontali	1
-AM	Armenia		Erevan		georgia, azerbaigian, iran, turchia	Asia	rosso blu, giallo				strisce orizzontali	2
+AM	Armenia		Erevan		georgia, azerbaigian, iran, turchia	Asia	rosso, blu, giallo				strisce orizzontali	2
 AW	Aruba		Oranjestad			Nord America, caraibi	azzurro, giallo, rosso		stella	x	stella rossa	3
 AH	Ascensione	Isola di Ascensione	Georgetown			Africa	blu		emblema nazionale, tartaruga, animale, union jack	x		3
 AU	Australia		Canberra			Oceania	blu	bianco	union jack,croce del sud, stella		stella bianca	1
@@ -98,7 +98,7 @@ HK	Hong Kong		Victoria		cina, mare	Asia	rosso, bianco	bianco	stella	x	stella bia
 IN	India		Nuova Delhi	New Delhi	pakistan, cina, nepal, bhutan, bangladesh, myanmar, mare	Asia, Subcontinente indiano	arancione, bianco, verde	blu	cerchio		strisce orizzontali	1
 ID	Indonesia		Giacarta	Nusantara, Jacarta	Malaysia, papua nuova guinea, timor est, mare	Asia, Sud-Est Asiatico	rosso, bianco				strisce orizzontali	1
 GB-ENG	Inghilterra		Londra		galles, scozia, mare	Europa	bianco, rosso		croce simmetrica	x		3
-IR	Iran		Teheran		iraq, turchia, azerbaigian, armenia, turkmenistan, afghanistan, pakistan, mare	Asia	verde, bianco, rosso	rosso	emblema nazionale		strisce orizzontali	1
+IR	Iran		Teheran		iraq, turchia, azerbaigian, armenia, turkmenistan, afghanistan, pakistan, mare	Asia, Medio Oriente	verde, bianco, rosso	rosso	emblema nazionale		strisce orizzontali	1
 IQ	Iraq		Bagdad		kuwait, arabia saudita, giordania, siria, turchia, iran, mare	Asia, Medio Oriente	rosso, bianco, nero	verde	scritta		strisce orizzontali	1
 IE	Irlanda		Dublino		regno unito, mare	europa	verde, bianco, arancione				strisce verticali	1
 GB-NIR	Irlanda del Nord	nord irlanda	Belfast		irlanda, mare	europa	bianco, rosso		emblema nazionale, corona	x		3
@@ -208,7 +208,7 @@ SC	Seychelles		Victoria			africa	blu, giallo, rosso, bianco, verde					2
 SL	Sierra Leone		Freetown		guinea, liberia, mare	africa, africa centrale	verde, bianco, azzurro				strisce orizzontali	2
 SG	Singapore		Singapore		malaysia, mare	Asia, Sud-Est Asiatico	rosso, bianco		mezzaluna, stella		strisce verticali, mezzaluna bianca, stella bianca	1
 STE	Sint Eustatius	S eustatius	Oranjestad			Nord America, caraibi	rosso, blu, bianco	verde, bianco	stella	x	stella gialla	3
-SX	Sint Maarten	S Maarten	Philipsburg		saint-martin, mare		bianco, rosso, blu		emblema nazionale	x	triangolo a sinistra bianco	3
+SX	Sint Maarten	S Maarten	Philipsburg		saint-martin, mare	Nord America, caraibi	bianco, rosso, blu		emblema nazionale	x	triangolo a sinistra bianco	3
 SY	Siria		Damasco		turchia, iraq, giordania, israele, libano, mare	Asia, medio oriente	verde, bianco, nero	rosso	stella		strisce orizzontali, stella rossa	1
 SK	Slovacchia		Bratislava		cechia, polonia, ucraina, ungheria, austria	europa	bianco, blu, rosso		emblema nazionale		strisce orizzontali	1
 SI	Slovenia		Lubiana		italia, austria, ungheria, croazia, mare	europa, Mediterraneo, Balcani	bianco, blu, rosso		emblema nazionale		strisce orizzontali	1
