@@ -1895,7 +1895,7 @@ td.buildQuestionText = (num) => {
             if(currentLevel === 5) document.getElementById("termina-custom-btn").style.display = "block";
 
             let mcContainer = document.getElementById("mc-container");
-            if (currentLevel === 0) {
+            if (currentLevel === 0 && !voiceModeActive) {
                 inputEl.style.display = "none";
                 submitBtn.style.display = "none"; // Nasconde il tasto INVIA al Livello 0
                 mcContainer.style.display = "none"; // FIX: Parte invisibile per dare respiro
@@ -2960,5 +2960,86 @@ if (SpeechRecognition) {
     assistantRec.onerror = function(event) {
         console.log("Errore microfono: ", event.error);
         isListening = false;
+    };
+}
+
+// === FASE 3: AUTO-AVANZAMENTO VOCALE ===
+if (!window.voiceHooksAdded) {
+    window.voiceHooksAdded = true;
+
+    // 1. Intercetta gli errori standard
+    const origFailStandard = failStandard;
+    failStandard = function(wrongInput) {
+        origFailStandard(wrongInput);
+        if (voiceModeActive) {
+            if (window.pendingDefeat) {
+                parla("Hai perso. Partita terminata.");
+            } else {
+                // Estrae il nome pulito senza parentesi
+                let correctAns = currentTurnData.validAnswersCache[0].split(" (")[0];
+                parla("Sbagliato, era " + correctAns, function() {
+                    nextTurnMulti(); // Salta alla prossima domanda in automatico!
+                });
+            }
+        }
+    };
+
+    // 2. Intercetta gli errori nelle combo multiple
+    const origFailMulti = failMulti;
+    failMulti = function(reason, wrongInput) {
+        origFailMulti(reason, wrongInput);
+        if (voiceModeActive) {
+            if (window.pendingDefeat) {
+                parla("Hai perso. Partita terminata.");
+            } else {
+                parla("Sbagliato.", function() {
+                    nextTurnMulti(); // Salta alla prossima domanda in automatico!
+                });
+            }
+        }
+    };
+
+    // 3. Intercetta le risposte corrette
+    const origProcessaRisposta = processaRisposta;
+    processaRisposta = function() {
+        let esattePrima = esatte;
+        let comboPrima = comboInserted.length;
+        
+        origProcessaRisposta(); // Esegue il controllo normale
+        
+        if (voiceModeActive) {
+            if (window.pendingVictory) {
+                parla("Straordinario, hai vinto!");
+                return;
+            }
+            
+            let btnContinua = document.getElementById("continua-btn");
+            if (btnContinua && btnContinua.style.display === "block") {
+                parla("Traguardo raggiunto. Scegli se ritirarti o continuare.");
+                return;
+            }
+            
+            let btnNext = document.getElementById("next-btn");
+            if (window.pendingDefeat || (btnNext && btnNext.style.display === "block")) {
+                return; // Se è un errore ci hanno già pensato i blocchi qui sopra
+            }
+
+            // Se il punteggio o le combo sono salite, hai indovinato!
+            if (esatte > esattePrima || comboInserted.length > comboPrima) {
+                let isMulti = (currentLevel === 4 || (currentLevel === 5 && currentTurnData.numReq > 1));
+                if (isMulti && comboInserted.length > 0 && comboInserted.length < currentTurnData.numReq) {
+                     parla("Corretto.", function() {
+                         if (assistantRec && !isListening) { try { assistantRec.start(); } catch(e){} }
+                     });
+                } else {
+                     parla("Esatto!", function() {
+                         nextTurnMulti(); // Salta alla prossima domanda in automatico!
+                     });
+                }
+            } else {
+                // Parola non riconosciuta (es. farfugliamento o duplicato), riapre il microfono
+                if (assistantRec && !isListening) { try { assistantRec.start(); } catch(e){} }
+            }
+        }
     };
 }
