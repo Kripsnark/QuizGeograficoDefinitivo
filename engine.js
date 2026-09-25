@@ -1838,6 +1838,15 @@ td.buildQuestionText = (num) => {
             inputEl.value = "";
             currentTurnData = generateQuestion();
             questionEl.innerHTML = currentTurnData.questionText;
+
+	if (voiceModeActive) {
+                parla(currentTurnData.questionText, function() {
+                    // Appena la voce robotica finisce di leggere la domanda, si mette in ascolto
+                    if (assistantRec && !isListening) {
+                        try { assistantRec.start(); } catch(e) {}
+                    }
+                });
+            }
             
             logQuestionCounter++;
             debugGameLog += "----------------------------------------\n[DOMANDA " + logQuestionCounter + "]\n";
@@ -2817,15 +2826,7 @@ const SpeechGrammarList = window.SpeechGrammarList || window.webkitSpeechGrammar
 let assistantRec = null;
 let synth = window.speechSynthesis;
 
-function creaBottoneAssistente() {
-    let btnAss = document.createElement("button");
-    btnAss.id = "assistant-btn";
-    btnAss.innerText = "🎙️";
-    btnAss.title = "Modalità Assistente Vocale";
-    // Posizionato in alto a sinistra, speculare all'ingranaggio!
-    btnAss.style.cssText = "position: fixed; left: 15px; top: 15px; background: transparent; border: none; font-size: 28px; cursor: pointer; padding: 5px; opacity: 0.5; z-index: 9999; transition: all 0.3s; filter: grayscale(100%);";
-    
-    btnAss.onclick = function() {
+btnAss.onclick = function() {
         if (!SpeechRecognition) {
             alert("Il tuo browser non supporta il riconoscimento vocale avanzato.");
             return;
@@ -2834,15 +2835,19 @@ function creaBottoneAssistente() {
         if (voiceModeActive) {
             this.style.filter = "grayscale(0%) drop-shadow(0px 0px 8px #4caf50)";
             this.style.opacity = "1";
-            parla("Modalità vocale attivata. Seleziona un livello per cominciare.");
+            // Ora ti chiede il livello E accende il microfono appena finisce di parlare!
+            parla("Modalità vocale attivata. Quale livello vuoi giocare?", function() {
+                if (assistantRec && !isListening) {
+                    try { assistantRec.start(); } catch(e) {}
+                }
+            });
         } else {
             this.style.filter = "grayscale(100%)";
             this.style.opacity = "0.5";
-            synth.cancel(); // Zittisce l'assistente se lo spegni
+            synth.cancel();
+            if (isListening && assistantRec) assistantRec.stop();
         }
     };
-    document.body.appendChild(btnAss);
-}
 
 function parla(testo, callbackTermine) {
     if (!voiceModeActive) return;
@@ -2865,3 +2870,82 @@ function parla(testo, callbackTermine) {
 
 // Genera il bottone all'avvio
 creaBottoneAssistente();
+
+let isListening = false;
+
+if (SpeechRecognition) {
+    assistantRec = new SpeechRecognition();
+    assistantRec.lang = 'it-IT';
+    assistantRec.continuous = false;
+    assistantRec.interimResults = false;
+
+    // GRAMMATICA FORZATA: Diciamo al microfono quali sono le uniche parole che ci aspettiamo
+    if (SpeechGrammarList) {
+        let paroleValide = ["zero", "uno", "due", "tre", "quattro", "cinque", "sei", "morte improvvisa"];
+        globalDb.forEach(n => {
+            paroleValide.push(n.nome.toLowerCase());
+            if(n.capitale) paroleValide.push(n.capitale.toLowerCase());
+            if(n.alias_paese) paroleValide = paroleValide.concat(n.alias_paese);
+            if(n.alias_capitale) paroleValide = paroleValide.concat(n.alias_capitale);
+        });
+        paroleValide = paroleValide.map(p => p.replace(/['’]/g, ' '));
+        
+        let grammarList = new SpeechGrammarList();
+        let grammar = '#JSGF V1.0; grammar geo; public  = ' + paroleValide.join(' | ') + ' ;';
+        grammarList.addFromString(grammar, 1);
+        assistantRec.grammars = grammarList;
+    }
+
+    assistantRec.onstart = function() {
+        isListening = true;
+        let inputEl = document.getElementById("answer-input");
+        if(inputEl) inputEl.placeholder = "🎤 Parla ora...";
+        document.getElementById("assistant-btn").style.transform = "scale(1.2)";
+    };
+
+    assistantRec.onresult = function(event) {
+        let parolaDetta = event.results[0][0].transcript.replace(/\.$/, '').trim().toLowerCase();
+        
+        // SE SIAMO NELLA HOME PAGE: Intercetta il numero del livello
+        if (document.getElementById("start-screen").style.display !== "none") {
+            if (parolaDetta.includes("zero") || parolaDetta === "0") startGame(0);
+            else if (parolaDetta.includes("uno") || parolaDetta === "1") startGame(1);
+            else if (parolaDetta.includes("due") || parolaDetta === "2") startGame(2);
+            else if (parolaDetta.includes("tre") || parolaDetta === "3") startGame(3);
+            else if (parolaDetta.includes("quattro") || parolaDetta === "4") startGame(4);
+            else if (parolaDetta.includes("sei") || parolaDetta.includes("morte") || parolaDetta === "6") startLevel6Game();
+            else {
+                parla("Livello non riconosciuto. Ripeti numero.", function() {
+                    try { assistantRec.start(); } catch(e) {}
+                });
+            }
+            return; 
+        }
+
+        // SE SIAMO IN PARTITA: Processa la risposta geografica
+        let inputEl = document.getElementById("answer-input");
+        if(inputEl) inputEl.value = parolaDetta;
+        
+        if (document.getElementById("continua-btn").style.display === "block") {
+            continuaSfida();
+        } else if (document.getElementById("next-btn").style.display === "block") {
+            nextTurnMulti(); 
+        } else if (inputEl && !inputEl.disabled) {
+            processaRisposta(); 
+        }
+    };
+
+    assistantRec.onend = function() {
+        isListening = false;
+        let inputEl = document.getElementById("answer-input");
+        if(inputEl && inputEl.placeholder === "🎤 Parla ora...") {
+            inputEl.placeholder = "Scrivi la risposta...";
+        }
+        document.getElementById("assistant-btn").style.transform = "scale(1)";
+    };
+    
+    assistantRec.onerror = function(event) {
+        console.log("Errore microfono: ", event.error);
+        isListening = false;
+    };
+}
