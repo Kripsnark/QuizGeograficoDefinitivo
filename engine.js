@@ -1894,75 +1894,74 @@ td.buildQuestionText = (num) => {
             
             if(currentLevel === 5) document.getElementById("termina-custom-btn").style.display = "block";
 
-            let mcContainer = document.getElementById("mc-container");
+	    let mcContainer = document.getElementById("mc-container");
+            
+            // Seleziona il Livello 0 GIOCATO A MANO (microfono spento)
             if (currentLevel === 0 && !voiceModeActive) {
                 inputEl.style.display = "none";
-                submitBtn.style.display = "none"; // Nasconde il tasto INVIA al Livello 0
-                mcContainer.style.display = "none"; // FIX: Parte invisibile per dare respiro
-                mcContainer.innerHTML = "";
-                let opzioni = generaDistrattori(currentTurnData);
-                opzioni.forEach(opz => {
-                    let btn = document.createElement("button");
-                    btn.className = "mc-option-btn"; // Aggiungiamo una classe per trovarli dopo
-                    btn.style.cssText = "width:100%; padding:15px; background:#2a2a2a; color:#fff; border:2px solid #555; border-radius:8px; font-size:18px; font-weight:bold; cursor:pointer; transition: 0.2s;";
+                submitBtn.style.display = "none"; 
+                
+                if (mcContainer) {
+                    mcContainer.style.display = "flex"; // RIMOSSO IL RITARDO: compaiono subito!
+                    mcContainer.innerHTML = "";
                     
-                    if (currentTurnData.format === 13) {
-                        btn.innerHTML = `<img src="GIF/${opz.sigla.toLowerCase()}.jpg" style="height:60px; border-radius:4px; box-shadow:0 2px 5px rgba(0,0,0,0.5);">`;
-                    } else {
-                        btn.innerText = opz.text;
-                    }
-                    
-                    btn.onmouseover = function() { if(!inputEl.disabled) this.style.borderColor = "#ffd700"; };
-                    btn.onmouseout = function() { if(!inputEl.disabled) this.style.borderColor = "#555"; };
-                    
-                    btn.onclick = function() {
-                        if (inputEl.disabled) return; 
+                    let opzioni = generaDistrattori(currentTurnData);
+                    opzioni.forEach(opz => {
+                        let btn = document.createElement("button");
+                        btn.className = "mc-option-btn"; 
+                        btn.style.cssText = "width:100%; padding:15px; background:#2a2a2a; color:#fff; border:2px solid #555; border-radius:8px; font-size:18px; font-weight:bold; cursor:pointer; transition: 0.2s;";
                         
-                        // FASE 1: Nascondi gli altri bottoni
-                        let allBtns = document.getElementsByClassName("mc-option-btn");
-                        for(let b of allBtns) {
-                            if (b !== this) b.style.display = "none";
-                        }
-                        
-                        // FASE 2: Colora questo bottone in base all'esito
-                        if (opz.isCorrect) {
-                            this.style.borderColor = "#4caf50";
-                            this.style.backgroundColor = "rgba(76, 175, 80, 0.2)";
+                        if (currentTurnData.format === 13) {
+                            btn.innerHTML = `<img src="GIF/${opz.sigla.toLowerCase()}.jpg" style="height:60px; border-radius:4px; box-shadow:0 2px 5px rgba(0,0,0,0.5);">`;
                         } else {
-                            this.style.borderColor = "#f44336";
-                            this.style.backgroundColor = "rgba(244, 67, 54, 0.2)";
-                            
-                            // SE SBAGLIA: Crea un bottone extra per fargli vedere qual era la risposta giusta
-                            let btnCorretto = document.createElement("button");
-                            btnCorretto.style.cssText = "width:100%; padding:15px; background:rgba(76, 175, 80, 0.1); color:#4caf50; border:2px dashed #4caf50; border-radius:8px; font-size:16px; font-weight:bold; margin-top:10px; cursor:default;";
-                            let corrOpz = opzioni.find(o => o.isCorrect);
-                            if (currentTurnData.format === 13) {
-                                btnCorretto.innerHTML = `Era questa: <br><img src="GIF/${corrOpz.sigla.toLowerCase()}.jpg" style="height:40px; margin-top:5px; border-radius:4px;">`;
-                            } else {
-                                btnCorretto.innerText = "La risposta corretta era: " + corrOpz.text;
-                            }
-                            mcContainer.appendChild(btnCorretto);
+                            btn.innerText = opz.text;
                         }
                         
-                        inputEl.value = opz.text;
-                        processaRisposta();
-                    };
-                    mcContainer.appendChild(btn);
-                });
-                
-                // --- RITARDO DI 1 SECONDO PER I BOTTONI ---
-                setTimeout(() => {
-                    // Evita di mostrarli se nel frattempo hai premuto Arrenditi o chiuso la partita
-                    if (mcContainer.innerHTML !== "" && !window.pendingDefeat && !window.pendingVictory) {
-                        mcContainer.style.display = "flex";
-                        mcContainer.style.animation = "fadeIn 0.3s"; // Piccolo effetto comparsa!
-                    }
-                }, 250);
-                
+                        btn.onmouseover = function() { if(!inputEl.disabled) this.style.borderColor = "#ffd700"; };
+                        btn.onmouseout = function() { if(!inputEl.disabled) this.style.borderColor = "#555"; };
+                        
+                        btn.onclick = function() {
+                            if (inputEl.disabled) return; 
+                            let allBtns = document.getElementsByClassName("mc-option-btn");
+                            for(let b of allBtns) {
+                                if (b !== this) b.style.display = "none";
+                            }
+                            
+                            if (opz.isCorrect) {
+                                this.style.borderColor = "#4caf50";
+                                this.style.backgroundColor = "rgba(76, 175, 80, 0.2)";
+                            } else {
+                                this.style.borderColor = "#f44336";
+                                this.style.backgroundColor = "rgba(244, 67, 54, 0.2)";
+                                let btnCorretto = document.createElement("button");
+                                btnCorretto.style.cssText = "width:100%; padding:15px; background:rgba(76, 175, 80, 0.1); color:#4caf50; border:2px dashed #4caf50; border-radius:8px; font-size:16px; font-weight:bold; margin-top:10px; cursor:default;";
+                                let corrOpz = opzioni.find(o => o.isCorrect);
+                                if (currentTurnData.format === 13) {
+                                    btnCorretto.innerHTML = `Era questa: <br><img src="GIF/${corrOpz.sigla.toLowerCase()}.jpg" style="height:40px; margin-top:5px; border-radius:4px;">`;
+                                } else {
+                                    btnCorretto.innerText = "La risposta corretta era: " + corrOpz.text;
+                                }
+                                mcContainer.appendChild(btnCorretto);
+                            }
+                            
+                            inputEl.value = opz.text;
+                            processaRisposta();
+                        };
+                        mcContainer.appendChild(btn);
+                    });
+                }
             } else {
+                // Per TUTTI GLI ALTRI LIVELLI o per il Livello 0 VOCALE
                 inputEl.style.display = "block";
-                submitBtn.style.display = "block"; // Riaccende INVIA per tutti gli altri livelli
-                mcContainer.style.display = "none";
+                
+                // Se siamo nel livello 0 a voce, non serve il tasto INVIA (fa tutto il microfono)
+                if (currentLevel === 0) {
+                    submitBtn.style.display = "none";
+                } else {
+                    submitBtn.style.display = "block"; 
+                }
+                
+                if (mcContainer) mcContainer.style.display = "none";
             }
         }
 
@@ -2112,7 +2111,46 @@ function processaRisposta() {
 
         let isCapitalReq = currentTurnData.format === 0 || currentTurnData.format === 6 || currentTurnData.format === 10 || (currentTurnData.format === 12 && currentTurnData.f12AskCapital);
         let dName = getPrintedName(res.matchedCountry, res.matchedNameStr);
-        let nomeInserito = isCapitalReq ? `${getPrintedCapital(res.matchedCountry, res.matchedCapitalStr)} (${dName})` : dName;
+        let nomeInserito = isCapitalReq ? `\({getPrintedCapital(res.matchedCountry, res.matchedCapitalStr)} (\){dName})` : dName;
+
+        // --- INIZIO FIX: MOSTRA "ALTRE RISPOSTE VALIDE" PER LIVELLI SINGOLI ---
+        let arrayNomiPrimariTrovati = [];
+        let pNameBase = capitalize(res.matchedCountry.nome);
+        if (currentTurnData.reqInit && !res.matchedCountry.nome.toLowerCase().startsWith(currentTurnData.reqInit.toLowerCase())) {
+            let offAlias = res.matchedCountry.alias_paese_ufficiali.find(a => a.toLowerCase().startsWith(currentTurnData.reqInit.toLowerCase()));
+            if (offAlias) pNameBase = capitalize(offAlias);
+        }
+        if (isCapitalReq) {
+            let cName = capitalize(res.matchedCountry.capitale); 
+            let textMatchBase = false; 
+            let cnLower = res.matchedCountry.capitale ? res.matchedCountry.capitale.toLowerCase() : "";
+            if (currentTurnData.reqCapInit && cnLower.startsWith(currentTurnData.reqCapInit.toLowerCase())) textMatchBase = true;
+            if (currentTurnData.format === 6 && cnLower) {
+                let starts = currentTurnData.reqCapInit ? cnLower.startsWith(currentTurnData.reqCapInit.toLowerCase()) : true;
+                let ends = currentTurnData.reqCapFin ? cnLower.endsWith(currentTurnData.reqCapFin.toLowerCase()) : true;
+                if (starts && ends) textMatchBase = true;
+            }
+            if (!textMatchBase && res.matchedCountry.alias_capitale_ufficiali) {
+                let offCapAlias = res.matchedCountry.alias_capitale_ufficiali.find(c => { let cLow = c.toLowerCase(); let s = currentTurnData.reqCapInit ? cLow.startsWith(currentTurnData.reqCapInit.toLowerCase()) : true; let e = currentTurnData.reqCapFin ? cLow.endsWith(currentTurnData.reqCapFin.toLowerCase()) : true; return s && e; });
+                if (offCapAlias) cName = capitalize(offCapAlias);
+            }
+            arrayNomiPrimariTrovati.push(`\({cName} (\){pNameBase})`);
+        } else {
+            arrayNomiPrimariTrovati.push(pNameBase);
+        }
+
+        if (currentTurnData.maxPossible > 1) {
+            let rimanenti = currentTurnData.validAnswersCache.filter(v => !arrayNomiPrimariTrovati.includes(v));
+            if (rimanenti.length > 0) {
+                comboTracker.style.display = "block";
+                comboTracker.innerHTML = `Altre risposte valide: ${rimanenti.join(", ")}`;
+            } else {
+                comboTracker.style.display = "none";
+            }
+        } else {
+            comboTracker.style.display = "none";
+        }
+        // --- FINE FIX ---
 
         if (hasWon) {
             if (currentLevel === 6) {
