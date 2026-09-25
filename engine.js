@@ -2810,107 +2810,58 @@ function eseguiValidazioneMultipla(isTimeout = false) {
             document.getElementById('update-banner').style.display = 'none';
         }
 
+// === ASSISTENTE VOCALE (HANDS-FREE) ===
+let voiceModeActive = false;
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-let recognition = null;
-let isListening = false;
+const SpeechGrammarList = window.SpeechGrammarList || window.webkitSpeechGrammarList;
+let assistantRec = null;
+let synth = window.speechSynthesis;
 
-if (SpeechRecognition) {
-    recognition = new SpeechRecognition();
-    recognition.lang = 'it-IT';
-    recognition.continuous = false; 
-    recognition.interimResults = false; 
-
-    recognition.onstart = function() {
-        isListening = true;
-        let inputElement = document.getElementById("answer-input");
-        inputElement.placeholder = "🎤 In ascolto...";
-        inputElement.style.borderColor = "#f44336";
-    };
-
-    recognition.onresult = function(event) {
-        let parolaDetta = event.results[0][0].transcript;
-        
-        if (parolaDetta.endsWith('.')) {
-            parolaDetta = parolaDetta.slice(0, -1);
+function creaBottoneAssistente() {
+    let btnAss = document.createElement("button");
+    btnAss.id = "assistant-btn";
+    btnAss.innerText = "🎙️";
+    btnAss.title = "Modalità Assistente Vocale";
+    // Posizionato in alto a sinistra, speculare all'ingranaggio!
+    btnAss.style.cssText = "position: fixed; left: 15px; top: 15px; background: transparent; border: none; font-size: 28px; cursor: pointer; padding: 5px; opacity: 0.5; z-index: 9999; transition: all 0.3s; filter: grayscale(100%);";
+    
+    btnAss.onclick = function() {
+        if (!SpeechRecognition) {
+            alert("Il tuo browser non supporta il riconoscimento vocale avanzato.");
+            return;
         }
-
-        let inputElement = document.getElementById("answer-input");
-        inputElement.value = parolaDetta;
-        
-        inputElement.placeholder = "Scrivi la risposta...";
-        inputElement.style.borderColor = "#555";
-        
-        if (document.getElementById("continua-btn").style.display === "block") {
-            continuaSfida();
-        } else if (document.getElementById("next-btn").style.display === "block") {
-            nextTurnMulti(); 
-        } else if (!inputElement.disabled && document.getElementById("error-feedback-panel").style.display !== "flex") {
-            processaRisposta(); 
+        voiceModeActive = !voiceModeActive;
+        if (voiceModeActive) {
+            this.style.filter = "grayscale(0%) drop-shadow(0px 0px 8px #4caf50)";
+            this.style.opacity = "1";
+            parla("Modalità vocale attivata. Seleziona un livello per cominciare.");
+        } else {
+            this.style.filter = "grayscale(100%)";
+            this.style.opacity = "0.5";
+            synth.cancel(); // Zittisce l'assistente se lo spegni
         }
     };
-
-    recognition.onerror = function(event) {
-        console.log("Errore microfono: " + event.error);
-        isListening = false;
-        let inputElement = document.getElementById("answer-input");
-        inputElement.placeholder = "Scrivi la risposta...";
-        inputElement.style.borderColor = "#555";
-    };
-
-    recognition.onend = function() {
-        isListening = false;
-        let inputElement = document.getElementById("answer-input");
-        if (inputElement.placeholder === "🎤 In ascolto...") {
-            inputElement.placeholder = "Scrivi la risposta...";
-            inputElement.style.borderColor = "#555";
-        }
-    };
+    document.body.appendChild(btnAss);
 }
 
-function toggleMicrofono() {
-    if (!recognition) {
-        alert("Il tuo browser non supporta il riconoscimento vocale. Usa Chrome o Edge.");
-        return;
+function parla(testo, callbackTermine) {
+    if (!voiceModeActive) return;
+    synth.cancel(); // Interrompe eventuali frasi precedenti
+    
+    // Rimuove tutti i tag HTML (es. **, ) per leggere solo il testo puro
+    let testoPulito = testo.replace(/<[^>]*>?/gm, '');
+    
+    let utterance = new SpeechSynthesisUtterance(testoPulito);
+    utterance.lang = 'it-IT';
+    utterance.rate = 1.1; // Ritmo leggermente più vivace
+    
+    // Quando finisce di parlare, esegue l'azione successiva (es. accendere il microfono)
+    if (callbackTermine) {
+        utterance.onend = callbackTermine;
     }
     
-    if (isListening) {
-        recognition.stop();
-    } else {
-        recognition.start();
-    }
+    synth.speak(utterance);
 }
 
-function creaBottoneMicrofono() {
-    let btnMic = document.createElement("button");
-    btnMic.id = "mic-btn";
-    btnMic.innerText = "🎤";
-    btnMic.title = "Rispondi a voce";
-    btnMic.style.cssText = "background: transparent; border: none; font-size: 24px; cursor: pointer; padding: 5px; transition: transform 0.2s; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); opacity: 0.8;";
-    
-    btnMic.onmouseover = function() { 
-        this.style.transform = "translateY(-50%) scale(1.2)"; 
-        this.style.opacity = "1"; 
-    };
-    
-    btnMic.onmouseout = function() { 
-        this.style.transform = "translateY(-50%) scale(1)"; 
-        this.style.opacity = "0.8"; 
-    };
-    
-    btnMic.onclick = toggleMicrofono;
-
-    let inputArea = document.getElementById("input-area");
-    let inputOriginale = document.getElementById("answer-input");
-    
-    let wrapper = document.createElement("div");
-    wrapper.style.position = "relative";
-    wrapper.style.width = "100%";
-    wrapper.style.maxWidth = "600px";
-    
-    inputArea.insertBefore(wrapper, inputOriginale);
-    wrapper.appendChild(inputOriginale);
-    wrapper.appendChild(btnMic);
-}
-
-// Inizializza il bottone al caricamento dello script
-creaBottoneMicrofono();
+// Genera il bottone all'avvio
+creaBottoneAssistente();
