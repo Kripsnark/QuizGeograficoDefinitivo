@@ -2757,56 +2757,55 @@ function eseguiValidazioneMultipla(isTimeout = false) {
         });
 
 	function terminaPartitaVolontaria() {
-            let conf = confirm("Vuoi davvero terminare la partita e salvare i tuoi record?");
-            if (conf) {
-                if (currentLevel === 4 || currentLevel === 6 || (currentLevel === 5 && customConfig.timer)) stopTimer();
-                inputEl.disabled = true;
-                popolaGameOver(false); 
-                document.getElementById("game-over-title").innerText = "PARTITA CONCLUSA";
-                document.getElementById("game-over-title").style.color = "#2196f3";
-                document.getElementById("game-over-msg").innerHTML = "Ti sei ritirato con onore dalla Sandbox.<br>Ottimo allenamento!";
-            }
-        }
+    let conf = confirm("Vuoi davvero terminare la partita e salvare i tuoi record?");
+    if (conf) {
+        if (currentLevel === 4 || currentLevel === 6 || (currentLevel === 5 && customConfig.timer)) stopTimer();
+        inputEl.disabled = true;
+        popolaGameOver(false); 
+        document.getElementById("game-over-title").innerText = "PARTITA CONCLUSA";
+        document.getElementById("game-over-title").style.color = "#2196f3";
+        document.getElementById("game-over-msg").innerHTML = "Ti sei ritirato con onore dalla Sandbox.<br>Ottimo allenamento!";
+    }
+}
         
-        // --- AVVIO SERVICE WORKER (PWA) ---
-        let newWorker;
+// --- AVVIO SERVICE WORKER (PWA) ---
+let newWorker;
 
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').then(reg => {
-                
-                // 1. IL FIX: Se c'è GIÀ un aggiornamento bloccato in attesa da una sessione precedente, mostra subito il banner!
-                if (reg.waiting) {
-                    newWorker = reg.waiting;
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').then(reg => {
+        
+        // 1. IL FIX: Se c'è GIÀ un aggiornamento bloccato in attesa da una sessione precedente, mostra subito il banner!
+        if (reg.waiting) {
+            newWorker = reg.waiting;
+            document.getElementById('update-banner').style.display = 'block';
+        }
+
+        // 2. Se invece sta scaricando un aggiornamento ora, fai come sempre:
+        reg.addEventListener('updatefound', () => {
+            newWorker = reg.installing;
+            newWorker.addEventListener('statechange', () => {
+                // Se c'è un aggiornamento scaricato e pronto, mostra il banner
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                     document.getElementById('update-banner').style.display = 'block';
                 }
-
-                // 2. Se invece sta scaricando un aggiornamento ora, fai come sempre:
-                reg.addEventListener('updatefound', () => {
-                    newWorker = reg.installing;
-                    newWorker.addEventListener('statechange', () => {
-                        // Se c'è un aggiornamento scaricato e pronto, mostra il banner
-                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            document.getElementById('update-banner').style.display = 'block';
-                        }
-                    });
-                });
             });
+        });
+    });
 
-            // Quando l'utente clicca il banner e il SW si aggiorna, ricarica la pagina
-            let refreshing = false;
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (!refreshing) {
-                    refreshing = true;
-                    window.location.reload();
-                }
-            });
+    // Quando l'utente clicca il banner e il SW si aggiorna, ricarica la pagina
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+            refreshing = true;
+            window.location.reload();
         }
+    });
+}
 
-        // Funzione chiamata dal click sul banner
-        window.applyUpdate = function() {
-            if (newWorker) {
-                newWorker.postMessage('SKIP_WAITING');
-            }
-            document.getElementById('update-banner').style.display = 'none';
-        }
-
+// Funzione chiamata dal click sul banner
+window.applyUpdate = function() {
+    if (newWorker) {
+        newWorker.postMessage('SKIP_WAITING');
+    }
+    document.getElementById('update-banner').style.display = 'none';
+}
