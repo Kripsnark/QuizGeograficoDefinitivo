@@ -2863,7 +2863,51 @@ const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecogni
 const SpeechGrammarList = window.SpeechGrammarList || window.webkitSpeechGrammarList;
 let assistantRec = null;
 let synth = window.speechSynthesis;
-let wakeLock = null; // Aggiunta la variabile per controllare lo schermo
+let wakeLock = null; 
+
+// Funzione avanzata per impedire allo schermo di spegnersi
+async function gestisciSchermo(attivo) {
+    if (!('wakeLock' in navigator)) {
+        console.log("WakeLock non supportato, uso fallback video silente.");
+        // Fallback: crea un video invisibile in loop per tenere sveglio il sistema
+        let hiddenVideo = document.getElementById("wakeLockFallback");
+        if (attivo) {
+            if (!hiddenVideo) {
+                hiddenVideo = document.createElement("video");
+                hiddenVideo.id = "wakeLockFallback";
+                hiddenVideo.setAttribute("loop", "");
+                hiddenVideo.setAttribute("playsinline", "");
+                hiddenVideo.style.display = "none";
+                hiddenVideo.src = "data:video/webm;base64,GkXfo0AgQoaBAUL3gQFC8oEEQvOBCEKCQAR3ZWJtQoeBAkKGgQVF/4EBQvOBAUMqgQJTQ6CEPDxyYgAAwCAAAAABBIEAAIBBAAAARACBAAAAAAAAAAACQocBA1t/gQFDv4ELQaCCh4EBQ62BAUPOgQpD6wAAAAAAAH5/gQNDy4EIQ/OBA0PzgQhD9oEBQ+uCA4PPAQBBoIEPQw+BAEN9gQVDpIIBRZ2E4wAAkAAAAACBQwgAGb/DAAABAAABAAAABQIDAAEAAAMBAQAFAgMAAQAAAQEBAwMDBQUDBAQDAwMBAAAAAAAABAMAAAAAAAADAwAAAAAAQvWBAEJ2gQhC94EIQq+BAUMGgQFCwoEBQwyBAUKvgQFCr4EBQwyBAUKvgQFCwoEBQwKB"; // Video nero di 1 sec
+                document.body.appendChild(hiddenVideo);
+            }
+            hiddenVideo.play().catch(e => console.log(e));
+        } else if (hiddenVideo) {
+            hiddenVideo.pause();
+        }
+        return; 
+    } 
+    
+    try {
+        if (attivo) {
+            wakeLock = await navigator.wakeLock.request('screen');
+            console.log("Schermo bloccato acceso (WakeLock API).");
+        } else if (wakeLock !== null) {
+            await wakeLock.release();
+            wakeLock = null;
+            console.log("Blocco schermo rilasciato.");
+        }
+    } catch (err) {
+        console.log("Impossibile bloccare lo schermo:", err);
+    }
+}
+
+// RIATTIVA IL WAKELOCK SE TORNI AL BROWSER DOPO AVER ABBASSATO LA TENDINA
+document.addEventListener("visibilitychange", async () => {
+    if (wakeLock !== null && document.visibilityState === "visible" && voiceModeActive) {
+        try { wakeLock = await navigator.wakeLock.request('screen'); } catch(e){}
+    }
+});
 
 // Funzione per impedire allo schermo di spegnersi
 async function gestisciSchermo(attivo) {
@@ -3059,13 +3103,14 @@ if (!window.voiceHooksAdded) {
         origFailStandard(wrongInput);
         if (voiceModeActive) {
             if (window.pendingDefeat) {
-                parla("Hai perso. Partita terminata.");
+                setTimeout(() => parla("Hai perso. Partita terminata."), 200);
             } else {
-                // Estrae il nome pulito senza parentesi
                 let correctAns = currentTurnData.validAnswersCache[0].split(" (")[0];
-                parla("Sbagliato, era " + correctAns, function() {
-                    nextTurnMulti(); // Salta alla prossima domanda in automatico!
-                });
+                setTimeout(() => {
+                    parla("Sbagliato, era " + correctAns, function() {
+                        setTimeout(() => nextTurnMulti(), 300); // Ritardo extra prima di girare pagina
+                    });
+                }, 200);
             }
         }
     };
@@ -3076,11 +3121,13 @@ if (!window.voiceHooksAdded) {
         origFailMulti(reason, wrongInput);
         if (voiceModeActive) {
             if (window.pendingDefeat) {
-                parla("Hai perso. Partita terminata.");
+                setTimeout(() => parla("Hai perso. Partita terminata."), 200);
             } else {
-                parla("Sbagliato.", function() {
-                    nextTurnMulti(); // Salta alla prossima domanda in automatico!
-                });
+                setTimeout(() => {
+                    parla("Sbagliato.", function() {
+                        setTimeout(() => nextTurnMulti(), 300);
+                    });
+                }, 200);
             }
         }
     };
@@ -3095,31 +3142,35 @@ if (!window.voiceHooksAdded) {
         
         if (voiceModeActive) {
             if (window.pendingVictory) {
-                parla("Straordinario, hai vinto!");
+                setTimeout(() => parla("Straordinario, hai vinto!"), 200);
                 return;
             }
             
             let btnContinua = document.getElementById("continua-btn");
             if (btnContinua && btnContinua.style.display === "block") {
-                parla("Traguardo raggiunto. Scegli se ritirarti o continuare.");
+                setTimeout(() => parla("Traguardo raggiunto. Scegli se ritirarti o continuare."), 200);
                 return;
             }
             
             if (window.pendingDefeat) {
-                return; // Se hai perso ci pensa il blocco di errore
+                return; 
             }
 
             // Se il punteggio o le combo sono salite, hai indovinato!
             if (esatte > esattePrima || comboInserted.length > comboPrima) {
                 let isMulti = (currentLevel === 4 || (currentLevel === 5 && currentTurnData.numReq > 1));
                 if (isMulti && comboInserted.length > 0 && comboInserted.length < currentTurnData.numReq) {
-                     parla("Corretto.", function() {
-                         if (assistantRec && !isListening) { try { assistantRec.start(); } catch(e){} }
-                     });
+                     setTimeout(() => {
+                         parla("Corretto.", function() {
+                             if (assistantRec && !isListening) { try { assistantRec.start(); } catch(e){} }
+                         });
+                     }, 150);
                 } else {
-                     parla("Esatto!", function() {
-                         nextTurnMulti(); // Salta alla prossima domanda in automatico!
-                     });
+                     setTimeout(() => {
+                         parla("Esatto!", function() {
+                             setTimeout(() => nextTurnMulti(), 300); // Forza il passaggio
+                         });
+                     }, 150);
                 }
             } else {
                 // Parola non riconosciuta, riapre il microfono

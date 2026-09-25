@@ -88,7 +88,7 @@
     gap: 15px;
     width: 90%;
     max-width: 420px;
-    margin: 40px auto; 
+    margin: 60px auto 20px auto; /* Forza 60px di spazio in alto */
     background: #1e1e1e;
     padding: 25px 20px;
     border-radius: 16px;
@@ -97,6 +97,8 @@
     text-align: left;
     box-sizing: border-box;
     box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.7);
+    max-height: 80vh; /* Se il telefono è piccolo, non esce dallo schermo */
+    overflow-y: auto; /* Rende il pannello scorrevole col dito */
 }
 
 #l6-setup-screen {
