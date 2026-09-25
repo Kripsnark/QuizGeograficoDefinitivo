@@ -1,4 +1,3 @@
-        const globalDb = [];
         let levelDb = []; 
         let currentLevel = 1;
         let actionTimeout = null; 
@@ -12,6 +11,12 @@
             timer: false,
             maxCombo: 1,
             vite: 3
+        };
+	
+	let configL6 = {
+            bacino: 'sprint', 
+            argomento: 'bandiere', 
+            formato: 9 
         };
         
 // Stato dell'audio
@@ -37,827 +42,115 @@ function playSound(nomeSuono) {
     EffettiSonori[nomeSuono].play().catch(err => console.log("Audio bloccato dal browser"));
 }
 
-// Funzione per il bottone on/off
 function toggleSuoni() {
     suoniAttivi = !suoniAttivi;
-    let btnSuono = document.getElementById("sound-toggle");
-    if (suoniAttivi) {
-        btnSuono.innerText = "🔊";
-        btnSuono.style.opacity = "0.5";
-    } else {
-        btnSuono.innerText = "🔇";
-        btnSuono.style.opacity = "0.2";
-    }
+    // Nessuna ricerca DOM. La UI viene aggiornata direttamente dal bottone in ui.js!
 }
 
-let vibrationEnabled = true;
+// === VARIABILI DI STATO E COLLEGAMENTI DOM (RECUPERATI) ===
+const allColors = ['rosso','bianco','blu','nero','giallo','verde','arancione','azzurro'];
+const allLetters = 'ABCDEFGHILMNOPQRSTUVZ'.split('');
 
-function toggleVibration() {
-    vibrationEnabled = !vibrationEnabled;
-    let btn = document.getElementById("vibe-toggle");
-    if (btn) btn.innerText = vibrationEnabled ? "📳" : "📴";
-    saveStats();
-    // Doppio colpo rapido, molto più percettibile di uno singolo lungo
-    if (vibrationEnabled) triggerVibration([40, 30, 40]); 
-}
+let vite = 3;
+const maxVite = 5;
+const NUM_OPZIONI = 3;
+let esatte = 0;
+let punteggio = 0;
+let prossimoCuore = 750;
+let erroriCommessi = []; 
+let currentTurnData = null; 
+let nazioniUsate = []; 
 
-function triggerVibration(pattern) {
-    if (vibrationEnabled && navigator.vibrate) {
-        navigator.vibrate(pattern);
+let currentStreak = 0;
+let bestStreak = 0;
+let fotofinishCount = 0;
+let grazieRicevuteCount = 0;
+
+let timerState = "stopped"; 
+let readingTimeout = null;
+let mainTimerInterval = null;
+let activeTimeTotal = 0;
+let activeTimeLeft = 0;
+let comboInserted = [];
+
+let nazioniDigitateCount = {};
+let nazioniIgnorateCount = {};
+let turnStartTime = 0;
+let totalActiveTimeMs = 0;
+let totalAnswersSubmitted = 0;
+
+let endlessVittoriaSbloccata = false;
+
+let debugGameLog = "";
+let recentTargets = [];
+let logQuestionCounter = 0;
+let totalActiveTime = 0;
+
+// --- GESTIONE PWA E TOUCH ---
+window.addEventListener('popstate', function(event) {
+    if (document.getElementById("game-over-screen").style.display === "flex") {
+    } else if (document.getElementById("input-area").style.display === "flex") {
+        let conf = confirm("Partita in corso! Vuoi davvero uscire? I progressi andranno persi.");
+        if (conf) resetGame();
+        else history.pushState(null, null, window.location.href);
     }
-}
+});
 
-// --- SISTEMA DI SALVATAGGIO LOCALE (LOCALSTORAGE) E BACKUP ---
-        let allTimeBestScore = 0; let allTimeBestStreak = 0;
-        let allTimeFotofinish = 0; let allTimeGrazie = 0;
-        let allTimeNazioniCount = {}; let allTimeNazioniIgnorate = {}; 
-        let allTimeBestAvgTime = 0;
-        let globalPlays = 0;
-        let recentGamesHistory = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
+document.addEventListener('touchmove', function(e) {
+    if (document.getElementById("start-screen").style.display === "flex") return; 
+    if (e.target.closest('.db-table-container') || e.target.closest('#modal-body') || e.target.closest('#error-log') || e.target.closest('#top5-nations')) return;
+    e.preventDefault();
+}, { passive: false });
 
-        let statsByLevel = {
-            0: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 },
-            1: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 },
-            2: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 },
-            3: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 },
-            4: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0, fotofinish: 0, grazie: 0 },
-            5: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0, fotofinish: 0, grazie: 0 },
-            6: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0, fotofinish: 0, grazie: 0 }
-        };
-
-        function loadStats() {
-    let saved = localStorage.getItem('geoQuizStats');
-    if (saved) {
-        let data = JSON.parse(saved);
-        allTimeBestScore = data.bestScore || 0;
-        allTimeBestStreak = data.bestStreak || 0;
-        allTimeFotofinish = data.fotofinish || 0;
-        allTimeGrazie = data.grazie || 0;
-        allTimeNazioniCount = data.nazioniCount || {}; 
-        allTimeNazioniIgnorate = data.nazioniIgnorate || data.nazioniEvitate || {}; 
-        allTimeBestAvgTime = data.bestAvgTime || 0; 
-        if (data.statsByLevel) { statsByLevel = Object.assign({}, statsByLevel, data.statsByLevel); }
-        globalPlays = data.globalPlays || 0;
-        if (data.recentGamesHistory) { 
- 	   recentGamesHistory = data.recentGamesHistory; 
-    // FIX ANTI-CRASH: Se la memoria vecchia non ha il livello 6, crealo!
- 	   if (!recentGamesHistory[6]) recentGamesHistory[6] = []; 
-	}
-        if (data.vibrationEnabled !== undefined) {
-            vibrationEnabled = data.vibrationEnabled;
-        }
-    }
-    let btn = document.getElementById("vibe-toggle");
-    if (btn) btn.innerText = vibrationEnabled ? "📳" : "📴";
-}
-        
-        function saveStats() {
-    let data = {
-        bestScore: allTimeBestScore,
-        bestStreak: allTimeBestStreak,
-        fotofinish: allTimeFotofinish,
-        grazie: allTimeGrazie,
-        nazioniCount: allTimeNazioniCount,
-        nazioniIgnorate: allTimeNazioniIgnorate, 
-        bestAvgTime: allTimeBestAvgTime,
-        statsByLevel: statsByLevel,
-        globalPlays: globalPlays,
-        recentGamesHistory: recentGamesHistory,
-        vibrationEnabled: vibrationEnabled
-    };
-    localStorage.setItem('geoQuizStats', JSON.stringify(data));
-}
-
-        function exportBackup() {
-            let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(localStorage.getItem('geoQuizStats') || "{}");
-            let node = document.createElement('a');
-            node.setAttribute("href", dataStr);
-            node.setAttribute("download", "geoquiz_backup.json");
-            document.body.appendChild(node);
-            node.click();
-            node.remove();
-        }
-
-        function importBackup(event) {
-            let file = event.target.files[0];
-            if (!file) return;
-            let reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    let contents = e.target.result;
-                    JSON.parse(contents); 
-                    localStorage.setItem('geoQuizStats', contents);
-                    loadStats();
-                    alert("✅ Salvataggio importato con successo!");
-                    closeModal(); openRecords(); 
-                } catch(err) { alert("❌ File di salvataggio non valido!"); }
-            };
-            reader.readAsText(file);
-        }
-
-        window.clearAllData = function() {
-            if (confirm("⚠️ ATTENZIONE! Vuoi davvero eliminare TUTTI i record, le statistiche e la cronologia delle nazioni? L'azione è irreversibile!")) {
-                localStorage.removeItem('geoQuizStats');
-                allTimeBestScore = 0; allTimeBestStreak = 0;
-                allTimeFotofinish = 0; allTimeGrazie = 0;
-                allTimeNazioniCount = {}; allTimeNazioniIgnorate = {}; 
-                allTimeBestAvgTime = 0;
-                globalPlays = 0;
-                recentGamesHistory = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
-                statsByLevel = {
-                    0: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 },
-                    1: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 },
-                    2: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 },
-                    3: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 },
-                    4: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0, fotofinish: 0, grazie: 0 },
-                    5: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0, fotofinish: 0, grazie: 0 },
-                    6: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0, fotofinish: 0, grazie: 0 }
-                };
-                alert("✅ Dati eliminati con successo.");
-                closeModal(); 
-            }
-        };
-
-        loadStats();
-        // ----------------------------------------------------
-        
-        let righe = rawData.trim().split("\n");
-        righe.forEach((riga, index) => {
-            if (index === 0 && riga.toLowerCase().startsWith("sigla")) return; 
-            
-            let separatore = riga.includes("\t") ? "\t" : "|";
-            let colonne = riga.split(separatore);
-            
-            if(colonne.length >= 10) {
-                let isIndipendente = (colonne[10] && colonne[10].trim().toLowerCase() === "x") ? false : true;
-                let livello = (colonne.length > 12 && colonne[12]) ? parseInt(colonne[12].trim()) : 1;
-                
-                let nazione = {
-                    sigla: colonne[0].trim(),
-                    nome: colonne[1].trim(),
-                    alias_paese: [],
-                    alias_paese_ufficiali: [],
-                    capitale: colonne[3] ? colonne[3].trim() : "",
-                    alias_capitale: [],
-                    alias_capitale_ufficiali: [],
-                    confini: colonne[5] ? colonne[5].split(",").map(c => c.trim().toLowerCase()).filter(Boolean) : [],
-                    aree: colonne[6] ? colonne[6].split(",").map(a => {
-                        let area = a.trim().toUpperCase();
-                        if(area === "AMERICA DEL NORD") return "NORD AMERICA";
-                        if(area === "AMERICA DEL SUD") return "SUD AMERICA";
-                        return area;
-                    }).filter(Boolean) : [], 
-                    colori_base: colonne[7] ? colonne[7].split(",").map(c => c.trim().toLowerCase()).filter(Boolean) : [], 
-                    colori_emblema: colonne[8] ? colonne[8].split(",").map(c => c.trim().toLowerCase()).filter(Boolean) : [], 
-                    simboli: (colonne[9] || "").split(",").map(s => s.trim().toLowerCase()).filter(Boolean), 
-                    indipendente: isIndipendente,
-                    formati_bandiera: (colonne.length > 11 && colonne[11]) ? colonne[11].split(",").map(f => f.trim().toLowerCase()).filter(Boolean) : [],
-                    livello: isNaN(livello) ? 1 : livello 
-                };
-
-                let rawAliasPaese = colonne[2] ? colonne[2].split(",").map(n => n.trim().toLowerCase()).filter(Boolean) : [];
-                rawAliasPaese.forEach(a => {
-                    if (a.startsWith('*')) {
-                        let pulito = a.substring(1).trim();
-                        nazione.alias_paese_ufficiali.push(pulito);
-                        nazione.alias_paese.push(pulito); 
-                    } else {
-                        nazione.alias_paese.push(a);
-                    }
-                });
-
-                let rawAliasCap = colonne[4] ? colonne[4].split(",").map(c => c.trim().toLowerCase()).filter(Boolean) : [];
-                rawAliasCap.forEach(a => {
-                    if (a.startsWith('*')) {
-                        let pulito = a.substring(1).trim();
-                        nazione.alias_capitale_ufficiali.push(pulito);
-                        nazione.alias_capitale.push(pulito); 
-                    } else {
-                        nazione.alias_capitale.push(a);
-                    }
-                });
-
-                let hasSea = false;
-                let landBorders = [];
-                nazione.confini.forEach(c => {
-                    if (c === "mare" || c.includes("oceano") || c.includes("mar ")) hasSea = true;
-                    else if (c !== "") landBorders.push(c);
-                });
-                nazione.confini = landBorders; 
-                
-                let eccezioniIsole = ["GL", "HT", "DO", "MF", "SX", "BH", "SG"];
-                if (landBorders.length === 0 || eccezioniIsole.includes(nazione.sigla)) nazione.tipoGeo = "isola"; 
-                else if (hasSea) nazione.tipoGeo = "costiera";
-                else nazione.tipoGeo = "interna"; 
-
-                globalDb.push(nazione);
-            }
-        });
-
-        const allColors = ['rosso','bianco','blu','nero','giallo','verde','arancione','azzurro'];
-        const allLetters = 'ABCDEFGHILMNOPQRSTUVZ'.split('');
-
-        let vite = 3;
-        const maxVite = 5;
-	const NUM_OPZIONI = 3;
-        let esatte = 0;
-        let punteggio = 0;
-        let prossimoCuore = 750;
-        let erroriCommessi = []; 
-        let currentTurnData = null; 
-        
-        let nazioniUsate = []; 
-
-        let currentStreak = 0;
-        let bestStreak = 0;
-        let fotofinishCount = 0;
-        let grazieRicevuteCount = 0;
-
-        let timerState = "stopped"; 
-        let readingTimeout = null;
-        let mainTimerInterval = null;
-        let activeTimeTotal = 0;
-        let activeTimeLeft = 0;
-        let comboInserted = [];
-
-        let nazioniDigitateCount = {};
-        let nazioniIgnorateCount = {};
-        let turnStartTime = 0;
-        let totalActiveTimeMs = 0;
-        let totalAnswersSubmitted = 0;
-    
-        let endlessVittoriaSbloccata = false;
-
-        let debugGameLog = "";
-        let recentTargets = [];
-        let logQuestionCounter = 0;
-        let totalActiveTime = 0;
-
-        function downloadDebugLog() {
-            let now = new Date();
-            let pad = (num) => String(num).padStart(2, '0');
-            let dataOra = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
-            
-            let dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(debugGameLog);
-            let node = document.createElement('a');
-            node.setAttribute("href", dataStr);
-            node.setAttribute("download", `QG_DebugLog_${dataOra}.txt`);
-            document.body.appendChild(node);
-            node.click();
-            node.remove();
-        }
-
-        const capitalize = str => str ? str.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : "";
-        
-        function getPrintedName(country, matchedNameStr) {
-            if (matchedNameStr && country.alias_paese_ufficiali.map(a=>a.toLowerCase()).includes(matchedNameStr.toLowerCase())) {
-                // SE C'È UN PALETTO DI INIZIALE E L'ALIAS NON LO RISPETTA, FORZA IL NOME PRIMARIO
-                if (currentTurnData && currentTurnData.reqInit && !matchedNameStr.toLowerCase().startsWith(currentTurnData.reqInit.toLowerCase())) {
-                    let offAlias = country.alias_paese_ufficiali.find(a => a.toLowerCase().startsWith(currentTurnData.reqInit.toLowerCase()));
-                    return offAlias ? capitalize(offAlias) : capitalize(country.nome);
-                }
-                return capitalize(matchedNameStr);
-            }
-            return capitalize(country.nome);
-        }
-
-        function getPrintedCapital(country, matchedCapStr) {
-            if (matchedCapStr && country.alias_capitale_ufficiali.map(a=>a.toLowerCase()).includes(matchedCapStr.toLowerCase())) {
-                // SE C'È UN PALETTO DI INIZIALE CAPITALE E L'ALIAS NON LO RISPETTA, FORZA IL NOME PRIMARIO
-                if (currentTurnData && currentTurnData.reqCapInit && !matchedCapStr.toLowerCase().startsWith(currentTurnData.reqCapInit.toLowerCase())) {
-                    let offAlias = country.alias_capitale_ufficiali.find(a => a.toLowerCase().startsWith(currentTurnData.reqCapInit.toLowerCase()));
-                    return offAlias ? capitalize(offAlias) : capitalize(country.capitale);
-                }
-                return capitalize(matchedCapStr);
-            }
-            return capitalize(country.capitale);
-        }
-
-        const heartsEl = document.getElementById("hearts");
-        const esatteEl = document.getElementById("esatte-counter");
-        const puntiEl = document.getElementById("punti-counter");
-        const questionEl = document.getElementById("question");
-        const inputEl = document.getElementById("answer-input");
-        const eventBadge = document.getElementById("event-badge");
-        const submitBtn = document.getElementById("submit-btn");
-        const nextBtn = document.getElementById("next-btn");
-        const surrenderBtn = document.getElementById("surrender-btn");
-        const gameOverScreen = document.getElementById("game-over-screen");
-        const errorLogEl = document.getElementById("error-log");
-        const bandieraContainer = document.getElementById("bandiera-container");
-        const bandieraImg = document.getElementById("bandiera-img");
-        const homeBtn = document.getElementById("home-btn");
-        const timerContainer = document.getElementById("timer-container");
-        const timerBar = document.getElementById("timer-bar");
-        const timerStatus = document.getElementById("timer-status");
-        const comboTracker = document.getElementById("combo-tracker");
-        const modalOverlay = document.getElementById("modal-overlay");
-        const modalTitle = document.getElementById("modal-title");
-        const modalBody = document.getElementById("modal-body");
-        
-        const errPanel = document.getElementById("error-feedback-panel");
-        const errTitle = document.getElementById("error-feedback-title");
-        const errText = document.getElementById("error-feedback-text");
-
-// NUOVA FUNZIONE: Lightbox Bandiere a tutto schermo
-        window.openFlagModal = function(src) {
-            let overlay = document.getElementById("flag-lightbox");
-            
-            if (!overlay) {
-                overlay = document.createElement("div");
-                overlay.id = "flag-lightbox";
-                overlay.style.cssText = "display:flex; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:10000; justify-content:center; align-items:center; flex-direction:column; opacity:0; transition: opacity 0.2s;";
-                
-                // Quando clicchi ovunque sul nero, la finestra si chiude
-                overlay.onclick = function() { 
-                    this.style.opacity = "0"; 
-                    setTimeout(() => { this.style.display = 'none'; }, 200); 
-                };
-                
-                let img = document.createElement("img");
-                img.id = "flag-lightbox-img";
-                img.style.cssText = "max-width:90%; max-height:80%; border-radius:8px; box-shadow:0 4px 15px rgba(0,0,0,0.7); border:2px solid #fff; transform: scale(0.9); transition: transform 0.2s;";
-                
-                overlay.appendChild(img);
-                document.body.appendChild(overlay);
-            }
-            
-            let imgEl = document.getElementById("flag-lightbox-img");
-            imgEl.src = src;
-            overlay.style.display = "flex";
-            
-            // Piccolo delay per l'animazione di comparsa morbida
-            setTimeout(() => {
-                overlay.style.opacity = "1";
-                imgEl.style.transform = "scale(1)";
-            }, 10);
-        };
-
-        // Rende cliccabile e zoomabile la bandiera principale della domanda!
-        bandieraImg.style.cursor = "pointer";
-        bandieraImg.onclick = function() { window.openFlagModal(this.src); };
-
-	const normalizzaTesto = function(str) {
-    	if (!str) return "";
-   	return str.toLowerCase()
-          .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-          .replace(/[-_.,;:]/g, " ") // Converte trattini e punti in spazi
-          .replace(/['’`´]/g, " ") // Converte tutti gli apostrofi in spazi
-          .replace(/[^a-z0-9\s]/g, "") // Mantiene gli spazi
-          .trim()
-          .replace(/\s+/g, " "); // Evita di creare doppi spazi
-	};
-        
-	// --- GESTIONE PWA BACK BUTTON ---
-        window.addEventListener('popstate', function(event) {
-            if (document.getElementById("game-over-screen").style.display === "flex") {
-                 // Lascia scorrere
-            } else if (document.getElementById("input-area").style.display === "flex") {
-                let conf = confirm("Partita in corso! Vuoi davvero uscire? I progressi andranno persi.");
-                if (conf) {
-                    resetGame();
-                } else {
-                    history.pushState(null, null, window.location.href);
-                }
-            }
-        });
-		
-		// --- BLOCCO SWIPE-TO-REFRESH INTELLIGENTE (Permette lo scorrimento!) ---
-        let touchStartY = 0;
-        document.addEventListener('touchstart', function(e) {
-            touchStartY = e.touches[0].clientY;
-        }, { passive: true });
-
-        document.addEventListener('touchmove', function(e) {
-            if (document.getElementById("start-screen").style.display === "flex") return; 
-            
-            if (e.target.closest('.db-table-container') || e.target.closest('#modal-body') || e.target.closest('#error-log') || e.target.closest('#top5-nations')) {
-                return;
-            }
-            
-            let touchY = e.touches[0].clientY;
-            let isSwipingDown = (touchY - touchStartY) > 0;
-
-            // Blocca il refresh SOLO se si scorre verso il basso E ci si trova esattamente in cima alla pagina
-            if (isSwipingDown && window.scrollY <= 0) {
-                e.preventDefault();
-            }
-        }, { passive: false });
-
-        function getLevenshteinTolerance(word, level) {
-            if (word.length <= 3) return 0;
-            let tolerance = 0;
-            if (word.length >= 5 && word.length <= 8) tolerance = 1;
-            if (word.length >= 9) tolerance = 2;
-            if (level === 1 || level === 6) tolerance += 1; 
-            return tolerance;
-        }
-
-        function isDoppelganger(input, target) {
-    if (!input || !target) return false;
-    let iAlpha = input.toLowerCase().replace(/[^a-z]/g, "");
-    let tAlpha = target.toLowerCase().replace(/[^a-z]/g, "");
-    
-    if ((iAlpha === "kingston" && tAlpha === "kingstown") || (iAlpha === "kingstown" && tAlpha === "kingston")) return true;
-    
-    if ((iAlpha === "basseterre" && tAlpha === "basseterre") || (iAlpha === "georgetown" && tAlpha === "georgetown")) {
-        let hasSeparatorInput = input.includes("-") || input.includes(" ");
-        let hasSeparatorTarget = target.includes("-") || target.includes(" ");
-        if (hasSeparatorInput !== hasSeparatorTarget) return true; 
-    }
-    return false;
-}
-
-        function levenshteinDistance(a, b) {
-            let aNorm = normalizzaTesto(a);
-            let bNorm = normalizzaTesto(b);
-            const matrix = Array.from({ length: aNorm.length + 1 }, () => Array(bNorm.length + 1).fill(0));
-            for (let i = 0; i <= aNorm.length; i++) matrix[i][0] = i;
-            for (let j = 0; j <= bNorm.length; j++) matrix[0][j] = j;
-            for (let i = 1; i <= aNorm.length; i++) {
-                for (let j = 1; j <= bNorm.length; j++) {
-                    const cost = aNorm[i - 1] === bNorm[j - 1] ? 0 : 1;
-                    matrix[i][j] = Math.min(matrix[i - 1][j] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j - 1] + cost);
-                }
-            }
-            return matrix[aNorm.length][bNorm.length];
-        }
-
-        function findCountryByInput(inputStr, level, td = null) {
-            let bestMatches = [];
-            let globalMinDist = 999;
-            let searchPool = globalDb;
-            if (td !== null) {
-                searchPool = (td.format === 4 || td.format === 7 || td.isComboInception) ? globalDb : getAnswerPool(level);
-            }
-            
-            for (let country of searchPool) {
-                let validNames = [country.nome.toLowerCase(), ...country.alias_paese];
-                let validCapitals = country.capitale ? [country.capitale.toLowerCase(), ...country.alias_capitale] : [];
-                
-                let relevantDist = 999;
-                for(let n of validNames) {
-                    if (isDoppelganger(inputStr, n)) continue;
-                    let d = levenshteinDistance(inputStr, n);
-                    if (d <= getLevenshteinTolerance(n, level)) {
-                        if (d < relevantDist) relevantDist = d;
-                    }
-                }
-                for(let c of validCapitals) {
-                    if (isDoppelganger(inputStr, c)) continue;
-                    let d = levenshteinDistance(inputStr, c);
-                    if (d <= getLevenshteinTolerance(c, level)) {
-                        if (d < relevantDist) relevantDist = d;
-                    }
-                }
-                
-                if (relevantDist < globalMinDist) {
-                    globalMinDist = relevantDist;
-                    bestMatches = [country];
-                } else if (relevantDist === globalMinDist && globalMinDist !== 999) {
-                    bestMatches.push(country);
-                }
-            }
-            
-            if (bestMatches.length > 0) {
-                if (bestMatches.length > 1 && td !== null) {
-                    for (let match of bestMatches) {
-                        let res = checkSingleAnswer(inputStr, td, level);
-                        if (res.isCorrect && res.matchedCountry.sigla === match.sigla) {
-                            return match;
-                        }
-                    }
-                }
-                return bestMatches[0]; 
-            }
-            return null; 
-        }
-
-        function openModal(title, htmlContent) {
-            modalTitle.innerText = title;
-            modalBody.innerHTML = htmlContent;
-            modalOverlay.style.display = "flex";
-        }
-        function closeModal() { modalOverlay.style.display = "none"; modalBody.innerHTML = ""; }
-
-        function openRules() {
-            let html = `
-    <p>Il tuo obiettivo è uno solo: dimostrare una conoscenza geografica assoluta e sopravvivere al motore logico.</p>
-
-    <h3 style="color:#ffd700; margin-bottom:5px;">❤️ VITE E SISTEMA DI PUNTEGGIO</h3>
-    <ul style="margin-top:5px; padding-left:20px;">
-        <li><strong>Cuori:</strong> Inizi la partita con <strong>3 vite</strong>. Ottieni un cuore extra ogni <strong>750 punti</strong>.</li>
-        <li><strong>Bonus Audacia (x2):</strong> Se nei livelli 1 e 2 usi nazioni di livelli superiori, i punti raddoppiano.</li>
-        <li><strong>Malus Pigrizia (-50%):</strong> Usare nazioni già nominate dimezza il punteggio (Livelli 1-3).</li>
-        <li><strong>Grazia Ricevuta:</strong> Se scade il timer ma hai inserito almeno 2 risposte esatte, ti salvi! Punteggio dimezzato per ogni risposta mancante (Liv. 4-5).</li>
-    </ul>
-
-    <h3 style="color:#2196f3; margin-bottom:5px;">🗺️ DEFINIZIONI GEOGRAFICHE</h3>
-    <ul style="margin-top:5px; padding-left:20px;">
-        <li><strong>Stato Insulare:</strong> Accetta SOLO isole (es. Giappone, Groenlandia).</li>
-        <li><strong>Stato Continentale Costiero:</strong> Esclude le isole! Valgono solo paesi sul continente bagnati dal mare (es. Italia, Brasile).</li>
-        <li><strong>Con Sbocco sul Mare:</strong> Inclusivo. Accetta ENTRAMBI i casi precedenti (Isole + Costieri).</li>
-        <li><strong>Stato Interno:</strong> Nessuno sbocco sul mare (es. Svizzera).</li>
-    </ul>
-
-    <h3 style="color:#ffd700; margin-bottom:5px;">🌍 I LIVELLI DI SFIDA E VITTORIA</h3>
-    <ul style="margin-top:5px; padding-left:20px;">
-        <li><strong>1. Bestia Apolide:</strong> Solo Nazioni Indipendenti note. (Vittoria: 2500 pt)</li>
-        <li><strong>2. Animale Accasato:</strong> Sblocca i micro-stati e attiva i Paletti Negativi. (Vittoria: 3500 pt)</li>
-        <li><strong>3. Creatura Cosmopolita:</strong> Sblocca il database completo (dipendenze, ecc.).</li>
-        <li><strong>4. Divinità Geografa:</strong> Fino a 5 risposte a raffica, Timer letale, Malus Pigrizia disattivato.</li>
-        <li><strong>Vittoria Leggendaria (L3 e L4):</strong> Raggiungere <strong>10.000 punti</strong> sblocca la Vittoria Infinita. Scegli se ritirarti da eroe o continuare per frantumare ogni record!</li>
-    </ul>
-`;
-            openModal("📜 REGOLAMENTO", html);
-        }
-
-        function openDB() {
-            let tableHTML = `<div class="db-table-container"><table class="db-table">
-                <thead><tr>
-                    <th>Bandiera</th>
-                    <th>Sigla</th>
-                    <th class="sticky-col">Paese</th>
-                    <th>Capitale</th>
-                    <th>Confini</th>
-                    <th>Aree</th>
-                    <th>Colori Base</th>
-                    <th>Colori Emblema</th>
-                    <th>Simboli</th>
-                    <th>Formato Bandiera</th>
-                    <th>Livello Base</th>
-                </tr></thead><tbody>`;
-            
-            globalDb.forEach(n => {
-                tableHTML += `<tr>
-                    <td style="text-align:center;">
-                        <img src="GIF/${n.sigla.toLowerCase()}.jpg" 
-                             onclick="window.openFlagModal(this.src)"
-                             style="width:40px; border-radius:2px; border:1px solid #444; cursor:pointer;" 
-                             onerror="this.onerror=null; this.alt='❌ ERR'; this.style.border='2px solid #f44336'; this.style.padding='2px';">
-                    </td>
-                    <td>${n.sigla.toUpperCase()}</td>
-                    <td class="sticky-col" style="font-weight:bold;">${capitalize(n.nome)}</td>
-                    <td>${capitalize(n.capitale)}</td>
-                    <td>${n.confini.map(capitalize).join(', ')}</td>
-                    <td>${n.aree.map(capitalize).join(', ')}</td>
-                    <td>${n.colori_base.map(capitalize).join(', ')}</td>
-                    <td>${n.colori_emblema.map(capitalize).join(', ')}</td>
-                    <td>${n.simboli.map(capitalize).join(', ')}</td>
-                    <td>${n.formati_bandiera.map(capitalize).join(', ')}</td>
-                    <td>${n.livello}</td>
-                </tr>`;
-            });
-            tableHTML += `</tbody></table></div>`;
-            openModal("📚 ENCICLOPEDIA", tableHTML);
-        }
-
-	function openRecords() {
-        let sortedUsate = Object.keys(allTimeNazioniCount).map(sigla => {
-            let n = globalDb.find(c => c.sigla === sigla);
-            return { nome: n ? n.nome : sigla, count: allTimeNazioniCount[sigla], sigla: sigla };
-        }).sort((a, b) => b.count - a.count).slice(0, 10);
-
-        let sortedIgnorate = Object.keys(allTimeNazioniIgnorate).map(sigla => {
-            let n = globalDb.find(c => c.sigla === sigla);
-            return { nome: n ? n.nome : sigla, count: allTimeNazioniIgnorate[sigla], sigla: sigla };
-        }).sort((a, b) => b.count - a.count).slice(0, 10);
-
-        const buildList = (arr, emptyMsg, color) => {
-            if (arr.length === 0) return "<p style='text-align:center; color:#888; font-size:12px;'>" + emptyMsg + "</p>";
-            let h = "<div style='display:flex; flex-direction:column;'>";
-            arr.forEach((sn, idx) => {
-                h += "<div style='display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding: 3px 0; height: 22px;'>";
-                h += "<div style='display:flex; align-items:center; gap:5px; flex:1; min-width:0; padding-right:5px;'>";
-                h += "<span style='color:#777; font-weight:bold; font-size:10px; width:14px; text-align:right; flex-shrink:0;'>" + (idx + 1) + ".</span>";
-                h += "<img src='GIF/" + sn.sigla.toLowerCase() + ".jpg' onclick='window.openFlagModal(this.src)' style='width:16px; height:11px; border-radius:2px; flex-shrink:0; object-fit:cover; cursor:pointer;' onerror='this.style.display=\"none\"'>";
-                h += "<span style='color:#ccc; font-weight:bold; font-size:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; flex:1;'>" + sn.nome.toUpperCase() + "</span>";
-                h += "</div>";
-                h += "<span style='color:" + color + "; font-weight:bold; font-size:11px; flex-shrink:0; width:15px; text-align:right;'>" + sn.count + "</span>";
-                h += "</div>";
-            });
-            return h + "</div>";
-        };
-
-        const renderLvlBox = (lvl, s, isPro, vicThreshold) => {
-            let vicStr = (vicThreshold && s.bestScore >= vicThreshold) ? " 🏆" : "";
-            let displayStyle = (lvl === 1) ? 'block' : 'none';
-            let h = "<div class='rbox-lvl' id='rbox-" + lvl + "' style='display:" + displayStyle + "; background:#2a2a2a; border:1px solid #444; border-radius:6px; padding:6px 10px; margin-bottom:8px;'>";
-            h += "<div style='display:flex; justify-content:space-around; font-size:10px; color:#aaa; text-align:center;'>";
-            h += "<div style='display:flex; flex-direction:column;'><span>Partite</span><strong style='font-size:14px; color:#fff;'>" + s.plays + "</strong></div>";
-            h += "<div style='display:flex; flex-direction:column;'><span>Record</span><strong style='font-size:14px; color:#fff;'>" + (s.plays > 0 ? s.bestScore : '-') + vicStr + "</strong></div>";
-            h += "<div style='display:flex; flex-direction:column;'><span>Serie Max</span><strong style='font-size:14px; color:#fff;'>" + (s.bestStreak || 0) + "</strong></div>";
-            h += "<div style='display:flex; flex-direction:column;'><span>Tempo Med</span><strong style='font-size:14px; color:#fff;'>" + (s.bestAvgTime > 0 ? s.bestAvgTime + "s" : "-") + "</strong></div>";
-            h += "</div>";
-            if (isPro) {
-                h += "<div style='display:flex; justify-content:center; gap:20px; font-size:10px; color:#888; margin-top:5px; border-top:1px dashed #444; padding-top:4px;'>";
-                h += "<span>Fotofinish: <strong style='color:#2196f3;'>" + (s.fotofinish || 0) + "</strong></span>";
-                h += "<span>Grazie: <strong style='color:#ffd700;'>" + (s.grazie || 0) + "</strong></span>";
-                h += "</div>";
-            }
-            h += "</div>";
-            return h;
-        };
-
-        let btnStyle = "flex:1; padding:6px 2px; font-size:11px; font-weight:bold; cursor:pointer; border-radius:4px; border:1px solid #444; text-align:center; transition:all 0.2s; ";
-        let tabsHtml = "<div style='display:flex; gap:5px; margin-bottom:8px; width:100%;'>";
-        tabsHtml += "<button id='rtab-0' onclick='switchRecordTab(0)' style='" + btnStyle + " background:#2a2a2a; color:#ccc;'>L0</button>";
-        tabsHtml += "<button id='rtab-1' onclick='switchRecordTab(1)' style='" + btnStyle + " background:#ffd700; color:#121212;'>L1</button>";
-        tabsHtml += "<button id='rtab-2' onclick='switchRecordTab(2)' style='" + btnStyle + " background:#2a2a2a; color:#ccc;'>L2</button>";
-        tabsHtml += "<button id='rtab-3' onclick='switchRecordTab(3)' style='" + btnStyle + " background:#2a2a2a; color:#ccc;'>L3</button>";
-        tabsHtml += "<button id='rtab-4' onclick='switchRecordTab(4)' style='" + btnStyle + " background:#2a2a2a; color:#ccc;'>L4</button>";
-        tabsHtml += "<button id='rtab-5' onclick='switchRecordTab(5)' style='" + btnStyle + " background:#2a2a2a; color:#ccc;'>CUST</button>";
-        tabsHtml += "</div>";
-
-        let html = "<div style='padding:0px; display:flex; flex-direction:column; max-height:82vh;'>";
-        html += "<div style='background:#1e1e1e; border:1px solid #ffd700; border-radius:6px; padding:6px 10px; margin-bottom:10px; text-align:center; flex-shrink:0;'>";
-        html += "<div style='font-size:12px; color:#ffd700; font-weight:bold; margin-bottom:6px; text-transform:uppercase; letter-spacing:1px;'>Statistiche Globali</div>";
-        html += "<div style='display:flex; justify-content:space-around; font-size:10px; color:#aaa;'>";
-        html += "<div style='display:flex; flex-direction:column;'><span>Partite</span><strong style='font-size:14px; color:#fff;'>" + globalPlays + "</strong></div>";
-        html += "<div style='display:flex; flex-direction:column;'><span>Record Assoluto</span><strong style='font-size:14px; color:#fff;'>" + allTimeBestScore + "</strong></div>";
-        html += "<div style='display:flex; flex-direction:column;'><span>Serie Max</span><strong style='font-size:14px; color:#fff;'>" + allTimeBestStreak + "</strong></div>";
-        html += "<div style='display:flex; flex-direction:column;'><span>Tempo Med</span><strong style='font-size:14px; color:#fff;'>" + (allTimeBestAvgTime > 0 ? allTimeBestAvgTime + "s" : "-") + "</strong></div>";
-        html += "</div></div>";
-        
-        html += "<div style='flex-shrink:0;'>";
-        html += tabsHtml;
-        html += renderLvlBox(0, statsByLevel[0], false, 1500);
-        html += renderLvlBox(1, statsByLevel[1], false, 2500);
-        html += renderLvlBox(2, statsByLevel[2], false, 3500);
-        html += renderLvlBox(3, statsByLevel[3], false, 5000);
-        html += renderLvlBox(4, statsByLevel[4], true, null);
-        html += renderLvlBox(5, statsByLevel[5], true, null);
-        html += "</div>";
-
-        html += "<div style='display:flex; gap:10px; text-align:left; flex-grow:1; overflow:hidden; margin-bottom:10px;'>";
-        html += "<div style='flex:1;'>";
-        html += "<h3 style='color:#4caf50; margin:0 0 4px 0; font-size:11px; text-transform:uppercase; text-align:center;'>Top 10 Usate</h3>";
-        html += buildList(sortedUsate, 'Nessuna', '#4caf50');
-        html += "</div><div style='flex:1;'>";
-        html += "<h3 style='color:#f44336; margin:0 0 4px 0; font-size:11px; text-transform:uppercase; text-align:center;'>Top 10 Ignorate</h3>";
-        html += buildList(sortedIgnorate, 'Nessuna', '#f44336');
-        html += "</div></div>";
-        
-        html += "<div style='display:flex; flex-direction:column; gap:8px; flex-shrink:0; margin-top:auto;'>";
-        html += "<button onclick='openGamesHistory()' style='width:100%; background:#2196f3; color:#fff; border:1px solid #1976d2; padding:10px 0; border-radius:4px; font-weight:bold; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(0,0,0,0.3); text-transform:uppercase;'>📜 Ultime Partite e Log</button>";
-        html += "<div style='display:flex; gap:6px; justify-content:center;'>";
-        html += "<button onclick='exportBackup()' style='flex:1; background:#2a2a2a; color:#fff; border:1px solid #444; padding:8px 0; border-radius:4px; font-weight:bold; font-size:10px; cursor:pointer; display:flex; align-items:center; justify-content:center;'>💾 ESPORTA</button>";
-        html += "<button onclick='clearAllData()' style='flex:1; background:#b71c1c; color:#fff; border:1px solid #f44336; padding:8px 0; border-radius:4px; font-weight:bold; font-size:10px; cursor:pointer; display:flex; align-items:center; justify-content:center;'>🗑️ CANC DATI</button>";
-        html += "<label style='flex:1; background:#2a2a2a; color:#fff; border:1px solid #444; padding:8px 0; border-radius:4px; font-weight:bold; font-size:10px; cursor:pointer; margin:0; display:flex; align-items:center; justify-content:center; box-sizing:border-box;'>";
-        html += "📂 IMPORTA <input type='file' accept='.json' style='display:none;' onchange='importBackup(event)'>";
-        html += "</label></div></div></div>";
-
-        openModal('🏆 STORICO E RECORD', html);
-    }
-
-    window.switchRecordTab = function(lvl) {
-        for(let i=0; i<=5; i++) {
-            let box = document.getElementById('rbox-' + i);
-            if(box) box.style.display = (i === lvl) ? 'block' : 'none';
-            let btn = document.getElementById('rtab-' + i);
-            if(btn) {
-                if(i === lvl) {
-                    btn.style.backgroundColor = '#ffd700';
-                    btn.style.color = '#121212';
-                } else {
-                    btn.style.backgroundColor = '#2a2a2a';
-                    btn.style.color = '#ccc';
-                }
-            }
-        }
-    }
-
-    function openCustomSetup() {
-        document.getElementById("start-screen").style.display = "none";
-        document.getElementById("custom-setup-screen").style.display = "flex";
+function findCountryByInput(inputStr, level, td = null) {
+    let bestMatches = [];
+    let globalMinDist = 999;
+    let searchPool = globalDb;
+    if (td !== null) {
+        searchPool = (td.format === 4 || td.format === 7 || td.isComboInception) ? globalDb : getAnswerPool(level);
     }
     
-    function closeCustomSetup() {
-        document.getElementById("custom-setup-screen").style.display = "none";
-        document.getElementById("start-screen").style.display = "flex";
-    }
-
-// --- VARIABILI E FUNZIONI UI PER IL LIVELLO 6 ---
-    let configL6 = {
-        bacino: 1, // 1 = Livello 1 (ONU 193), 3 = Livello 3 (Totale)
-        formato: 9 // Default: 9 = Bandiere, 1 = Capitale->Stato, 0 = Stato->Capitale
-    };
-
-    function openLevel6Setup() {
-        document.getElementById("start-screen").style.display = "none";
-        document.getElementById("level6-setup-screen").style.display = "flex";
-    }
-    
-    function closeLevel6Setup() {
-        document.getElementById("level6-setup-screen").style.display = "none";
-        document.getElementById("start-screen").style.display = "flex";
-    }
-
-    function setL6Bacino(val) {
-        configL6.bacino = val;
-        document.getElementById("l6-bacino-1").classList.toggle("selected", val === 1);
-        document.getElementById("l6-bacino-3").classList.toggle("selected", val === 3);
-    }
-
-    function setL6Mode(val) {
-        configL6.formato = val;
-        document.getElementById("l6-mode-9").classList.toggle("selected", val === 9);
-        document.getElementById("l6-mode-1").classList.toggle("selected", val === 1);
-        document.getElementById("l6-mode-0").classList.toggle("selected", val === 0);
-    }
-
-    function startLevel6Game() {
-        document.body.style.overscrollBehavior = "none";
-        currentLevel = 6;
+    for (let country of searchPool) {
+        let validNames = [country.nome.toLowerCase(), ...country.alias_paese];
+        let validCapitals = country.capitale ? [country.capitale.toLowerCase(), ...country.alias_capitale] : [];
         
-        // Il bottone 1 (ONU) corrisponde al livello <= 2 del DB
-        let targetLivello = configL6.bacino === 1 ? 2 : 3;
-        levelDb = globalDb.filter(n => n.livello <= targetLivello);
-        
-        vite = 1;
-        punteggio = 0;
-        esatte = 0;
-        erroriCommessi = [];
-        comboInserted = [];
-        nazioniUsate = [];
-        logQuestionCounter = 0;
-        recentTargets = [];
-        turnStartTime = Date.now();
-        
-        debugGameLog = "=== GEOQUIZ DEBUG LOG ===\nData: " + new Date().toLocaleString() + "\nLivello Giocato: 6 (Morte Improvvisa)\n";
-        debugGameLog += "Bacino: " + (configL6.bacino === 1 ? "ONU" : "Totale") + " | Formato: " + configL6.formato + "\n\n";
-
-        document.getElementById("start-screen").style.display = "none";
-        document.getElementById("level6-setup-screen").style.display = "none";
-        document.getElementById("header").style.display = "flex";
-        document.getElementById("question").style.display = "block";
-        document.getElementById("input-area").style.display = "flex";
-        homeBtn.style.display = "block"; 
-        
-        history.pushState(null, null, window.location.href);
-
-        aggiornaUI();
-        playTurn();
-
-	setTimeout(() => {
-            inputEl.focus();
-            inputEl.click();
-        }, 100);
-    }
-    // ------------------------------------------------
-
-    window.openGamesHistory = function() {
-        let html = "<div style='max-height: 70vh; overflow-y: auto; padding-right: 5px;'>";
-        for(let lvl = 0; lvl <= 6; lvl++) {
-            let lvlName = lvl === 0 ? "Livello 0" : (lvl === 5 ? "Personalizzata" : (lvl === 6 ? "Morte Improvvisa" : "Livello " + lvl));
-            html += "<h3 style='color:#ffd700; border-bottom:1px solid #444; padding-bottom:3px; margin-top:10px; margin-bottom:5px; font-size:14px; text-transform:uppercase;'>" + lvlName + "</h3>";
-            if (recentGamesHistory[lvl].length === 0) {
-                html += "<p style='color:#888; font-size:12px; font-style:italic; margin: 0 0 15px 0;'>Nessuna partita registrata.</p>";
-            } else {
-                recentGamesHistory[lvl].forEach((game, idx) => {
-                    html += "<div style='display:flex; justify-content:space-between; align-items:center; background:#2a2a2a; margin-bottom:6px; padding:8px 12px; border-radius:6px; border:1px solid #444;'>";
-                    html += "<div style='display:flex; flex-direction:column; gap:2px;'>";
-                    html += "<span style='color:#ccc; font-size:11px;'>" + game.date + "</span>";
-                    
-                    if (lvl === 6) {
-                        // Calcola la percentuale estraendo il totale dal file di log (se esiste), altrimenti stima 193
-                        let totalTarget = 193; 
-                        if (game.log) {
-                            let match = game.log.match(/su (\d+)/);
-                            if (match) totalTarget = parseInt(match[1]);
-                        }
-                        let pctProgresso = ((game.esatte / totalTarget) * 100).toFixed(1);
-                        
-                        html += "<span style='color:#fff; font-size:13px; font-weight:bold;'>Progresso: <span style='color:#ffd700;'>" + pctProgresso + "%</span> | Esatte: <span style='color:#4caf50;'>" + game.esatte + "</span></span>";
-                    } else {
-                        html += "<span style='color:#fff; font-size:13px; font-weight:bold;'>Punti: <span style='color:#4caf50;'>" + game.punteggio + "</span> | Esatte: " + game.esatte + "</span>";
-                    }
-                    
-                    html += "</div>";
-                    html += "<button onclick='downloadSpecificLog(" + lvl + ", " + idx + ")' style='background:#2196f3; color:#fff; border:none; border-radius:4px; padding:6px 12px; font-size:11px; font-weight:bold; cursor:pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.3); display:flex; align-items:center; gap:4px;'>📥</button>";
-                    html += "</div>";
-                });
-                html += "<div style='margin-bottom: 15px;'></div>";
+        let relevantDist = 999;
+        for(let n of validNames) {
+            if (isDoppelganger(inputStr, n)) continue;
+            let d = levenshteinDistance(inputStr, n);
+            if (d <= getLevenshteinTolerance(n, level)) {
+                if (d < relevantDist) relevantDist = d;
             }
         }
-        html += "</div>";
-        html += "<button onclick='openRecords()' style='width:100%; background:#444; color:#fff; border:none; padding:12px; margin-top:10px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:14px;'>🔙 TORNA AI RECORD</button>";
-        openModal("📜 ULTIME PARTITE", html);
-    };
+        for(let c of validCapitals) {
+            if (isDoppelganger(inputStr, c)) continue;
+            let d = levenshteinDistance(inputStr, c);
+            if (d <= getLevenshteinTolerance(c, level)) {
+                if (d < relevantDist) relevantDist = d;
+            }
+        }
+        
+        if (relevantDist < globalMinDist) {
+            globalMinDist = relevantDist;
+            bestMatches = [country];
+        } else if (relevantDist === globalMinDist && globalMinDist !== 999) {
+            bestMatches.push(country);
+        }
+    }
+    
+if (bestMatches.length > 0) {
+        if (bestMatches.length > 1 && td !== null) {
+            let res = checkSingleAnswer(inputStr, td, level);
+            if (res.isCorrect) {
+                let contextualMatch = bestMatches.find(m => m.sigla === res.matchedCountry.sigla);
+                if (contextualMatch) return contextualMatch;
+            }
+        }
+        return bestMatches[0]; 
+    }
+    return null; 
+}
 
-    window.downloadSpecificLog = function(lvl, idx) {
-        let game = recentGamesHistory[lvl][idx];
-        if (!game || !game.log) return;
-        let dateStr = game.date.replace(/[\/ :]/g, "_").replace(",", "");
-        let dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(game.log);
-        let node = document.createElement('a');
-        node.setAttribute("href", dataStr);
-        node.setAttribute("download", "QG_Log_L" + lvl + "_" + dateStr + ".txt");
-        document.body.appendChild(node);
-        node.click();
-        node.remove();
-    };
-		
         function toggleCustomOpt(opt) {
             customConfig[opt] = !customConfig[opt];
             let el = document.getElementById("opt-" + opt);
@@ -971,6 +264,42 @@ function triggerVibration(pattern) {
             aggiornaUI();
             playTurn();
         }
+
+	window.startLevel6Game = function() {
+            document.body.style.overscrollBehavior = "none"; 
+            currentLevel = 6;
+            vite = 1; 
+            
+            // 1. Assegna il formato corretto per il motore logico
+            if (configL6.argomento === 'bandiere') configL6.formato = 9;  // Bandiera -> Nazione
+            else if (configL6.argomento === 'stati') configL6.formato = 1; // Capitale -> Nazione
+            else if (configL6.argomento === 'capitali') configL6.formato = 0; // Nazione -> Capitale
+            
+            // 2. Filtra il database in base al traguardo scelto
+            if (configL6.bacino === 'sprint') {
+                let fullDb = globalDb.filter(n => n.livello <= 2);
+                levelDb = fullDb.sort(() => 0.5 - Math.random()).slice(0, 50); 
+            } else if (configL6.bacino === 'onu') {
+                levelDb = globalDb.filter(n => n.livello <= 2);
+            } else {
+                levelDb = globalDb; // Tutte le 253 nazioni
+            }
+            
+            debugGameLog = `=== GEOQUIZ DEBUG LOG ===\nData: ${new Date().toLocaleString()}\nLivello Giocato: 6 (Morte Improvvisa)\n`;
+            debugGameLog += `Modalità: \({configL6.bacino.toUpperCase()} | Argomento:\){configL6.argomento.toUpperCase()}\n\n`;
+                        
+            document.getElementById("l6-setup-screen").style.display = "none";
+            document.getElementById("start-screen").style.display = "none";
+            document.getElementById("header").style.display = "flex";
+            document.getElementById("question").style.display = "block";
+            document.getElementById("input-area").style.display = "flex";
+            homeBtn.style.display = "block"; 
+            
+            history.pushState(null, null, window.location.href);
+
+            UI.aggiornaHeader(vite, customConfig.vite, maxVite, esatte, punteggio, currentLevel, levelDb.length);
+            playTurn();
+        };
 
         function resetGame() {
             debugGameLog = ""; 
@@ -2628,7 +1957,7 @@ td.buildQuestionText = (num) => {
             }
         }
 
-        function processaRisposta() {
+function processaRisposta() {
     let inputStr = inputEl.value.trim().toLowerCase();
     if (!inputStr) return;
 
@@ -2655,18 +1984,13 @@ td.buildQuestionText = (num) => {
 
     let res = checkSingleAnswer(inputStr, currentTurnData, currentLevel);
     
-    // FIX: Blocco "L'hai già usata" con PAUSA TIMER di 3 secondi (Solo Livello 6)
     if (currentLevel === 6 && res.isCorrect && !isMulti && nazioniUsate.includes(res.matchedCountry.sigla)) {
-        
-        // 1. Ferma il timer per dare respiro
         let wasActive = (timerState === "active");
-        let currentQ = logQuestionCounter; // Memorizza a quale domanda siamo
+        let currentQ = logQuestionCounter; 
         
         if (wasActive) {
-            stopTimer(); // Blocca il conto alla rovescia
-            timerBar.style.backgroundColor = "#ff9800"; // Barra arancione di avviso
-            
-            // 2. Riattiva il timer dopo 3 secondi (solo se non hai già risposto nel frattempo)
+            stopTimer(); 
+            timerBar.style.backgroundColor = "#ff9800"; 
             setTimeout(() => {
                 if (logQuestionCounter === currentQ && !inputEl.disabled) {
                     activateMainTimer();
@@ -2674,7 +1998,6 @@ td.buildQuestionText = (num) => {
             }, 3000);
         }
 
-        // 3. Effetti visivi e di testo
         inputEl.classList.add("warning-flash", "shake");
         setTimeout(() => {
             inputEl.classList.remove("warning-flash", "shake");
@@ -2687,25 +2010,16 @@ td.buildQuestionText = (num) => {
         setTimeout(() => { 
             if (inputEl.placeholder === "L'hai già usata, CAMBIA!") inputEl.placeholder = oldPlaceholder; 
         }, 1500);
-        
         return; 
     }
 
-    inputEl.classList.remove("shake", "correct-flash", "wrong-flash", "warning-flash");
-    void inputEl.offsetWidth; 
-
     totalAnswersSubmitted++;
     totalActiveTimeMs += (Date.now() - turnStartTime);
-    
     let actionTime = ((Date.now() - turnStartTime) / 1000).toFixed(1);
-    if (isMulti) {
-        if(res.isCorrect) debugGameLog += `-> INPUT COMBO PARZIALE [${actionTime}s]: ` + inputStr + " (Riconosciuto: " + res.matchedCountry.nome + ")\n";
-        else debugGameLog += `-> INPUT COMBO ERRATO [${actionTime}s]: ` + inputStr + "\n";
-    }
 
     if (res.isCorrect) {
         triggerVibration(30);
-	playSound("esatto");
+        playSound("esatto");
         if (useTimer) stopTimer();
         
         let sigla = res.matchedCountry.sigla;
@@ -2719,30 +2033,18 @@ td.buildQuestionText = (num) => {
 
         let lazyMargin = 2; 
         let applyMalus = (currentLevel >= 1 && currentLevel <= 3) || (currentLevel === 5 && !customConfig.timer);
-        
-        let isLazy = false;
-        if (applyMalus && nazioniUsate.includes(sigla) && currentTurnData.maxPossible > currentTurnData.numReq + lazyMargin) {
-            isLazy = true;
-        }
-        if (!nazioniUsate.includes(sigla)) {
-            nazioniUsate.push(sigla);
-        }
+        let isLazy = (applyMalus && nazioniUsate.includes(sigla) && currentTurnData.maxPossible > currentTurnData.numReq + lazyMargin);
+        if (!nazioniUsate.includes(sigla)) nazioniUsate.push(sigla);
 
         esatte++;
         currentStreak++;
         if (currentStreak > bestStreak) bestStreak = currentStreak;
 
-        let numSoluzioni = currentTurnData.maxPossible;
-        let puntiGuadagnati = (currentLevel === 0) ? 50 : calcolaPuntiDomandaL1_3(currentTurnData.format, numSoluzioni, currentTurnData.isComboInception); 
+        let puntiGuadagnati = (currentLevel === 0) ? 50 : calcolaPuntiDomandaL1_3(currentTurnData.format, currentTurnData.maxPossible, currentTurnData.isComboInception); 
         
         let badgeText = "";
-        let badgeColor = "#2a2a2a";
         let badgeBorder = "#555";
-
-        let virtualLevel = currentLevel;
-        if (currentLevel === 5) {
-            virtualLevel = customConfig.difficolta === 'facile' ? 1 : (customConfig.difficolta === 'medio' ? 2 : 3);
-        }
+        let virtualLevel = currentLevel === 5 ? (customConfig.difficolta === 'facile' ? 1 : (customConfig.difficolta === 'medio' ? 2 : 3)) : currentLevel;
 
         if (currentLevel !== 0) {
             if (virtualLevel < 3 && res.matchedCountry.livello > virtualLevel) { 
@@ -2750,7 +2052,6 @@ td.buildQuestionText = (num) => {
                 badgeText += "⭐ OTTIMA SCELTA! (Bonus Audacia x2)<br>";
                 badgeBorder = "#ffd700";
             }
-
             if (isLazy) {
                 puntiGuadagnati = Math.floor(puntiGuadagnati / 2);
                 badgeText += "⚠️ DÉJÀ VU! (Malus pigrizia)<br>";
@@ -2759,173 +2060,93 @@ td.buildQuestionText = (num) => {
         }
         
         punteggio += puntiGuadagnati;
-	if (!isMulti) {
-             debugGameLog += `-> ESITO [${actionTime}s] [${puntiGuadagnati}pti]: ✅ CORRETTO (Input: ` + inputStr + " -> Riconosciuto: " + res.matchedCountry.nome + ")\n\n";
-        }
+        debugGameLog += `-> ESITO [${actionTime}s] [${puntiGuadagnati}pti]: ✅ CORRETTO (Input: ` + inputStr + " -> Riconosciuto: " + res.matchedCountry.nome + ")\n\n";
 
-        let hasWon = false;
-        let isEndlessTrig = false;
-        
-        if (currentLevel === 6 && esatte >= levelDb.length) {
-            hasWon = true; // Hai indovinato TUTTE le 193 nazioni!
-        }
-        else if (currentLevel === 0 && punteggio >= 1500 && !endlessVittoriaSbloccata) {
-            isEndlessTrig = true;
-            endlessVittoriaSbloccata = true;
-        }
-        else if (currentLevel === 1 && punteggio >= 2500) hasWon = true;
-        else if (currentLevel === 2 && punteggio >= 3500) hasWon = true;
-        else if ((currentLevel === 3 || currentLevel === 4) && punteggio >= 10000 && !endlessVittoriaSbloccata) {
-            isEndlessTrig = true;
-            endlessVittoriaSbloccata = true;
-        }
+        let hasWon = (currentLevel === 6 && esatte >= levelDb.length) || (currentLevel === 1 && punteggio >= 2500) || (currentLevel === 2 && punteggio >= 3500);
+        let isEndlessTrig = ((currentLevel === 3 || currentLevel === 4) && punteggio >= 10000 && !endlessVittoriaSbloccata) || (currentLevel === 0 && punteggio >= 1500 && !endlessVittoriaSbloccata);
+        if (isEndlessTrig) endlessVittoriaSbloccata = true;
 
         let currentMaxVite = customConfig.vite > 5 ? customConfig.vite : maxVite;
         if (currentLevel !== 6 && !hasWon && punteggio >= prossimoCuore && vite < currentMaxVite) {
-            vite++;
-            prossimoCuore += 750; 
+            vite++; prossimoCuore += 750; 
             badgeText += "❤️ +1 VITA EXTRA!<br>";
             badgeBorder = "#f44336";
         }
 
         aggiornaUI();
-        inputEl.classList.add(isLazy ? "warning-flash" : "correct-flash");
-        inputEl.disabled = true;
-        submitBtn.disabled = true;
-        surrenderBtn.style.display = "none";
-        
+
         let oldGrid = document.getElementById("combo-flags-grid");
         if (oldGrid) oldGrid.remove();
 
         if (currentTurnData.format === 9 || currentTurnData.format === 10) {
             bandieraImg.style.display = "block";
             bandieraContainer.style.display = "block";
-            
             if (currentTurnData.isComboInception) {
                 let gridContainer = document.createElement("div");
                 gridContainer.id = "combo-flags-grid";
-                gridContainer.style.display = "flex";
-                gridContainer.style.justifyContent = "center";
-                gridContainer.style.marginTop = "15px";
-
+                gridContainer.style.display = "flex"; gridContainer.style.justifyContent = "center"; gridContainer.style.marginTop = "15px";
                 let img = document.createElement("img");
                 img.src = "GIF/" + sigla.toLowerCase() + ".jpg";
-                img.style.width = "70px"; 
-                img.style.borderRadius = "4px";
-                img.style.boxShadow = "0 3px 6px rgba(0,0,0,0.6)";
-                img.style.border = "1px solid #444";
-                
-                img.style.cursor = "pointer";
-                img.onclick = function() { window.openFlagModal(this.src); };
-                
+                img.style.width = "70px"; img.style.borderRadius = "4px"; img.style.boxShadow = "0 3px 6px rgba(0,0,0,0.6)"; img.style.border = "1px solid #444";
+                img.style.cursor = "pointer"; img.onclick = function() { window.openFlagModal(this.src); };
                 img.onerror = function() { this.style.display = 'none'; };
-
                 gridContainer.appendChild(img);
                 bandieraContainer.appendChild(gridContainer);
             }
         } else if (currentTurnData.format === 13) {
-            bandieraImg.style.display = "none";
-            bandieraContainer.style.display = "none";
+            bandieraImg.style.display = "none"; bandieraContainer.style.display = "none";
         } else {
             bandieraImg.onerror = function() { this.style.display = 'none'; };
             bandieraImg.src = "GIF/" + sigla.toLowerCase() + ".jpg";
-            bandieraImg.style.display = "block";
-            bandieraContainer.style.display = "block";
+            bandieraImg.style.display = "block"; bandieraContainer.style.display = "block";
         }
+
+        let isCapitalReq = currentTurnData.format === 0 || currentTurnData.format === 6 || currentTurnData.format === 10 || (currentTurnData.format === 12 && currentTurnData.f12AskCapital);
+        let dName = getPrintedName(res.matchedCountry, res.matchedNameStr);
+        let nomeInserito = isCapitalReq ? `${getPrintedCapital(res.matchedCountry, res.matchedCapitalStr)} (${dName})` : dName;
 
         if (hasWon) {
             if (currentLevel === 6) {
-                inputEl.value = `INUMANO! HAI COMPLETATO IL DATABASE! 🏆`;
-                inputEl.style.color = "#ffd700";
                 badgeText = `<span style="color:#ffd700; font-size:16px;">🏆 INUMANO! DATABASE COMPLETATO!</span><br>` + badgeText;
                 badgeBorder = "#ffd700";
             } else {
-                inputEl.value = `VITTORIA! Livello Superato! 🏆`;
                 badgeText = `<span style="color:#4caf50; font-size:16px;">🏆 VITTORIA! Livello Superato!</span><br>` + badgeText;
                 badgeBorder = "#4caf50";
             }
+            UI.mostraSuccesso(null, nomeInserito, badgeText, badgeBorder);
             window.pendingVictory = true;
-            submitBtn.style.display = "none";
             nextBtn.innerText = "VAI AI RISULTATI ➔";
-            nextBtn.style.display = "block";
-            
-            // FORZA L'APPARIZIONE DEL BADGE
-            eventBadge.innerHTML = badgeText; 
-            eventBadge.style.borderColor = badgeBorder; 
-            eventBadge.style.display = "block"; 
-        } else {
-            let isCapitalReq = currentTurnData.format === 0 || currentTurnData.format === 6 || currentTurnData.format === 10 || (currentTurnData.format === 12 && currentTurnData.f12AskCapital);
-            let dName = getPrintedName(res.matchedCountry, res.matchedNameStr);
-            let nomeInserito = isCapitalReq ? `${getPrintedCapital(res.matchedCountry, res.matchedCapitalStr)} (${dName})` : dName;
-            let nomePrimario = isCapitalReq ? `${capitalize(res.matchedCountry.capitale)} (${capitalize(res.matchedCountry.nome)})` : capitalize(res.matchedCountry.nome);
-            
-            if (currentTurnData.maxPossible > 1) {
-                let rimanenti = currentTurnData.validAnswersCache.filter(v => v !== nomePrimario);
-                if (rimanenti.length > 0) {
-                    comboTracker.style.display = "block";
-                    comboTracker.innerHTML = `<span style="color:#aaa;">Altre risposte valide: ${rimanenti.join(", ")}</span>`;
-                }
-            }
-
-            if (isEndlessTrig) {
-                if (currentLevel === 0) {
-                    inputEl.value = `LIVELLO COMPLETATO! 🎓`;
-                    inputEl.style.color = "#4caf50";
-                    document.getElementById("ritirati-btn").innerHTML = "🚪 TERMINA LA SFIDA";
-                    document.getElementById("continua-btn").innerHTML = "🔁 CONTINUA LA SFIDA";
-                } else {
-                    inputEl.value = `VITTORIA! Mi inchino alla tua immensa conoscenza 👑`;
-                    inputEl.style.color = "#ffd700";
-                    document.getElementById("ritirati-btn").innerHTML = "🏆 RITIRATI DA LEGGENDA";
-                    document.getElementById("continua-btn").innerHTML = "⚔️ CONTINUA LA SFIDA";
-                    badgeText = `<span style="color:#ffd700; font-size:16px;">👑 VITTORIA! Sei una Leggenda! Scegli se continuare:</span><br>` + badgeText;
-                    badgeBorder = "#ffd700";
-                }
-                
-                eventBadge.innerHTML = badgeText; 
-                eventBadge.style.borderColor = badgeBorder;
-                eventBadge.style.display = "block";
-                
-                submitBtn.style.display = "none";
-                nextBtn.style.display = "none";
-                document.getElementById("ritirati-btn").style.display = "block";
-                document.getElementById("continua-btn").style.display = "block";
+        } else if (isEndlessTrig) {
+            if (currentLevel === 0) {
+                badgeText = `<span style="color:#4caf50; font-size:16px;">🎓 LIVELLO COMPLETATO!</span><br>` + badgeText;
+                badgeBorder = "#4caf50";
+                document.getElementById("ritirati-btn").innerHTML = "🚪 TERMINA LA SFIDA";
+                document.getElementById("continua-btn").innerHTML = "🔁 CONTINUA LA SFIDA";
             } else {
-                let msg = `Corretto! +${puntiGuadagnati}pt`;
-                
-                if (currentLevel === 0) {
-                    badgeText = `<span style="color:#4caf50; font-size:18px;">✅ ${msg}</span><br>` + badgeText;
-                    eventBadge.innerHTML = badgeText;
-                    eventBadge.style.borderColor = "#4caf50";
-                    eventBadge.style.display = "block";
-                } else {
-                    if (currentLevel === 6) {
-                         inputEl.value = `Esatto! - ${nomeInserito}`; 
-                    } else {
-                         inputEl.value = `${msg} - ${nomeInserito}`; 
-                    }
-                    if (badgeText !== "") { 
-                        eventBadge.innerHTML = badgeText; 
-                        eventBadge.style.borderColor = badgeBorder; 
-                        eventBadge.style.display = "block"; 
-                    } else { 
-                        eventBadge.style.display = "none"; 
-                    }
-                }
-                
-                submitBtn.style.display = "none";
-                nextBtn.innerText = "PROSSIMA DOMANDA ➔";
-                nextBtn.style.display = "block"; 
+                badgeText = `<span style="color:#ffd700; font-size:16px;">👑 VITTORIA! Sei una Leggenda! Scegli se continuare:</span><br>` + badgeText;
+                badgeBorder = "#ffd700";
+                document.getElementById("ritirati-btn").innerHTML = "🏆 RITIRATI DA LEGGENDA";
+                document.getElementById("continua-btn").innerHTML = "⚔️ CONTINUA LA SFIDA";
+            }
+            UI.mostraSuccesso(puntiGuadagnati, nomeInserito, badgeText, badgeBorder);
+            nextBtn.style.display = "none";
+            document.getElementById("ritirati-btn").style.display = "block";
+            document.getElementById("continua-btn").style.display = "block";
+        } else {
+            if (currentLevel === 0) {
+                badgeText = `<span style="color:#4caf50; font-size:18px;">✅ Corretto! +${puntiGuadagnati}pt</span><br>` + badgeText;
+                UI.mostraSuccesso(null, "", badgeText, "#4caf50");
+            } else {
+                let pti = currentLevel === 6 ? null : puntiGuadagnati;
+                UI.mostraSuccesso(pti, nomeInserito, badgeText, badgeBorder);
             }
         }
     } else {
         if (currentLevel === 6) {
-            // MODALITÀ SPAM LIVELLO 6: Sbagli? Pulisce e trema, ma NON muori! Puoi ritentare finché non scade il tempo.
             inputEl.classList.add("shake", "wrong-flash");
             setTimeout(() => inputEl.classList.remove("shake", "wrong-flash"), 400);
             inputEl.value = "";
         } else {
-            // COMPORTAMENTO NORMALE PER I LIVELLI 0-5 (Errore = Schermata rossa e perdi una vita)
             if (useTimer) stopTimer();
             triggerVibration([100, 50, 100]);
             playSound("errore");
@@ -2934,13 +2155,8 @@ td.buildQuestionText = (num) => {
     }
 }
 
-        function eseguiValidazioneMultipla(isTimeout = false) {
-    inputEl.disabled = true;
-    submitBtn.disabled = true;
-    surrenderBtn.style.display = "none";
-    
+function eseguiValidazioneMultipla(isTimeout = false) {
     totalActiveTimeMs += (Date.now() - turnStartTime);
-    
     let useTimer = (currentLevel === 4 || currentLevel === 6 || (currentLevel === 5 && customConfig.timer));
     let pct = useTimer ? (activeTimeLeft / activeTimeTotal) * 100 : 100;
     if (useTimer) stopTimer();
@@ -2958,15 +2174,9 @@ td.buildQuestionText = (num) => {
     for (let ans of comboInserted) {
         let res = checkSingleAnswer(ans, currentTurnData, currentLevel);
         if (res.isCorrect) {
-            if (matchedSiglas.includes(res.matchedCountry.sigla)) {
-                allCorrect = false; 
-            } else {
-                matchedSiglas.push(res.matchedCountry.sigla);
-                matchedCountriesInfos.push(res);
-            }
-        } else {
-            allCorrect = false; 
-        }
+            if (matchedSiglas.includes(res.matchedCountry.sigla)) allCorrect = false; 
+            else { matchedSiglas.push(res.matchedCountry.sigla); matchedCountriesInfos.push(res); }
+        } else allCorrect = false; 
     }
 
     matchedCountriesInfos.forEach(info => {
@@ -2975,26 +2185,23 @@ td.buildQuestionText = (num) => {
 
     if (!allCorrect) {
         triggerVibration([100, 50, 100]);
-        let wrongStr = comboInserted.map(s => s.toUpperCase()).join(", ");
-        failMulti(isTimeout ? "Tempo scaduto con errori!" : "Errore nella combo!", wrongStr);
+        failMulti(isTimeout ? "Tempo scaduto con errori!" : "Errore nella combo!", comboInserted.map(s => s.toUpperCase()).join(", "));
         return;
     }
 
     let isGrazia = false;
     if (isTimeout && comboInserted.length < currentTurnData.numReq) {
-        if (currentTurnData.numReq >= 3 && comboInserted.length >= 2) {
-            isGrazia = true; 
-        } else {
+        if (currentTurnData.numReq >= 3 && comboInserted.length >= 2) isGrazia = true; 
+        else {
             triggerVibration([100, 50, 100]);
-            let wrongStr = comboInserted.map(s => s.toUpperCase()).join(", ");
-            failMulti("Tempo scaduto!", wrongStr);
+            failMulti("Tempo scaduto!", comboInserted.map(s => s.toUpperCase()).join(", "));
             return;
         }
     }
 
     if (allCorrect || isGrazia) {
         triggerVibration(30);
-        playSound("esatto"); // <--- IL SUONO ORA PARTE!
+        playSound("esatto");
                
         if (currentTurnData.validSiglas && currentTurnData.validSiglas.length <= 30) {
             currentTurnData.validSiglas.forEach(s => {
@@ -3002,26 +2209,20 @@ td.buildQuestionText = (num) => {
             });
         }
         
-        let badgeText = "";
-        let badgeBorder = "#555";
-        let badgeBg = "#2a2a2a";
-        let badgeTxtColor = "#fff";
+        let badgeText = ""; let badgeBorder = "#555"; let badgeBg = "#2a2a2a"; let badgeTxtColor = "#fff";
 
         if (isGrazia) {
             grazieRicevuteCount++;
             let mancanti = currentTurnData.numReq - comboInserted.length;
             badgeText = `🕊️ GRAZIA RICEVUTA! (${mancanti === 1 ? 'Mancava' : 'Mancavano'} ${mancanti} ${mancanti === 1 ? 'risposta' : 'risposte'})<br>`;
-            badgeBorder = "#ffd700";
-            badgeBg = "rgba(255, 255, 255, 0.1)"; 
-            badgeTxtColor = "#ffd700";
+            badgeBorder = "#ffd700"; badgeBg = "rgba(255, 255, 255, 0.1)"; badgeTxtColor = "#ffd700";
         } else if (pct > 0 && pct <= 25) {
             fotofinishCount++;
             badgeText += "⏱️ FOTOFINISH! Che salvataggio!<br>";
             badgeBorder = "#2196f3";
         }
         
-        esatte ++; 
-        currentStreak++;
+        esatte ++; currentStreak++;
         if (currentStreak > bestStreak) bestStreak = currentStreak;
 
         let basePunti = 0;
@@ -3034,68 +2235,36 @@ td.buildQuestionText = (num) => {
             if (basePunti < 10) basePunti = 10; 
         }
 
-        let puntiRound = 0;
-        let lazyNames = [];
-        let audaceNames = [];
+        let puntiRound = 0; let lazyNames = []; let audaceNames = [];
         let isL5Relax = (currentLevel === 5 && !customConfig.timer);
-        
-        let virtualLevel = currentLevel;
-        if (currentLevel === 5) {
-            virtualLevel = customConfig.difficolta === 'facile' ? 1 : (customConfig.difficolta === 'medio' ? 2 : 3);
-        }
+        let virtualLevel = currentLevel === 5 ? (customConfig.difficolta === 'facile' ? 1 : (customConfig.difficolta === 'medio' ? 2 : 3)) : currentLevel;
 
         if (isGrazia) {
             let mancanti = currentTurnData.numReq - comboInserted.length;
             let pRound = Math.round(basePunti / Math.pow(2, mancanti));
             puntiRound = Math.round(pRound / 5) * 5; 
             if (puntiRound < 5) puntiRound = 5;
-            
-            matchedCountriesInfos.forEach(info => {
-                if (!nazioniUsate.includes(info.matchedCountry.sigla)) nazioniUsate.push(info.matchedCountry.sigla);
-            });
+            matchedCountriesInfos.forEach(info => { if (!nazioniUsate.includes(info.matchedCountry.sigla)) nazioniUsate.push(info.matchedCountry.sigla); });
         } else {
             let pointsPerCountry = basePunti / comboInserted.length;
-            let lazyMargin = 2;
-            
             matchedCountriesInfos.forEach(info => {
-                let sigla = info.matchedCountry.sigla;
-                let dName = capitalize(info.matchedCountry.nome);
-                let p = pointsPerCountry;
-                
-                if (isL5Relax && nazioniUsate.includes(sigla) && currentTurnData.maxPossible > currentTurnData.numReq + lazyMargin) {
-                    p = p / 2;
-                    lazyNames.push(dName);
-                }
-                
-                if (virtualLevel < 3 && info.matchedCountry.livello > virtualLevel) {
-                    p = p * 2;
-                    audaceNames.push(dName);
-                }
-                
+                let sigla = info.matchedCountry.sigla; let dName = capitalize(info.matchedCountry.nome); let p = pointsPerCountry;
+                if (isL5Relax && nazioniUsate.includes(sigla) && currentTurnData.maxPossible > currentTurnData.numReq + 2) { p = p / 2; lazyNames.push(dName); }
+                if (virtualLevel < 3 && info.matchedCountry.livello > virtualLevel) { p = p * 2; audaceNames.push(dName); }
                 if (!nazioniUsate.includes(sigla)) nazioniUsate.push(sigla); 
                 puntiRound += p;
             });
+            puntiRound = Math.round(puntiRound / 5) * 5; if (puntiRound < 5) puntiRound = 5;
             
-            puntiRound = Math.round(puntiRound / 5) * 5; 
-            if (puntiRound < 5) puntiRound = 5;
-            
-            if (audaceNames.length > 0) {
-                badgeText += `⭐ AUDACIA su ${audaceNames.join(", ")} (x2)<br>`;
-                if (!isGrazia) badgeBorder = "#ffd700";
-            }
-            if (lazyNames.length > 0) {
-                badgeText += `⚠️ DÉJÀ VU su ${lazyNames.join(", ")} (-50%)<br>`;
-                if (!isGrazia && audaceNames.length === 0) badgeBorder = "#ff9800";
-            }
+            if (audaceNames.length > 0) { badgeText += `⭐ AUDACIA su ${audaceNames.join(", ")} (x2)<br>`; if (!isGrazia) badgeBorder = "#ffd700"; }
+            if (lazyNames.length > 0) { badgeText += `⚠️ DÉJÀ VU su ${lazyNames.join(", ")} (-50%)<br>`; if (!isGrazia && audaceNames.length === 0) badgeBorder = "#ff9800"; }
         }
         
         punteggio += puntiRound;
-        
         let comboTimeNum = (Date.now() - turnStartTime) / 1000;
-        let timePerRisp = (comboTimeNum / comboInserted.length).toFixed(1);
-        debugGameLog += `-> ESITO COMBO [${comboTimeNum.toFixed(1)}s tot | ${timePerRisp}s/risp] [${puntiRound}pti]: ✅ SUPERATA` + (isGrazia ? " CON GRAZIA" : "") + " (Trovate: " + comboInserted.join(", ") + ")\n\n";
+        debugGameLog += `-> ESITO COMBO [${comboTimeNum.toFixed(1)}s tot | ${(comboTimeNum / comboInserted.length).toFixed(1)}s/risp] [${puntiRound}pti]: ✅ SUPERATA` + (isGrazia ? " CON GRAZIA" : "") + " (Trovate: " + comboInserted.join(", ") + ")\n\n";
 
-	let currentMaxVite = customConfig.vite > 5 ? customConfig.vite : maxVite;
+        let currentMaxVite = customConfig.vite > 5 ? customConfig.vite : maxVite;
         if (currentLevel !== 6 && punteggio >= prossimoCuore && vite < currentMaxVite) {
             vite++; prossimoCuore += 750; 
             badgeText += "❤️ +1 VITA EXTRA!<br>";
@@ -3103,123 +2272,69 @@ td.buildQuestionText = (num) => {
         }
 
         aggiornaUI();
-        inputEl.classList.add("correct-flash");
 
         let oldGrid = document.getElementById("combo-flags-grid");
         if (oldGrid) oldGrid.remove();
-
-        if (currentTurnData.format === 9 || currentTurnData.format === 10) {
-            bandieraImg.style.display = "block"; 
-        } else {
-            bandieraImg.style.display = "none"; 
-        }
+        if (currentTurnData.format === 9 || currentTurnData.format === 10) bandieraImg.style.display = "block"; else bandieraImg.style.display = "none"; 
 
         if (currentTurnData.format !== 9 && currentTurnData.format !== 10 || currentTurnData.isComboInception) {
-            let gridContainer = document.createElement("div");
-            gridContainer.id = "combo-flags-grid";
-            gridContainer.style.display = "flex";
-            gridContainer.style.flexDirection = "column";
-            gridContainer.style.gap = "10px";
-            gridContainer.style.alignItems = "center";
-            gridContainer.style.marginTop = "15px";
-
-            let row1 = document.createElement("div");
-            row1.style.display = "flex"; row1.style.gap = "10px"; row1.style.justifyContent = "center";
-            
-            let row2 = document.createElement("div");
-            row2.style.display = "flex"; row2.style.gap = "10px"; row2.style.justifyContent = "center";
+            let gridContainer = document.createElement("div"); gridContainer.id = "combo-flags-grid"; gridContainer.style.display = "flex"; gridContainer.style.flexDirection = "column"; gridContainer.style.gap = "10px"; gridContainer.style.alignItems = "center"; gridContainer.style.marginTop = "15px";
+            let row1 = document.createElement("div"); row1.style.display = "flex"; row1.style.gap = "10px"; row1.style.justifyContent = "center";
+            let row2 = document.createElement("div"); row2.style.display = "flex"; row2.style.gap = "10px"; row2.style.justifyContent = "center";
 
             matchedCountriesInfos.forEach((info, index) => {
-                let img = document.createElement("img");
-                img.src = "GIF/" + info.matchedCountry.sigla.toLowerCase() + ".jpg";
-                img.style.width = "70px"; 
-                img.style.borderRadius = "4px";
-                img.style.boxShadow = "0 3px 6px rgba(0,0,0,0.6)";
-                img.style.border = "1px solid #444";
-                
-                img.style.cursor = "pointer"; // <-- AGGIUNTA
-                img.onclick = function() { window.openFlagModal(this.src); }; // <-- AGGIUNTA
-                
-                img.onerror = function() { this.style.display = 'none'; };
-                
-                if (matchedCountriesInfos.length === 5) {
-                    if (index < 3) row1.appendChild(img);
-                    else row2.appendChild(img);
-                } else {
-                    row1.appendChild(img);
-                }
+                let img = document.createElement("img"); img.src = "GIF/" + info.matchedCountry.sigla.toLowerCase() + ".jpg"; img.style.width = "70px"; img.style.borderRadius = "4px"; img.style.boxShadow = "0 3px 6px rgba(0,0,0,0.6)"; img.style.border = "1px solid #444"; img.style.cursor = "pointer";
+                img.onclick = function() { window.openFlagModal(this.src); }; img.onerror = function() { this.style.display = 'none'; };
+                if (matchedCountriesInfos.length === 5) { if (index < 3) row1.appendChild(img); else row2.appendChild(img); } else row1.appendChild(img);
             });
-
             gridContainer.appendChild(row1);
             if (matchedCountriesInfos.length === 5) gridContainer.appendChild(row2);
-            
             bandieraContainer.appendChild(gridContainer);
         }
         bandieraContainer.style.display = "block";
 
-        let arrayNomiTrovati = [];
-        let arrayNomiPrimariTrovati = [];
-        let nomiTrovati = "";
+        let arrayNomiTrovati = []; let arrayNomiPrimariTrovati = []; let nomiTrovati = "";
         let isCapitalRequired = currentTurnData.format === 0 || currentTurnData.format === 6 || currentTurnData.format === 10 || (currentTurnData.format === 12 && currentTurnData.f12AskCapital);
-        if (currentTurnData.isComboInception && (currentTurnData.format === 1 || currentTurnData.format === 9)) {
-            isCapitalRequired = false; 
-        } else if (currentTurnData.isComboInception && (currentTurnData.format === 0 || currentTurnData.format === 10)) {
-            isCapitalRequired = true;
-        }
+        if (currentTurnData.isComboInception && (currentTurnData.format === 1 || currentTurnData.format === 9)) isCapitalRequired = false; 
+        else if (currentTurnData.isComboInception && (currentTurnData.format === 0 || currentTurnData.format === 10)) isCapitalRequired = true;
 
         if (isCapitalRequired) {
-    arrayNomiTrovati = matchedCountriesInfos.map(info => `${getPrintedCapital(info.matchedCountry, info.matchedCapitalStr)} (${getPrintedName(info.matchedCountry, info.matchedNameStr)})`);
-    
-    arrayNomiPrimariTrovati = matchedCountriesInfos.map(info => {
-        let country = info.matchedCountry;
-        let pNameBase = capitalize(country.nome);
-        
-        if (currentTurnData.reqInit && !country.nome.toLowerCase().startsWith(currentTurnData.reqInit.toLowerCase())) {
-            let offAlias = country.alias_paese_ufficiali.find(a => a.toLowerCase().startsWith(currentTurnData.reqInit.toLowerCase()));
-            if (offAlias) pNameBase = capitalize(offAlias);
-        }
-        
-        let cName = capitalize(country.capitale);
-        let textMatchBase = false;
-        let cnLower = country.capitale ? country.capitale.toLowerCase() : "";
-        
-        if (currentTurnData.reqCapInit && cnLower.startsWith(currentTurnData.reqCapInit.toLowerCase())) textMatchBase = true;
-        if (currentTurnData.format === 6 && cnLower) {
-            let starts = currentTurnData.reqCapInit ? cnLower.startsWith(currentTurnData.reqCapInit.toLowerCase()) : true;
-            let ends = currentTurnData.reqCapFin ? cnLower.endsWith(currentTurnData.reqCapFin.toLowerCase()) : true;
-            if (starts && ends) textMatchBase = true;
-        }
-        
-        if (!textMatchBase && country.alias_capitale_ufficiali) {
-            let offCapAlias = country.alias_capitale_ufficiali.find(c => {
-                let cLow = c.toLowerCase();
-                let s = currentTurnData.reqCapInit ? cLow.startsWith(currentTurnData.reqCapInit.toLowerCase()) : true;
-                let e = currentTurnData.reqCapFin ? cLow.endsWith(currentTurnData.reqCapFin.toLowerCase()) : true;
-                return s && e;
+            arrayNomiTrovati = matchedCountriesInfos.map(info => `${getPrintedCapital(info.matchedCountry, info.matchedCapitalStr)} (${getPrintedName(info.matchedCountry, info.matchedNameStr)})`);
+            arrayNomiPrimariTrovati = matchedCountriesInfos.map(info => {
+                let country = info.matchedCountry; let pNameBase = capitalize(country.nome);
+                if (currentTurnData.reqInit && !country.nome.toLowerCase().startsWith(currentTurnData.reqInit.toLowerCase())) {
+                    let offAlias = country.alias_paese_ufficiali.find(a => a.toLowerCase().startsWith(currentTurnData.reqInit.toLowerCase()));
+                    if (offAlias) pNameBase = capitalize(offAlias);
+                }
+                let cName = capitalize(country.capitale); let textMatchBase = false; let cnLower = country.capitale ? country.capitale.toLowerCase() : "";
+                if (currentTurnData.reqCapInit && cnLower.startsWith(currentTurnData.reqCapInit.toLowerCase())) textMatchBase = true;
+                if (currentTurnData.format === 6 && cnLower) {
+                    let starts = currentTurnData.reqCapInit ? cnLower.startsWith(currentTurnData.reqCapInit.toLowerCase()) : true;
+                    let ends = currentTurnData.reqCapFin ? cnLower.endsWith(currentTurnData.reqCapFin.toLowerCase()) : true;
+                    if (starts && ends) textMatchBase = true;
+                }
+                if (!textMatchBase && country.alias_capitale_ufficiali) {
+                    let offCapAlias = country.alias_capitale_ufficiali.find(c => { let cLow = c.toLowerCase(); let s = currentTurnData.reqCapInit ? cLow.startsWith(currentTurnData.reqCapInit.toLowerCase()) : true; let e = currentTurnData.reqCapFin ? cLow.endsWith(currentTurnData.reqCapFin.toLowerCase()) : true; return s && e; });
+                    if (offCapAlias) cName = capitalize(offCapAlias);
+                }
+                return `${cName} (${pNameBase})`;
             });
-            if (offCapAlias) cName = capitalize(offCapAlias);
+        } else {
+            arrayNomiTrovati = matchedCountriesInfos.map(info => getPrintedName(info.matchedCountry, info.matchedNameStr));
+            arrayNomiPrimariTrovati = matchedCountriesInfos.map(info => {
+                let pNameBase = capitalize(info.matchedCountry.nome);
+                if (currentTurnData.reqInit && !info.matchedCountry.nome.toLowerCase().startsWith(currentTurnData.reqInit.toLowerCase())) {
+                    let offAlias = info.matchedCountry.alias_paese_ufficiali.find(a => a.toLowerCase().startsWith(currentTurnData.reqInit.toLowerCase()));
+                    if (offAlias) pNameBase = capitalize(offAlias);
+                }
+                return pNameBase;
+            });
         }
-        
-        return `${cName} (${pNameBase})`;
-    });
-    nomiTrovati = arrayNomiTrovati.join(", ");
-} else {
-    arrayNomiTrovati = matchedCountriesInfos.map(info => getPrintedName(info.matchedCountry, info.matchedNameStr));
-    arrayNomiPrimariTrovati = matchedCountriesInfos.map(info => {
-        let pNameBase = capitalize(info.matchedCountry.nome);
-        if (currentTurnData.reqInit && !info.matchedCountry.nome.toLowerCase().startsWith(currentTurnData.reqInit.toLowerCase())) {
-            let offAlias = info.matchedCountry.alias_paese_ufficiali.find(a => a.toLowerCase().startsWith(currentTurnData.reqInit.toLowerCase()));
-            if (offAlias) pNameBase = capitalize(offAlias);
-        }
-        return pNameBase;
-    });
-    nomiTrovati = arrayNomiTrovati.join(", ");
-}
+        nomiTrovati = arrayNomiTrovati.join(", ");
 
         let isEndlessTrig = false;
         if ((currentLevel === 3 || currentLevel === 4) && punteggio >= 10000 && !endlessVittoriaSbloccata) {
-            isEndlessTrig = true;
-            endlessVittoriaSbloccata = true;
+            isEndlessTrig = true; endlessVittoriaSbloccata = true;
         }
 
         if (currentTurnData.maxPossible > comboInserted.length) {
@@ -3231,49 +2346,22 @@ td.buildQuestionText = (num) => {
         } else comboTracker.style.display = "none";
 
         if (isEndlessTrig) {
-            inputEl.value = `VITTORIA! Mi inchino alla tua immensa conoscenza 👑`;
-            inputEl.style.color = "#ffd700";
-            
             badgeText = `<span style="color:#ffd700; font-size:16px;">👑 VITTORIA! Sei una Leggenda! Scegli se continuare:</span><br>` + badgeText;
             badgeBorder = "#ffd700";
             
-            eventBadge.innerHTML = badgeText; 
-            eventBadge.style.backgroundColor = badgeBg;
-            eventBadge.style.color = badgeTxtColor; 
-            eventBadge.style.borderColor = badgeBorder;
-            eventBadge.style.display = "block";
+            UI.mostraSuccesso(puntiRound, nomiTrovati, badgeText, badgeBorder, badgeBg, badgeTxtColor);
             
-            submitBtn.style.display = "none";
             nextBtn.style.display = "none";
             document.getElementById("ritirati-btn").innerHTML = "🏆 RITIRATI DA LEGGENDA";
             document.getElementById("continua-btn").innerHTML = "⚔️ CONTINUA LA SFIDA";
             document.getElementById("ritirati-btn").style.display = "block";
             document.getElementById("continua-btn").style.display = "block";
         } else {
-            // IL BLOCCO SCOMPARSO È TORNATO!
-            if (currentLevel === 0) {
-                inputEl.value = "Corretto! +" + puntiRound + "pt";
-            } else {
-                inputEl.value = "Corretto! +" + puntiRound + "pt - " + nomiTrovati;
-            }
-            
-            if (badgeText !== "") {
-                eventBadge.innerHTML = badgeText; 
-                eventBadge.style.backgroundColor = badgeBg;
-                eventBadge.style.color = badgeTxtColor; 
-                eventBadge.style.borderColor = badgeBorder;
-                eventBadge.style.display = "block";
-            } else { 
-                eventBadge.style.display = "none"; 
-            }
-            
-            submitBtn.style.display = "none";
-            nextBtn.innerText = "PROSSIMA DOMANDA ➔";
-            nextBtn.style.display = "block"; 
+            let pti = currentLevel === 6 ? null : puntiRound;
+            UI.mostraSuccesso(pti, nomiTrovati, badgeText, badgeBorder, badgeBg, badgeTxtColor);
         }
     }
 }
-
         function failStandard(wrongInput) {
             let failTime = ((Date.now() - turnStartTime) / 1000).toFixed(1);
             debugGameLog += `-> ESITO [${failTime}s] [0pti]: ❌ ERRORE (Input: ` + (wrongInput || "Nessuno") + ")\n\n";
@@ -3454,7 +2542,7 @@ td.buildQuestionText = (num) => {
                 recentGamesHistory[currentLevel].pop(); // Mantiene solo le ultime 5
             }
             
-            if (currentLevel === 4 || currentLevel === 5) { 
+            if (currentLevel === 4 || (currentLevel === 5 && customConfig.timer)) { 
                 statsByLevel[currentLevel].fotofinish += fotofinishCount;
                 statsByLevel[currentLevel].grazie += grazieRicevuteCount;
             }
@@ -3509,8 +2597,8 @@ td.buildQuestionText = (num) => {
 
             document.getElementById("final-fotofinish").innerText = fotofinishCount;
             document.getElementById("final-grazie").innerText = grazieRicevuteCount;
-            // FIX: Mostra Fotofinish e Grazie solo nei livelli 4 e 5
-            if (currentLevel === 4 || currentLevel === 5) {
+// FIX: Mostra Fotofinish e Grazie solo se la modalità lo supporta (timer attivo)
+            if (currentLevel === 4 || (currentLevel === 5 && customConfig.timer)) {
                 document.getElementById("stat-fotofinish-row").style.display = "block";
                 document.getElementById("stat-grazie-row").style.display = "block";
             } else {
@@ -3633,7 +2721,7 @@ td.buildQuestionText = (num) => {
             }
             
             debugGameLog += "Tempo Medio di Risposta: " + avgTime + "s | Tempo di Gioco Attivo: " + strTempoTotale + "\n";
-            if (currentLevel === 4 || currentLevel === 5) {
+            if (currentLevel === 4 || (currentLevel === 5 && customConfig.timer)) {
                 debugGameLog += "Salvataggi al Fotofinish: " + fotofinishCount + " | Grazie Ricevute: " + grazieRicevuteCount + "\n";
             }
             // Nasconde Top 5 dal log se si gioca a L0 o L6
@@ -3715,7 +2803,7 @@ td.buildQuestionText = (num) => {
         }
 
         // Funzione chiamata dal click sul banner
-        function applyUpdate() {
+        window.applyUpdate = function() {
             if (newWorker) {
                 newWorker.postMessage('SKIP_WAITING');
             }

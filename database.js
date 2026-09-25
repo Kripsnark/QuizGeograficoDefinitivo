@@ -253,3 +253,75 @@ YE	Yemen		Sana'a	Sanaa	arabia saudita, oman, mare	Asia, Medio Oriente, Penisola 
 ZM	Zambia		Lusaka		angola, repubblica democratica del congo, tanzania, malawi, mozambico, zimbabwe, botswana, namibia	africa, africa meridionale	verde, rosso, nero, arancione	arancione	uccello, animale			2
 ZW	Zimbabwe		Harare		zambia, mozambico, sudafrica, botswana	africa, africa meridionale	verde, giallo, rosso, nero, bianco	rosso, giallo	stella		triangolo a sinistra bianco, stella rossa	1`;
 
+// Costruzione dinamica del Database Globale
+const globalDb = [];
+
+const righe = rawData.trim().split("\n");
+righe.forEach((riga, index) => {
+    if (index === 0 && riga.toLowerCase().startsWith("sigla")) return; 
+    
+    let separatore = riga.includes("\t") ? "\t" : "|";
+    let colonne = riga.split(separatore);
+    
+    if(colonne.length >= 10) {
+        let isIndipendente = !(colonne[10] && colonne[10].trim().toLowerCase() === "x");
+        let livello = (colonne.length > 12 && colonne[12]) ? parseInt(colonne[12].trim()) : 1;
+        
+        // Funzione DRY per parsing veloce degli array separati da virgola
+        const parseList = (str) => str ? str.split(",").map(s => s.trim().toLowerCase()).filter(Boolean) : [];
+        
+        let nazione = {
+            sigla: colonne[0].trim(),
+            nome: colonne[1].trim(),
+            alias_paese: [],
+            alias_paese_ufficiali: [],
+            capitale: colonne[3] ? colonne[3].trim() : "",
+            alias_capitale: [],
+            alias_capitale_ufficiali: [],
+            confini: parseList(colonne[5]),
+            aree: parseList(colonne[6]).map(a => {
+                let area = a.toUpperCase();
+                if(area === "AMERICA DEL NORD") return "NORD AMERICA";
+                if(area === "AMERICA DEL SUD") return "SUD AMERICA";
+                return area;
+            }), 
+            colori_base: parseList(colonne[7]), 
+            colori_emblema: parseList(colonne[8]), 
+            simboli: parseList(colonne[9]), 
+            indipendente: isIndipendente,
+            formati_bandiera: parseList(colonne[11]),
+            livello: isNaN(livello) ? 1 : livello 
+        };
+
+        // Funzione DRY per gli alias
+        const processAliases = (rawAliasStr, targetArr, targetOfficialArr) => {
+            parseList(rawAliasStr).forEach(a => {
+                if (a.startsWith('*')) {
+                    let pulito = a.substring(1).trim();
+                    targetOfficialArr.push(pulito);
+                    targetArr.push(pulito); 
+                } else {
+                    targetArr.push(a);
+                }
+            });
+        };
+
+        processAliases(colonne[2], nazione.alias_paese, nazione.alias_paese_ufficiali);
+        processAliases(colonne[4], nazione.alias_capitale, nazione.alias_capitale_ufficiali);
+
+        let hasSea = false;
+        let landBorders = [];
+        nazione.confini.forEach(c => {
+            if (c === "mare" || c.includes("oceano") || c.includes("mar ")) hasSea = true;
+            else if (c !== "") landBorders.push(c);
+        });
+        nazione.confini = landBorders; 
+        
+        let eccezioniIsole = ["GL", "HT", "DO", "MF", "SX"];
+        if (landBorders.length === 0 || eccezioniIsole.includes(nazione.sigla)) nazione.tipoGeo = "isola"; 
+        else if (hasSea) nazione.tipoGeo = "costiera";
+        else nazione.tipoGeo = "interna"; 
+
+        globalDb.push(nazione);
+    }
+});

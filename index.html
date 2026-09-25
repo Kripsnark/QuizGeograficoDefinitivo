@@ -363,6 +363,14 @@
         .wrong-flash { color: #f44336 !important; border-bottom: 2px solid #f44336 !important; }
         .warning-flash { color: #ff9800 !important; border-bottom: 2px solid #ff9800 !important; }
         
+	.ui-tab-btn {
+            flex: 1; background: #2a2a2a; color: #ccc; border: 1px solid #444; 
+            padding: 10px 5px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s;
+        }
+        .ui-tab-btn.active {
+            background: #ffd700; color: #121212; border-color: #ffd700;
+        }
+
         @keyframes shake {
             0% { transform: translateX(0); }
             25% { transform: translateX(-10px); }
@@ -396,11 +404,10 @@
     </div>
 
     <div id="game-container">
-		<button id="sound-toggle" onclick="toggleSuoni()" style="position: fixed; left: 15px; top: 15px; background: transparent; border: none; font-size: 24px; cursor: pointer; padding: 5px; opacity: 0.5; z-index: 9999; transition: opacity 0.2s;">🔊</button>
-		<button id="vibe-toggle" onclick="toggleVibration()" style="position: fixed; right: 15px; top: 15px; background: transparent; border: none; font-size: 24px; cursor: pointer; padding: 5px; opacity: 0.5; z-index: 9999; transition: opacity 0.2s;">📳</button>
+	<button onclick="openSettings()" style="position: fixed; right: 15px; top: 15px; background: transparent; border: none; font-size: 28px; cursor: pointer; padding: 5px; opacity: 0.7; z-index: 9999; transition: opacity 0.2s;" title="Impostazioni">⚙️</button>
         
         <div id="start-screen">
-            <h1 style="color: #ffd700; margin-bottom: 5px; text-transform: uppercase; font-size: 22px;">Quiz Geografico Definitivo</h1>
+	    <h1 style="color: #ffd700; margin-bottom: 5px; text-transform: uppercase; font-size: 22px; text-align: center;">Quiz Geografico Definitivo</h1>
             <p style="color: #ccc; margin-bottom: 10px; font-size: 15px;">Seleziona il tuo livello di competenza:</p>
             
             <button class="level-btn" onclick="startGame(0)" style="border-color: #4caf50;">
@@ -427,7 +434,7 @@
                 <strong style="color: #2196f3;">5. PARTITA PERSONALIZZATA</strong>
                 <div class="level-desc">Configura argomenti, continenti, vite, timer e combo.</div>
             </button>
-	    <button class="level-btn" onclick="openLevel6Setup()" style="border-color: #9c27b0;">
+	    <button class="level-btn" onclick="openL6Setup()" style="border-color: #9c27b0;">
                 <strong style="color: #9c27b0;">6. MORTE IMPROVVISA</strong>
                 <div class="level-desc">Una vita. 10 secondi a domanda. L'intero Database.</div>
             </button>
@@ -504,32 +511,33 @@
                 <button class="menu-btn" onclick="closeCustomSetup()" style="background: #444;">ANNULLA</button>
                 <button class="menu-btn" onclick="startCustomGame()" style="background: #4caf50; color: #fff;">GIOCA ➔</button>
             </div>
-        </div>
+        </div> <!-- ⚠️ QUESTA È LA CHIUSURA CORRETTA DELLA PARTITA PERSONALIZZATA (NON CANCELLARLA) ⚠️ -->
 
-<!-- INIZIO SCHERMATA SETUP LIVELLO 6 (INCOLLA QUI) -->
-        <div id="level6-setup-screen" style="display: none; flex-direction: column; align-items: center; gap: 15px; width: 100%; max-width: 500px; background: #1e1e1e; padding: 20px; border-radius: 8px; border: 2px solid #9c27b0; animation: fadeIn 0.3s; text-align: left;">
-            <h2 style="color: #9c27b0; margin: 0; font-size: 18px; text-align: center;">IMPOSTAZIONI MORTE IMPROVVISA</h2>
+        <!-- SCHERMATA IMPOSTAZIONI LIVELLO 6 -->
+        <div id="l6-setup-screen" style="display: none; flex-direction: column; width: 100%; max-width: 400px; background: #1a1a1a; padding: 20px; border-radius: 8px; border: 2px solid #9c27b0; box-shadow: 0 4px 15px rgba(156, 39, 176, 0.4); margin: 0 auto;">
+            <h2 style="color: #9c27b0; text-align: center; text-transform: uppercase; margin-bottom: 20px; font-size: 16px;">Impostazioni Morte Improvvisa</h2>
             
-            <div class="custom-group">
-                <label>Bacino Nazioni (Traguardo):</label>
-                <div class="custom-options">
-                    <div class="custom-opt-btn selected" id="l6-bacino-1" onclick="setL6Bacino(1)">ONU (193)</div>
-                    <div class="custom-opt-btn" id="l6-bacino-3" onclick="setL6Bacino(3)">Totale (253)</div>
+            <div style="margin-bottom: 20px;">
+                <p style="color: #ffd700; font-size: 12px; font-weight: bold; margin-bottom: 8px; text-transform: uppercase;">Bacino Nazioni (Traguardo):</p>
+                <div style="display: flex; gap: 8px;">
+                    <button id="opt-l6-sprint" onclick="setL6Bacino('sprint')" style="flex: 1; background: #ffd700; color: #121212; border: 1px solid #ffd700; padding: 12px 5px; border-radius: 4px; font-weight: bold; font-size: 11px; cursor: pointer;">Sprint (50)</button>
+                    <button id="opt-l6-onu" onclick="setL6Bacino('onu')" style="flex: 1; background: #2a2a2a; color: #ccc; border: 1px solid #444; padding: 12px 5px; border-radius: 4px; font-weight: bold; font-size: 11px; cursor: pointer;">ONU (193)</button>
+                    <button id="opt-l6-totale" onclick="setL6Bacino('totale')" style="flex: 1; background: #2a2a2a; color: #ccc; border: 1px solid #444; padding: 12px 5px; border-radius: 4px; font-weight: bold; font-size: 11px; cursor: pointer;">Totale (253)</button>
                 </div>
             </div>
 
-            <div class="custom-group">
-                <label>Argomento Sfida:</label>
-                <div class="custom-options">
-                    <div class="custom-opt-btn selected" id="l6-mode-9" onclick="setL6Mode(9)">🏴 Bandiere</div>
-                    <div class="custom-opt-btn" id="l6-mode-1" onclick="setL6Mode(1)">🏛️ Stati</div>
-                    <div class="custom-opt-btn" id="l6-mode-0" onclick="setL6Mode(0)">🌍 Capitali</div>
+            <div style="margin-bottom: 25px;">
+                <p style="color: #ffd700; font-size: 12px; font-weight: bold; margin-bottom: 8px; text-transform: uppercase;">Argomento Sfida:</p>
+                <div style="display: flex; gap: 8px;">
+                    <button id="opt-l6-bandiere" onclick="setL6Argomento('bandiere')" style="flex: 1; background: #ffd700; color: #121212; border: 1px solid #ffd700; padding: 12px 5px; border-radius: 4px; font-weight: bold; font-size: 12px; cursor: pointer;">🏳️ Bandiere</button>
+                    <button id="opt-l6-stati" onclick="setL6Argomento('stati')" style="flex: 1; background: #2a2a2a; color: #ccc; border: 1px solid #444; padding: 12px 5px; border-radius: 4px; font-weight: bold; font-size: 12px; cursor: pointer;">🏛️ Stati</button>
+                    <button id="opt-l6-capitali" onclick="setL6Argomento('capitali')" style="flex: 1; background: #2a2a2a; color: #ccc; border: 1px solid #444; padding: 12px 5px; border-radius: 4px; font-weight: bold; font-size: 12px; cursor: pointer;">🌍 Capitali</button>
                 </div>
             </div>
 
-            <div style="display: flex; gap: 10px; width: 100%; margin-top: 10px;">
-                <button class="menu-btn" onclick="closeLevel6Setup()" style="background: #444;">ANNULLA</button>
-                <button class="menu-btn" onclick="startLevel6Game()" style="background: #9c27b0; color: #fff;">INIZIA SFIDA ➔</button>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="closeL6Setup()" style="flex: 1; background: #444; color: #fff; border: none; padding: 15px; border-radius: 4px; font-weight: bold; cursor: pointer;">ANNULLA</button>
+                <button onclick="startLevel6Game()" style="flex: 1; background: #9c27b0; color: #fff; border: none; padding: 15px; border-radius: 4px; font-weight: bold; cursor: pointer;">INIZIA SFIDA ➔</button>
             </div>
         </div>
         <!-- FINE SCHERMATA SETUP LIVELLO 6 -->
@@ -616,7 +624,7 @@
 	</div>
     </div>
     
-    <div id="version-badge">v1.1.9.9</div>
+    <div id="version-badge">v2.2.0</div>
 
     <div id="modal-overlay">
         <div id="modal-content">
@@ -629,6 +637,9 @@
     </div>
 
 	<script src="database.js"></script>
+	<script src="utils.js"></script>
+	<script src="storage.js"></script>
+	<script src="ui.js"></script>
 	<script src="engine.js"></script>
 
 </body>
