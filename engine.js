@@ -2900,6 +2900,8 @@ function creaBottoneAssistente() {
     document.body.appendChild(btnAss);
 }
 
+window.speechUtterances = []; // TRUCCO: Evita che il browser mobile cancelli la voce dalla RAM
+
 function parla(testo, callbackTermine) {
     if (!voiceModeActive) return;
     synth.cancel(); 
@@ -2909,8 +2911,27 @@ function parla(testo, callbackTermine) {
     utterance.lang = 'it-IT';
     utterance.rate = 1.1; 
     
+    window.speechUtterances.push(utterance); // Salva l'audio globalmente per ingannare la Garbage Collection
+    
     if (callbackTermine) {
-        utterance.onend = callbackTermine;
+        let callbackEseguita = false;
+        
+        // Funzione blindata che scatta una volta sola
+        let eseguiCallback = function() {
+            if (!callbackEseguita) {
+                callbackEseguita = true;
+                callbackTermine();
+            }
+        };
+        
+        // Metodo standard
+        utterance.onend = eseguiCallback;
+        utterance.onerror = eseguiCallback;
+        
+        // PARACADUTE DI EMERGENZA: Calcola quanto ci mette a leggere (circa 65ms a lettera) 
+        // e forza l'avanzamento se il browser si addormenta.
+        let tempoDiLetturaStimato = (testoPulito.length * 65) + 800; 
+        setTimeout(eseguiCallback, tempoDiLetturaStimato);
     }
     
     synth.speak(utterance);
