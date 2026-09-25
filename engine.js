@@ -2979,15 +2979,25 @@ if (SpeechRecognition) {
     assistantRec.onresult = function(event) {
         let parolaDetta = event.results[0][0].transcript.replace(/\.$/, '').trim().toLowerCase();
         
+        // SE SIAMO NELLA HOME PAGE: Intercetta il numero del livello
         if (document.getElementById("start-screen").style.display !== "none") {
-            if (parolaDetta.includes("zero") || parolaDetta === "0") startGame(0);
-            else if (parolaDetta.includes("uno") || parolaDetta === "1") startGame(1);
-            else if (parolaDetta.includes("due") || parolaDetta === "2") startGame(2);
-            else if (parolaDetta.includes("tre") || parolaDetta === "3") startGame(3);
-            else if (parolaDetta.includes("quattro") || parolaDetta === "4") startGame(4);
-            else if (parolaDetta.includes("sei") || parolaDetta.includes("morte") || parolaDetta === "6") startLevel6Game();
+            if (parolaDetta.includes("zero") || parolaDetta.includes("0")) startGame(0);
+            else if (parolaDetta.includes("uno") || parolaDetta.includes("1")) startGame(1);
+            else if (parolaDetta.includes("due") || parolaDetta.includes("2")) startGame(2);
+            else if (parolaDetta.includes("tre") || parolaDetta.includes("3")) startGame(3);
+            else if (parolaDetta.includes("quattro") || parolaDetta.includes("4")) startGame(4);
+            else if (parolaDetta.includes("cinque") || parolaDetta.includes("5")) {
+                document.getElementById("start-screen").style.display = "none";
+                document.getElementById("custom-setup-screen").style.display = "flex";
+                parla("Configura la partita e premi inizia.");
+            }
+            else if (parolaDetta.includes("sei") || parolaDetta.includes("6") || parolaDetta.includes("morte")) {
+                document.getElementById("start-screen").style.display = "none";
+                document.getElementById("l6-setup-screen").style.display = "flex";
+                parla("Configura la morte improvvisa e premi inizia.");
+            }
             else {
-                parla("Livello non riconosciuto. Ripeti il numero.", function() {
+                parla("Livello non riconosciuto. Ripeti numero.", function() {
                     try { assistantRec.start(); } catch(e) {}
                 });
             }
@@ -3078,9 +3088,8 @@ if (!window.voiceHooksAdded) {
                 return;
             }
             
-            let btnNext = document.getElementById("next-btn");
-            if (window.pendingDefeat || (btnNext && btnNext.style.display === "block")) {
-                return; // Se è un errore ci hanno già pensato i blocchi qui sopra
+            if (window.pendingDefeat) {
+                return; // Se hai perso ci pensa il blocco di errore
             }
 
             // Se il punteggio o le combo sono salite, hai indovinato!
@@ -3096,7 +3105,7 @@ if (!window.voiceHooksAdded) {
                      });
                 }
             } else {
-                // Parola non riconosciuta (es. farfugliamento o duplicato), riapre il microfono
+                // Parola non riconosciuta, riapre il microfono
                 if (assistantRec && !isListening) { try { assistantRec.start(); } catch(e){} }
             }
         }
