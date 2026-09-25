@@ -2810,4 +2810,107 @@ function eseguiValidazioneMultipla(isTimeout = false) {
             document.getElementById('update-banner').style.display = 'none';
         }
 
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null;
+let isListening = false;
 
+if (SpeechRecognition) {
+    recognition = new SpeechRecognition();
+    recognition.lang = 'it-IT';
+    recognition.continuous = false; 
+    recognition.interimResults = false; 
+
+    recognition.onstart = function() {
+        isListening = true;
+        let inputElement = document.getElementById("answer-input");
+        inputElement.placeholder = "🎤 In ascolto...";
+        inputElement.style.borderColor = "#f44336";
+    };
+
+    recognition.onresult = function(event) {
+        let parolaDetta = event.results[0][0].transcript;
+        
+        if (parolaDetta.endsWith('.')) {
+            parolaDetta = parolaDetta.slice(0, -1);
+        }
+
+        let inputElement = document.getElementById("answer-input");
+        inputElement.value = parolaDetta;
+        
+        inputElement.placeholder = "Scrivi la risposta...";
+        inputElement.style.borderColor = "#555";
+        
+        if (document.getElementById("continua-btn").style.display === "block") {
+            continuaSfida();
+        } else if (document.getElementById("next-btn").style.display === "block") {
+            nextTurnMulti(); 
+        } else if (!inputElement.disabled && document.getElementById("error-feedback-panel").style.display !== "flex") {
+            processaRisposta(); 
+        }
+    };
+
+    recognition.onerror = function(event) {
+        console.log("Errore microfono: " + event.error);
+        isListening = false;
+        let inputElement = document.getElementById("answer-input");
+        inputElement.placeholder = "Scrivi la risposta...";
+        inputElement.style.borderColor = "#555";
+    };
+
+    recognition.onend = function() {
+        isListening = false;
+        let inputElement = document.getElementById("answer-input");
+        if (inputElement.placeholder === "🎤 In ascolto...") {
+            inputElement.placeholder = "Scrivi la risposta...";
+            inputElement.style.borderColor = "#555";
+        }
+    };
+}
+
+function toggleMicrofono() {
+    if (!recognition) {
+        alert("Il tuo browser non supporta il riconoscimento vocale. Usa Chrome o Edge.");
+        return;
+    }
+    
+    if (isListening) {
+        recognition.stop();
+    } else {
+        recognition.start();
+    }
+}
+
+function creaBottoneMicrofono() {
+    let btnMic = document.createElement("button");
+    btnMic.id = "mic-btn";
+    btnMic.innerText = "🎤";
+    btnMic.title = "Rispondi a voce";
+    btnMic.style.cssText = "background: transparent; border: none; font-size: 24px; cursor: pointer; padding: 5px; transition: transform 0.2s; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); opacity: 0.8;";
+    
+    btnMic.onmouseover = function() { 
+        this.style.transform = "translateY(-50%) scale(1.2)"; 
+        this.style.opacity = "1"; 
+    };
+    
+    btnMic.onmouseout = function() { 
+        this.style.transform = "translateY(-50%) scale(1)"; 
+        this.style.opacity = "0.8"; 
+    };
+    
+    btnMic.onclick = toggleMicrofono;
+
+    let inputArea = document.getElementById("input-area");
+    let inputOriginale = document.getElementById("answer-input");
+    
+    let wrapper = document.createElement("div");
+    wrapper.style.position = "relative";
+    wrapper.style.width = "100%";
+    wrapper.style.maxWidth = "600px";
+    
+    inputArea.insertBefore(wrapper, inputOriginale);
+    wrapper.appendChild(inputOriginale);
+    wrapper.appendChild(btnMic);
+}
+
+// Inizializza il bottone al caricamento dello script
+creaBottoneMicrofono();
