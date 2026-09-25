@@ -2863,6 +2863,22 @@ const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecogni
 const SpeechGrammarList = window.SpeechGrammarList || window.webkitSpeechGrammarList;
 let assistantRec = null;
 let synth = window.speechSynthesis;
+let wakeLock = null; // Aggiunta la variabile per controllare lo schermo
+
+// Funzione per impedire allo schermo di spegnersi
+async function gestisciSchermo(attivo) {
+    if (!('wakeLock' in navigator)) return; 
+    try {
+        if (attivo) {
+            wakeLock = await navigator.wakeLock.request('screen');
+        } else if (wakeLock !== null) {
+            await wakeLock.release();
+            wakeLock = null;
+        }
+    } catch (err) {
+        console.log("Impossibile bloccare lo schermo:", err);
+    }
+}
 
 function creaBottoneAssistente() {
     let oldBtn = document.getElementById("assistant-btn");
@@ -2883,6 +2899,7 @@ function creaBottoneAssistente() {
         if (voiceModeActive) {
             this.style.filter = "grayscale(0%) drop-shadow(0px 0px 8px #4caf50)";
             this.style.opacity = "1";
+            gestisciSchermo(true); // Tieni acceso lo schermo del telefono!
             parla("Modalità vocale attivata. Quale livello vuoi giocare?", function() {
                 if (assistantRec && !isListening) {
                     try { assistantRec.start(); } catch(e) {}
@@ -2891,6 +2908,7 @@ function creaBottoneAssistente() {
         } else {
             this.style.filter = "grayscale(100%)";
             this.style.opacity = "0.5";
+            gestisciSchermo(false); // Sblocca il risparmio energetico
             synth.cancel();
             if (isListening && assistantRec) {
                 try { assistantRec.stop(); } catch(e) {}
@@ -2899,7 +2917,6 @@ function creaBottoneAssistente() {
     };
     document.body.appendChild(btnAss);
 }
-
 window.speechUtterances = []; // TRUCCO: Evita che il browser mobile cancelli la voce dalla RAM
 
 function parla(testo, callbackTermine) {

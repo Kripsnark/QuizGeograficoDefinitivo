@@ -80,23 +80,46 @@
             box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.7);
         }
 
-        /* Il livello 6 ha il bordo magenta, quindi sovrascriviamo solo il colore */
-        #l6-setup-screen {
-            border-color: #9c27b0; 
-        }
+#custom-setup-screen,
+#l6-setup-screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    width: 90%;
+    max-width: 420px;
+    margin: 40px auto; 
+    background: #1e1e1e;
+    padding: 25px 20px;
+    border-radius: 16px;
+    border: 2px solid #ffd700;
+    animation: fadeIn 0.3s;
+    text-align: left;
+    box-sizing: border-box;
+    box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.7);
+}
 
-        #custom-setup-screen button,
-        #l6-setup-screen button {
-            padding: 12px 10px;
-            font-size: 14px;
-            border-radius: 8px;
-        }
+#l6-setup-screen {
+    border-color: #9c27b0; 
+}
 
-        #custom-setup-screen h2,
-        #l6-setup-screen h2 {
-            font-size: 18px;
-            margin-bottom: 20px;
-        }
+#custom-setup-screen h2,
+#l6-setup-screen h2 {
+    font-size: 18px;
+    margin-top: 0;
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+#custom-setup-screen .menu-btn-group button,
+#l6-setup-screen .menu-btn-group button {
+    padding: 12px 10px;
+    font-size: 14px;
+    border-radius: 8px;
+}
+
+/* Lascia intatto da qui in poi: */
+.custom-group { width: 100%; display: flex; flex-direction: column; gap: 8px; }
         .custom-group { width: 100%; display: flex; flex-direction: column; gap: 8px; }
         .custom-group label { font-weight: bold; color: #ffd700; font-size: 14px; text-transform: uppercase; }
         .custom-options { display: flex; gap: 10px; flex-wrap: wrap; }
@@ -419,30 +442,3 @@
             #bandiera-img { max-width: 120px; } 
             #input-area { gap: 12px; }
         }
-
-/* === FIX DIMENSIONI PANNELLI LIVELLO 5 E 6 === */
-#custom-setup-screen,
-#l6-setup-screen {
-    width: 90% !important;        /* Lascia margine ai lati dello schermo */
-    max-width: 420px !important;  /* Evita che diventino enormi su PC o Tablet */
-    margin: 40px auto !important; /* Centra il pannello verticalmente e orizzontalmente */
-    padding: 25px 20px !important;
-    border-radius: 16px !important;
-    box-sizing: border-box;
-    box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.7) !important;
-}
-
-/* Rende i bottoni di selezione più proporzionati */
-#custom-setup-screen button,
-#l6-setup-screen button {
-    padding: 12px 10px !important;
-    font-size: 14px !important;
-    border-radius: 8px !important;
-}
-
-/* Ristringe i titoli interni per non farli sbordare */
-#custom-setup-screen h2,
-#l6-setup-screen h2 {
-    font-size: 18px !important;
-    margin-bottom: 20px !important;
-}
