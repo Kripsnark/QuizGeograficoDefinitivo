@@ -7,7 +7,7 @@ self.addEventListener('install', (event) => {
                 './index.html',
                 './style.css',
                 './database.js',
-                './engine.js',
+                './engine.js?v=3',
                 './manifest.json',
                 './icon.png',
                 './suoni/esatto.wav',
