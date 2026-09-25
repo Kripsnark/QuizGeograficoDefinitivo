@@ -3010,7 +3010,8 @@ if (SpeechRecognition) {
 
     try {
         if (SpeechGrammarList) {
-            let paroleValide = ["zero", "uno", "due", "tre", "quattro", "cinque", "sei", "morte improvvisa"];
+            // Aggiunti i nuovi comandi alla grammatica del browser
+            let paroleValide = ["zero", "uno", "due", "tre", "quattro", "cinque", "sei", "morte improvvisa", "ripeti", "mi arrendo", "arrendo"];
             globalDb.forEach(n => {
                 paroleValide.push(n.nome.toLowerCase());
                 if(n.capitale) paroleValide.push(n.capitale.toLowerCase());
@@ -3020,7 +3021,6 @@ if (SpeechRecognition) {
             paroleValide = paroleValide.map(p => p.replace(/['’]/g, ' '));
             
             let grammarList = new SpeechGrammarList();
-            // IMPORTANT: Ensure the  tag below is NOT deleted by your editor
             let grammar = '#JSGF V1.0; grammar geo; public  = ' + paroleValide.join(' | ') + ' ;';
             grammarList.addFromString(grammar, 1);
             assistantRec.grammars = grammarList;
@@ -3032,7 +3032,7 @@ if (SpeechRecognition) {
     assistantRec.onstart = function() {
         isListening = true;
         let inputEl = document.getElementById("answer-input");
-        if(inputEl) inputEl.placeholder = "🎤 Parla ora...";
+        if(inputEl) inputEl.placeholder = "🎤 In ascolto...";
         let btn = document.getElementById("assistant-btn");
         if(btn) btn.style.transform = "scale(1.2)";
     };
@@ -3040,7 +3040,7 @@ if (SpeechRecognition) {
     assistantRec.onresult = function(event) {
         let parolaDetta = event.results[0][0].transcript.replace(/\.$/, '').trim().toLowerCase();
         
-        // SE SIAMO NELLA HOME PAGE: Intercetta il numero del livello
+        // INTERCETTAZIONE MENU PRINCIPALE
         if (document.getElementById("start-screen").style.display !== "none") {
             if (parolaDetta.includes("zero") || parolaDetta.includes("0")) startGame(0);
             else if (parolaDetta.includes("uno") || parolaDetta.includes("1")) startGame(1);
@@ -3065,6 +3065,20 @@ if (SpeechRecognition) {
             return; 
         }
 
+        // --- INTERCETTAZIONE NUOVI COMANDI EXTRA IN PARTITA ---
+        if (parolaDetta.includes("ripeti") || parolaDetta.includes("domanda")) {
+            parla(currentTurnData.questionText, function() {
+                if (assistantRec && !isListening) { try { assistantRec.start(); } catch(e){} }
+            });
+            return;
+        }
+
+        if (parolaDetta.includes("mi arrendo") || parolaDetta === "arrendo") {
+            surrenderTurn();
+            return;
+        }
+
+        // Gestione risposte normali
         let inputEl = document.getElementById("answer-input");
         if(inputEl) inputEl.value = parolaDetta;
         
@@ -3080,22 +3094,54 @@ if (SpeechRecognition) {
     assistantRec.onend = function() {
         isListening = false;
         let inputEl = document.getElementById("answer-input");
-        if(inputEl && inputEl.placeholder === "🎤 Parla ora...") {
-            inputEl.placeholder = "Scrivi la risposta...";
+        
+        // IL PARACADUTE ANTI-SILENZIO:
+        // Se il telefono spegne il microfono per pausa troppo lunga, ma stiamo giocando, forziamo il riavvio!
+        let gameIsActive = document.getElementById("input-area").style.display === "flex" && inputEl && !inputEl.disabled;
+        let continuaBtn = document.getElementById("continua-btn");
+        let waitContinua = continuaBtn && continuaBtn.style.display === "block";
+        let waitNext = document.getElementById("next-btn") && document.getElementById("next-btn").style.display === "block";
+        
+        if (voiceModeActive && !window.speechSynthesis.speaking && (gameIsActive || waitContinua) && !waitNext && !window.pendingDefeat && !window.pendingVictory) {
+            setTimeout(() => {
+                try { assistantRec.start(); } catch(e) {}
+            }, 100);
+        } else {
+            // Spegnimento effettivo se usciamo dalla partita
+            if(inputEl && inputEl.placeholder === "🎤 In ascolto...") inputEl.placeholder = "Scrivi la risposta...";
+            let btn = document.getElementById("assistant-btn");
+            if(btn) btn.style.transform = "scale(1)";
         }
-        let btn = document.getElementById("assistant-btn");
-        if(btn) btn.style.transform = "scale(1)";
     };
     
     assistantRec.onerror = function(event) {
         console.log("Errore microfono: ", event.error);
         isListening = false;
+        // In caso di errore "no-speech" (silenzio troppo lungo), il paracadute onend se ne occuperà
     };
 }
 
 // === FASE 3: AUTO-AVANZAMENTO VOCALE ===
 if (!window.voiceHooksAdded) {
     window.voiceHooksAdded = true;
+
+// 0. Intercetta la resa del giocatore ("Mi arrendo")
+    const origSurrenderTurn = surrenderTurn;
+    surrenderTurn = function() {
+        origSurrenderTurn();
+        if (voiceModeActive) {
+            if (window.pendingDefeat) {
+                setTimeout(() => parla("Ti sei arreso. Hai perso. Partita terminata."), 200);
+            } else {
+                let correctAns = currentTurnData.validAnswersCache[0].split(" (")[0];
+                setTimeout(() => {
+                    parla("Ti sei arreso. La risposta era " + correctAns, function() {
+                        setTimeout(() => nextTurnMulti(), 300);
+                    });
+                }, 200);
+            }
+        }
+    };
 
     // 1. Intercetta gli errori standard
     const origFailStandard = failStandard;
