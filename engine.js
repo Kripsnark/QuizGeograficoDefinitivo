@@ -2826,7 +2826,17 @@ const SpeechGrammarList = window.SpeechGrammarList || window.webkitSpeechGrammar
 let assistantRec = null;
 let synth = window.speechSynthesis;
 
-btnAss.onclick = function() {
+function creaBottoneAssistente() {
+    let oldBtn = document.getElementById("assistant-btn");
+    if(oldBtn) oldBtn.remove();
+    
+    let btnAss = document.createElement("button");
+    btnAss.id = "assistant-btn";
+    btnAss.innerText = "🎙️";
+    btnAss.title = "Modalità Assistente Vocale";
+    btnAss.style.cssText = "position: fixed; left: 15px; top: 15px; background: transparent; border: none; font-size: 28px; cursor: pointer; padding: 5px; opacity: 0.5; z-index: 9999; transition: all 0.3s; filter: grayscale(100%);";
+    
+    btnAss.onclick = function() {
         if (!SpeechRecognition) {
             alert("Il tuo browser non supporta il riconoscimento vocale avanzato.");
             return;
@@ -2835,7 +2845,6 @@ btnAss.onclick = function() {
         if (voiceModeActive) {
             this.style.filter = "grayscale(0%) drop-shadow(0px 0px 8px #4caf50)";
             this.style.opacity = "1";
-            // Ora ti chiede il livello E accende il microfono appena finisce di parlare!
             parla("Modalità vocale attivata. Quale livello vuoi giocare?", function() {
                 if (assistantRec && !isListening) {
                     try { assistantRec.start(); } catch(e) {}
@@ -2845,22 +2854,23 @@ btnAss.onclick = function() {
             this.style.filter = "grayscale(100%)";
             this.style.opacity = "0.5";
             synth.cancel();
-            if (isListening && assistantRec) assistantRec.stop();
+            if (isListening && assistantRec) {
+                try { assistantRec.stop(); } catch(e) {}
+            }
         }
     };
+    document.body.appendChild(btnAss);
+}
 
 function parla(testo, callbackTermine) {
     if (!voiceModeActive) return;
-    synth.cancel(); // Interrompe eventuali frasi precedenti
+    synth.cancel(); 
     
-    // Rimuove tutti i tag HTML (es. **, ) per leggere solo il testo puro
     let testoPulito = testo.replace(/<[^>]*>?/gm, '');
-    
     let utterance = new SpeechSynthesisUtterance(testoPulito);
     utterance.lang = 'it-IT';
-    utterance.rate = 1.1; // Ritmo leggermente più vivace
+    utterance.rate = 1.1; 
     
-    // Quando finisce di parlare, esegue l'azione successiva (es. accendere il microfono)
     if (callbackTermine) {
         utterance.onend = callbackTermine;
     }
@@ -2868,7 +2878,6 @@ function parla(testo, callbackTermine) {
     synth.speak(utterance);
 }
 
-// Genera il bottone all'avvio
 creaBottoneAssistente();
 
 let isListening = false;
@@ -2879,34 +2888,38 @@ if (SpeechRecognition) {
     assistantRec.continuous = false;
     assistantRec.interimResults = false;
 
-    // GRAMMATICA FORZATA: Diciamo al microfono quali sono le uniche parole che ci aspettiamo
-    if (SpeechGrammarList) {
-        let paroleValide = ["zero", "uno", "due", "tre", "quattro", "cinque", "sei", "morte improvvisa"];
-        globalDb.forEach(n => {
-            paroleValide.push(n.nome.toLowerCase());
-            if(n.capitale) paroleValide.push(n.capitale.toLowerCase());
-            if(n.alias_paese) paroleValide = paroleValide.concat(n.alias_paese);
-            if(n.alias_capitale) paroleValide = paroleValide.concat(n.alias_capitale);
-        });
-        paroleValide = paroleValide.map(p => p.replace(/['’]/g, ' '));
-        
-        let grammarList = new SpeechGrammarList();
-        let grammar = '#JSGF V1.0; grammar geo; public  = ' + paroleValide.join(' | ') + ' ;';
-        grammarList.addFromString(grammar, 1);
-        assistantRec.grammars = grammarList;
+    try {
+        if (SpeechGrammarList) {
+            let paroleValide = ["zero", "uno", "due", "tre", "quattro", "cinque", "sei", "morte improvvisa"];
+            globalDb.forEach(n => {
+                paroleValide.push(n.nome.toLowerCase());
+                if(n.capitale) paroleValide.push(n.capitale.toLowerCase());
+                if(n.alias_paese) paroleValide = paroleValide.concat(n.alias_paese);
+                if(n.alias_capitale) paroleValide = paroleValide.concat(n.alias_capitale);
+            });
+            paroleValide = paroleValide.map(p => p.replace(/['’]/g, ' '));
+            
+            let grammarList = new SpeechGrammarList();
+            // IMPORTANT: Ensure the  tag below is NOT deleted by your editor
+            let grammar = '#JSGF V1.0; grammar geo; public  = ' + paroleValide.join(' | ') + ' ;';
+            grammarList.addFromString(grammar, 1);
+            assistantRec.grammars = grammarList;
+        }
+    } catch (e) {
+        console.log("Grammatica chiusa ignorata dal browser.");
     }
 
     assistantRec.onstart = function() {
         isListening = true;
         let inputEl = document.getElementById("answer-input");
         if(inputEl) inputEl.placeholder = "🎤 Parla ora...";
-        document.getElementById("assistant-btn").style.transform = "scale(1.2)";
+        let btn = document.getElementById("assistant-btn");
+        if(btn) btn.style.transform = "scale(1.2)";
     };
 
     assistantRec.onresult = function(event) {
         let parolaDetta = event.results[0][0].transcript.replace(/\.$/, '').trim().toLowerCase();
         
-        // SE SIAMO NELLA HOME PAGE: Intercetta il numero del livello
         if (document.getElementById("start-screen").style.display !== "none") {
             if (parolaDetta.includes("zero") || parolaDetta === "0") startGame(0);
             else if (parolaDetta.includes("uno") || parolaDetta === "1") startGame(1);
@@ -2915,14 +2928,13 @@ if (SpeechRecognition) {
             else if (parolaDetta.includes("quattro") || parolaDetta === "4") startGame(4);
             else if (parolaDetta.includes("sei") || parolaDetta.includes("morte") || parolaDetta === "6") startLevel6Game();
             else {
-                parla("Livello non riconosciuto. Ripeti numero.", function() {
+                parla("Livello non riconosciuto. Ripeti il numero.", function() {
                     try { assistantRec.start(); } catch(e) {}
                 });
             }
             return; 
         }
 
-        // SE SIAMO IN PARTITA: Processa la risposta geografica
         let inputEl = document.getElementById("answer-input");
         if(inputEl) inputEl.value = parolaDetta;
         
@@ -2941,7 +2953,8 @@ if (SpeechRecognition) {
         if(inputEl && inputEl.placeholder === "🎤 Parla ora...") {
             inputEl.placeholder = "Scrivi la risposta...";
         }
-        document.getElementById("assistant-btn").style.transform = "scale(1)";
+        let btn = document.getElementById("assistant-btn");
+        if(btn) btn.style.transform = "scale(1)";
     };
     
     assistantRec.onerror = function(event) {
