@@ -1332,7 +1332,7 @@ td.buildQuestionText = (num) => {
                     }
                 }
 
-                if (match) {
+                                if (match) {
                     td.validSiglas.push(country.sigla);
                     
                     let dName = capitalize(country.nome);
@@ -1341,19 +1341,21 @@ td.buildQuestionText = (num) => {
                         if (offAlias) dName = capitalize(offAlias);
                     }
 
+                    // --- INIZIO FIX ASTERISCHI E NOMI UFFICIALI ---
+                    dName = dName.replace(/\*/g, '');
+                    
                     if (td.format === 0 || td.format === 10 || td.format === 6 || (td.format === 12 && td.f12AskCapital)) {
                         let cName = capitalize(country.capitale);
                         
-                        let textMatchBase = false;
-                        let cnLower = country.capitale ? country.capitale.toLowerCase() : "";
-                        if (td.reqCapInit && cnLower.startsWith(td.reqCapInit.toLowerCase())) textMatchBase = true;
-                        if (td.format === 6 && cnLower) {
+                        let officialFailsConstraint = false;
+                        if (td.reqCapInit || td.reqCapFin) {
+                            let cnLower = country.capitale ? country.capitale.toLowerCase() : "";
                             let starts = td.reqCapInit ? cnLower.startsWith(td.reqCapInit.toLowerCase()) : true;
                             let ends = td.reqCapFin ? cnLower.endsWith(td.reqCapFin.toLowerCase()) : true;
-                            if (starts && ends) textMatchBase = true;
+                            if (!(starts && ends)) officialFailsConstraint = true;
                         }
                         
-                        if (!textMatchBase && country.alias_capitale_ufficiali) {
+                        if (officialFailsConstraint && country.alias_capitale_ufficiali) {
                             let offCapAlias = country.alias_capitale_ufficiali.find(c => {
                                 let cLow = c.toLowerCase();
                                 let s = td.reqCapInit ? cLow.startsWith(td.reqCapInit.toLowerCase()) : true;
@@ -1363,10 +1365,12 @@ td.buildQuestionText = (num) => {
                             if (offCapAlias) cName = capitalize(offCapAlias);
                         }
                         
+                        cName = cName.replace(/\*/g, '');
                         validList.push(cName + " (" + dName + ")");
                     } else {
                         validList.push(dName);
                     }
+                    // --- FINE FIX ---
                 }
             }
             return validList;
