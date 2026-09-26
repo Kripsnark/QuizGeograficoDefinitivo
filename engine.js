@@ -2109,48 +2109,55 @@ function processaRisposta() {
             bandieraImg.style.display = "block"; bandieraContainer.style.display = "block";
         }
 
-        let isCapitalReq = currentTurnData.format === 0 || currentTurnData.format === 6 || currentTurnData.format === 10 || (currentTurnData.format === 12 && currentTurnData.f12AskCapital);
-        let dName = getPrintedName(res.matchedCountry, res.matchedNameStr);
-        let nomeInserito = isCapitalReq ? `\({getPrintedCapital(res.matchedCountry, res.matchedCapitalStr)} (\){dName})` : dName;
-
-        // --- INIZIO FIX: MOSTRA "ALTRE RISPOSTE VALIDE" PER LIVELLI SINGOLI ---
-        let arrayNomiPrimariTrovati = [];
-        let pNameBase = capitalize(res.matchedCountry.nome);
+                let isCapitalReq = currentTurnData.format === 0 || currentTurnData.format === 6 || currentTurnData.format === 10 || (currentTurnData.format === 12 && currentTurnData.f12AskCapital);
+        
+        // --- FIX ALIAS CON ASTERISCO E NOMI UFFICIALI ---
+        let dName = capitalize(res.matchedCountry.nome);
         if (currentTurnData.reqInit && !res.matchedCountry.nome.toLowerCase().startsWith(currentTurnData.reqInit.toLowerCase())) {
             let offAlias = res.matchedCountry.alias_paese_ufficiali.find(a => a.toLowerCase().startsWith(currentTurnData.reqInit.toLowerCase()));
-            if (offAlias) pNameBase = capitalize(offAlias);
+            if (offAlias) dName = capitalize(offAlias);
         }
+        dName = dName.replace(/\*/g, '');
+
+        let cName = res.matchedCountry.capitale ? capitalize(res.matchedCountry.capitale) : "";
         if (isCapitalReq) {
-            let cName = capitalize(res.matchedCountry.capitale); 
-            let textMatchBase = false; 
-            let cnLower = res.matchedCountry.capitale ? res.matchedCountry.capitale.toLowerCase() : "";
-            if (currentTurnData.reqCapInit && cnLower.startsWith(currentTurnData.reqCapInit.toLowerCase())) textMatchBase = true;
-            if (currentTurnData.format === 6 && cnLower) {
+            let officialFailsConstraint = false;
+            if (currentTurnData.reqCapInit || currentTurnData.reqCapFin) {
+                let cnLower = res.matchedCountry.capitale ? res.matchedCountry.capitale.toLowerCase() : "";
                 let starts = currentTurnData.reqCapInit ? cnLower.startsWith(currentTurnData.reqCapInit.toLowerCase()) : true;
                 let ends = currentTurnData.reqCapFin ? cnLower.endsWith(currentTurnData.reqCapFin.toLowerCase()) : true;
-                if (starts && ends) textMatchBase = true;
+                if (!(starts && ends)) officialFailsConstraint = true;
             }
-            if (!textMatchBase && res.matchedCountry.alias_capitale_ufficiali) {
-                let offCapAlias = res.matchedCountry.alias_capitale_ufficiali.find(c => { let cLow = c.toLowerCase(); let s = currentTurnData.reqCapInit ? cLow.startsWith(currentTurnData.reqCapInit.toLowerCase()) : true; let e = currentTurnData.reqCapFin ? cLow.endsWith(currentTurnData.reqCapFin.toLowerCase()) : true; return s && e; });
+            if (officialFailsConstraint && res.matchedCountry.alias_capitale_ufficiali) {
+                let offCapAlias = res.matchedCountry.alias_capitale_ufficiali.find(c => {
+                    let cLow = c.toLowerCase();
+                    let s = currentTurnData.reqCapInit ? cLow.startsWith(currentTurnData.reqCapInit.toLowerCase()) : true;
+                    let e = currentTurnData.reqCapFin ? cLow.endsWith(currentTurnData.reqCapFin.toLowerCase()) : true;
+                    return s && e;
+                });
                 if (offCapAlias) cName = capitalize(offCapAlias);
             }
-            arrayNomiPrimariTrovati.push(`\({cName} (\){pNameBase})`);
-        } else {
-            arrayNomiPrimariTrovati.push(pNameBase);
+            cName = cName.replace(/\*/g, '');
         }
+
+        // FIX SINTASSI: Usa i backtick normali e le variabili pulite!
+        let nomeInserito = isCapitalReq ? `${cName} (${dName})` : dName;
+
+        let arrayNomiPrimariTrovati = [];
+        arrayNomiPrimariTrovati.push(nomeInserito);
 
         if (currentTurnData.maxPossible > 1) {
             let rimanenti = currentTurnData.validAnswersCache.filter(v => !arrayNomiPrimariTrovati.includes(v));
             if (rimanenti.length > 0) {
                 comboTracker.style.display = "block";
-                comboTracker.innerHTML = `Altre risposte valide: ${rimanenti.join(", ")}`;
+                comboTracker.innerHTML = `<span style="color:#aaa; font-size:14px; margin-top:5px; text-align:center; display:block;">Altre risposte valide: ${rimanenti.join(", ")}</span>`;
             } else {
                 comboTracker.style.display = "none";
             }
         } else {
             comboTracker.style.display = "none";
         }
-        // --- FINE FIX ---
+
 
         if (hasWon) {
             if (currentLevel === 6) {
