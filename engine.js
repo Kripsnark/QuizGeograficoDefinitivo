@@ -3175,10 +3175,11 @@ if (!window.voiceHooksAdded) {
         }
     };
 
-    // 3. Intercetta le risposte corrette
+// 3. Intercetta le risposte corrette
     const origProcessaRisposta = processaRisposta;
     processaRisposta = function() {
         let esattePrima = esatte;
+        let vitePrima = vite; // Aggiunto per tracciare gli errori e fermare i loop!
         let comboPrima = comboInserted.length;
         
         origProcessaRisposta(); // Esegue il controllo normale
@@ -3199,26 +3200,34 @@ if (!window.voiceHooksAdded) {
                 return; 
             }
 
-            // Se il punteggio o le combo sono salite, hai indovinato!
-            if (esatte > esattePrima || comboInserted.length > comboPrima) {
-                let isMulti = (currentLevel === 4 || (currentLevel === 5 && currentTurnData.numReq > 1));
-                if (isMulti && comboInserted.length > 0 && comboInserted.length < currentTurnData.numReq) {
-                     setTimeout(() => {
-                         parla("Corretto.", function() {
-                             if (assistantRec && !isListening) { try { assistantRec.start(); } catch(e){} }
-                         });
-                     }, 150);
-                } else {
-                     setTimeout(() => {
-                         parla("Esatto!", function() {
-                             setTimeout(() => nextTurnMulti(), 300); // Forza il passaggio
-                         });
-                     }, 150);
-                }
-            } else {
-                // Parola non riconosciuta, riapre il microfono
-                if (assistantRec && !isListening) { try { assistantRec.start(); } catch(e){} }
+            // 🔴 FIX CRITICO: Se hai perso una vita, failStandard o failMulti hanno già agito.
+            // Ci fermiamo all'istante per evitare il "doppio avanzamento" che sfasa il microfono!
+            if (vite < vitePrima) {
+                return; 
             }
+
+            // Se la risposta finale o l'intera combo è esatta (esatte sale)
+            if (esatte > esattePrima) {
+                 setTimeout(() => {
+                     parla("Esatto!", function() {
+                         setTimeout(() => nextTurnMulti(), 300); // Avanza pulito
+                     });
+                 }, 150);
+                 return;
+            } 
+            
+            // Se sei a metà di una combo e hai appena inserito una parola nel calderone
+            if (comboInserted.length > comboPrima) {
+                 setTimeout(() => {
+                     parla("Presa.", function() { // Sostituito "Corretto" con "Presa" per non confondere
+                         if (assistantRec && !isListening) { try { assistantRec.start(); } catch(e){} }
+                     });
+                 }, 150);
+                 return;
+            }
+
+            // Se non ha riconosciuto la parola o hai detto un doppione, riapre il mic silenziosamente
+            if (assistantRec && !isListening) { try { assistantRec.start(); } catch(e){} }
         }
     };
 }
