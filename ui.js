@@ -194,12 +194,21 @@ function openRules() {
 }
 function openDB() {
     let tableHTML = `<div class="db-table-container"><table class="db-table">
-        <thead><tr><th>Bandiera</th><th>Sigla</th><th class="sticky-col">Paese</th><th>Capitale</th><th>Confini</th><th>Aree</th></tr></thead><tbody>`;
+        <thead><tr><th>Bandiera</th><th>Sigla</th><th class="sticky-col">Paese</th><th>Capitale</th><th>Confini</th><th>Aree</th><th>Colori Base</th><th>Colori Emblema</th><th>Simboli</th><th>Formati</th><th>Tipo Geo</th><th>Indipendente</th><th>Livello</th></tr></thead><tbody>`;
     globalDb.forEach(n => {
+        let nCapitale = n.capitale ? capitalize(n.capitale.replace(/\*/g, '')) : "-";
+        let nConfini = n.confini && n.confini.length > 0 ? n.confini.map(b => capitalize(b)).join(', ') : "Nessuno";
+        let nAree = n.aree && n.aree.length > 0 ? n.aree.map(a => capitalize(a)).join(', ') : "-";
+        let nColB = n.colori_base && n.colori_base.length > 0 ? n.colori_base.map(c => capitalize(c)).join(', ') : "-";
+        let nColE = n.colori_emblema && n.colori_emblema.length > 0 ? n.colori_emblema.map(c => capitalize(c)).join(', ') : "-";
+        let nSim = n.simboli && n.simboli.length > 0 ? n.simboli.map(s => capitalize(s)).join(', ') : "-";
+        let nForm = n.formati_bandiera && n.formati_bandiera.length > 0 ? n.formati_bandiera.map(f => capitalize(f)).join(', ') : "-";
+        let nInd = n.indipendente ? "Sì" : "No";
+
         tableHTML += `<tr>
-            <td style="text-align:center;"><img src="GIF/${n.sigla.toLowerCase()}.jpg" style="width:40px; border-radius:2px;" onerror="this.style.display='none'"></td>
-            <td>${n.sigla.toUpperCase()}</td><td class="sticky-col" style="font-weight:bold;">${capitalize(n.nome)}</td>
-            <td>${capitalize(n.capitale)}</td><td>${n.confini.join(', ')}</td><td>${n.aree.join(', ')}</td>
+            <td style="text-align:center;"><img src="GIF/${n.sigla.toLowerCase()}.jpg" onclick="window.openFlagModal(this.src)" style="width:40px; border-radius:2px; cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,0.5);" onerror="this.style.display='none'"></td>
+            <td>${n.sigla.toUpperCase()}</td><td class="sticky-col" style="font-weight:bold;">${capitalize(n.nome.replace(/\*/g, ''))}</td>
+            <td>${nCapitale}</td><td>${nConfini}</td><td>${nAree}</td><td>${nColB}</td><td>${nColE}</td><td>${nSim}</td><td>${nForm}</td><td>${capitalize(n.tipoGeo)}</td><td>${nInd}</td><td style="text-align:center;">L${n.livello}</td>
         </tr>`;
     });
     tableHTML += `</tbody></table></div>`;
@@ -382,15 +391,58 @@ window.switchLevelTab = function(lvl) {
     document.getElementById("level-detail-container").innerHTML = html;
 }
 
-window.downloadSpecificLog = function(lvl, idx) {
-    let game = recentGamesHistory[lvl][idx];
-    if (!game || !game.log) return;
-    let dateStr = game.date.replace(/[\/ :]/g, "_").replace(",", "");
-    let dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(game.log);
-    let node = document.createElement('a');
-    node.setAttribute("href", dataStr);
-    node.setAttribute("download", "QG_Log_L" + lvl + "_" + dateStr + ".txt");
-    document.body.appendChild(node);
-    node.click();
-    node.remove();
+// --- FIX GLOBALI BANDIERE E LOG ---
+window.openFlagModal = function(src) {
+    let lightbox = document.getElementById("flag-lightbox");
+    let lightboxImg = document.getElementById("flag-lightbox-img");
+    
+    // Se il lightbox non esiste nel DOM, lo crea al volo
+    if (!lightbox) {
+        lightbox = document.createElement("div");
+        lightbox.id = "flag-lightbox";
+        lightbox.style.cssText = "display: flex; position: fixed; top: 0px; left: 0px; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 10000; justify-content: center; align-items: center; flex-direction: column; opacity: 1; transition: opacity 0.2s;";
+        
+        lightboxImg = document.createElement("img");
+        lightboxImg.id = "flag-lightbox-img";
+        lightboxImg.style.cssText = "max-width: 90%; max-height: 80%; border-radius: 8px; box-shadow: rgba(0, 0, 0, 0.7) 0px 4px 15px; border: 2px solid rgb(255, 255, 255); transform: scale(1); transition: transform 0.2s;";
+        
+        lightbox.appendChild(lightboxImg);
+        document.body.appendChild(lightbox);
+        
+        // Chiudi al clic
+        lightbox.onclick = function() {
+            this.style.display = "none";
+        };
+    }
+    
+    lightboxImg.src = src;
+    lightbox.style.display = "flex";
 };
+
+// Forza l'aggancio del click sulla bandiera principale durante il gioco
+if (typeof bandieraImg !== 'undefined' && bandieraImg) {
+    bandieraImg.style.cursor = "pointer";
+    bandieraImg.addEventListener("click", function() {
+        if (this.src) window.openFlagModal(this.src);
+    });
+}
+window.scaricaLog = function() {
+    let testo = typeof debugGameLog !== 'undefined' ? debugGameLog : "Nessun dato registrato.";
+    let blob = new Blob([testo], { type: "text/plain" });
+    let url = URL.createObjectURL(blob);
+    let a = document.createElement('a');
+    a.href = url;
+    a.download = "GeoQuiz_Log_" + new Date().toISOString().slice(0,10) + ".txt";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+};
+
+// Forza l'aggancio del click sulla bandiera principale durante il gioco
+if (bandieraImg) {
+    bandieraImg.style.cursor = "pointer";
+    bandieraImg.addEventListener("click", function() {
+        if (this.src) window.openFlagModal(this.src);
+    });
+}

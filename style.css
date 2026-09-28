@@ -61,34 +61,15 @@
             margin-top: 5px;
         }
 
-        #custom-setup-screen,
-        #l6-setup-screen {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-            width: 90%;
-            max-width: 420px;
-            margin: auto;
-            background: #1e1e1e;
-            padding: 25px 20px;
-            border-radius: 16px;
-            border: 2px solid #ffd700;
-            animation: fadeIn 0.3s;
-            text-align: left;
-            box-sizing: border-box;
-            box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.7);
-        }
-
 #custom-setup-screen,
 #l6-setup-screen {
     display: none;
     flex-direction: column;
     align-items: center;
     gap: 15px;
-    width: 90%;
-    max-width: 420px;
-    margin: 60px auto 20px auto; /* Forza 60px di spazio in alto */
+    width: 85% !important; /* Lascia molto margine laterale */
+    max-width: 360px !important; /* Blocca la larghezza */
+    margin: 60px auto 20px auto !important; 
     background: #1e1e1e;
     padding: 25px 20px;
     border-radius: 16px;
@@ -97,8 +78,8 @@
     text-align: left;
     box-sizing: border-box;
     box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.7);
-    max-height: 80vh; /* Se il telefono è piccolo, non esce dallo schermo */
-    overflow-y: auto; /* Rende il pannello scorrevole col dito */
+    max-height: 80vh;
+    overflow-y: auto;
 }
 
 #l6-setup-screen {
@@ -120,37 +101,7 @@
     border-radius: 8px;
 }
 
-/* Lascia intatto da qui in poi: */
-.custom-group { width: 100%; display: flex; flex-direction: column; gap: 8px; }
-        .custom-group { width: 100%; display: flex; flex-direction: column; gap: 8px; }
-        .custom-group label { font-weight: bold; color: #ffd700; font-size: 14px; text-transform: uppercase; }
-        .custom-options { display: flex; gap: 10px; flex-wrap: wrap; }
-        .custom-opt-btn {
-            flex: 1; background: #2a2a2a; border: 1px solid #555; color: #ccc;
-            padding: 10px; border-radius: 4px; cursor: pointer; text-align: center; font-weight: bold; font-size: 13px;
-        }
-        .custom-opt-btn.selected { background: #ffd700; color: #121212; border-color: #ffd700; }
-        .custom-opt-btn.cont-btn.selected { background: #4caf50; color: #fff; border-color: #4caf50; }
-
-        .menu-btn-group {
-            display: flex; gap: 10px; margin-top: 0; margin-bottom: 20px; width: 100%; max-width: 400px;
-        }
-        .menu-btn {
-            flex: 1; background-color: #2a2a2a; color: #ddd; border: 1px solid #555;
-            padding: 12px; cursor: pointer; border-radius: 6px; font-weight: bold;
-            transition: all 0.2s; font-size: 14px;
-        }
-        .menu-btn:hover { background-color: #444; color: #fff; border-color: #4caf50; }
-
-        #header {
-            width: 100%;
-            display: none; 
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-        
+.custom-group { width: 100%; display: flex; flex-direction: column; gap: 8px; }        
         #home-btn {
             background-color: #1e1e1e;
             color: #ccc;

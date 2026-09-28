@@ -1941,7 +1941,7 @@ td.buildQuestionText = (num) => {
                                 btnCorretto.style.cssText = "width:100%; padding:15px; background:rgba(76, 175, 80, 0.1); color:#4caf50; border:2px dashed #4caf50; border-radius:8px; font-size:16px; font-weight:bold; margin-top:10px; cursor:default;";
                                 let corrOpz = opzioni.find(o => o.isCorrect);
                                 if (currentTurnData.format === 13) {
-                                    btnCorretto.innerHTML = `Era questa: <br><img src="GIF/${corrOpz.sigla.toLowerCase()}.jpg" style="height:40px; margin-top:5px; border-radius:4px;">`;
+                                    btnCorretto.innerHTML = `Era questa: <br><img src="GIF/${corrOpz.sigla.toLowerCase()}.jpg" onclick="window.openFlagModal(this.src)" style="height:40px; margin-top:5px; border-radius:4px; cursor:pointer;" onerror="this.style.display='none'">`;
                                 } else {
                                     btnCorretto.innerText = "La risposta corretta era: " + corrOpz.text;
                                 }
@@ -2151,7 +2151,7 @@ function processaRisposta() {
         arrayNomiPrimariTrovati.push(nomeInserito);
 
         if (currentTurnData.maxPossible > 1) {
-            let rimanenti = currentTurnData.validAnswersCache.filter(v => !arrayNomiPrimariTrovati.includes(v));
+            let rimanenti = currentTurnData.validAnswersCache.map(v => v.replace(/\*/g, '')).filter(v => !arrayNomiPrimariTrovati.map(a => a.replace(/\*/g, '')).includes(v));
             if (rimanenti.length > 0) {
                 comboTracker.style.display = "block";
                 comboTracker.innerHTML = `<span style="color:#aaa; font-size:14px; margin-top:5px; text-align:center; display:block;">Altre risposte valide: ${rimanenti.join(", ")}</span>`;
@@ -2396,7 +2396,7 @@ function eseguiValidazioneMultipla(isTimeout = false) {
         }
 
         if (currentTurnData.maxPossible > comboInserted.length) {
-            let rimanenti = currentTurnData.validAnswersCache.filter(v => !arrayNomiPrimariTrovati.includes(v));
+            let rimanenti = currentTurnData.validAnswersCache.map(v => v.replace(/\*/g, '')).filter(v => !arrayNomiPrimariTrovati.map(a => a.replace(/\*/g, '')).includes(v));
             if (rimanenti.length > 0) {
                 comboTracker.style.display = "block";
                 comboTracker.innerHTML = `<span style="color:#aaa;">Altre risposte valide: ${rimanenti.join(", ")}</span>`;
@@ -2920,20 +2920,6 @@ document.addEventListener("visibilitychange", async () => {
     }
 });
 
-// Funzione per impedire allo schermo di spegnersi
-async function gestisciSchermo(attivo) {
-    if (!('wakeLock' in navigator)) return; 
-    try {
-        if (attivo) {
-            wakeLock = await navigator.wakeLock.request('screen');
-        } else if (wakeLock !== null) {
-            await wakeLock.release();
-            wakeLock = null;
-        }
-    } catch (err) {
-        console.log("Impossibile bloccare lo schermo:", err);
-    }
-}
 
 function creaBottoneAssistente() {
     let oldBtn = document.getElementById("assistant-btn");
