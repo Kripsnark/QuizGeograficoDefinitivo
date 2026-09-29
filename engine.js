@@ -1969,6 +1969,43 @@ td.buildQuestionText = (num) => {
             }
         }
 
+function getBestDisplayName(country, userInput, reqInit) {
+    // 1. Cerca il nome ufficiale che rispetta l'iniziale
+    if (reqInit) {
+        if (country.nome.toLowerCase().startsWith(reqInit.toLowerCase())) return capitalize(country.nome);
+        let offAlias = country.alias_paese_ufficiali.find(a => a.toLowerCase().startsWith(reqInit.toLowerCase()));
+        if (offAlias) return capitalize(offAlias).replace(/\*/g, '');
+    }
+    // 2. Se l'utente ha digitato un alias ufficiale (es. swaziland), mostra quello
+    let cleanInput = userInput.trim().toLowerCase();
+    let matchedOffAlias = country.alias_paese_ufficiali.find(a => a.replace(/\*/g, '').toLowerCase() === cleanInput);
+    if (matchedOffAlias) return capitalize(matchedOffAlias).replace(/\*/g, '');
+    
+    // 3. Fallback sul nome principale
+    return capitalize(country.nome);
+}
+
+function getBestDisplayCapital(country, userInput, reqCapInit, reqCapFin) {
+    if (!country.capitale) return "";
+    if (reqCapInit || reqCapFin) {
+        let check = (str) => {
+            let s = str.toLowerCase();
+            let okStart = reqCapInit ? s.startsWith(reqCapInit.toLowerCase()) : true;
+            let okEnd = reqCapFin ? s.endsWith(reqCapFin.toLowerCase()) : true;
+            return okStart && okEnd;
+        };
+        if (check(country.capitale)) return capitalize(country.capitale);
+        let offAlias = (country.alias_capitale_ufficiali || []).find(a => check(a));
+        if (offAlias) return capitalize(offAlias).replace(/\*/g, '');
+    }
+    
+    let cleanInput = userInput.trim().toLowerCase();
+    let matchedOffAlias = (country.alias_capitale_ufficiali || []).find(a => a.replace(/\*/g, '').toLowerCase() === cleanInput);
+    if (matchedOffAlias) return capitalize(matchedOffAlias).replace(/\*/g, '');
+    
+    return capitalize(country.capitale);
+}
+
 function processaRisposta() {
     let inputStr = inputEl.value.trim().toLowerCase();
     if (!inputStr) return;
@@ -2035,6 +2072,16 @@ function processaRisposta() {
         if (useTimer) stopTimer();
         
         let sigla = res.matchedCountry.sigla;
+
+        // --- DINAMICA ALIAS SEGRETO ---
+        // Se la nazione indovinata non era tra le "ufficiali" calcolate originariamente dal motore:
+        if (currentTurnData.validSiglas && !currentTurnData.validSiglas.includes(sigla)) {
+            currentTurnData.validSiglas.push(sigla); // Inseriscila nel calderone valido
+            currentTurnData.maxPossible++;           // Dinamicamente, le soluzioni passano da 2 a 3!
+        }
+        // -----------------------------
+
+        nazioniDigitateCount[sigla] = (nazioniDigitateCount[sigla] || 0) + 1;
         nazioniDigitateCount[sigla] = (nazioniDigitateCount[sigla] || 0) + 1;
 
         if (currentTurnData.validSiglas && currentTurnData.validSiglas.length <= 30) {
@@ -2115,34 +2162,8 @@ function processaRisposta() {
 
                 let isCapitalReq = currentTurnData.format === 0 || currentTurnData.format === 6 || currentTurnData.format === 10 || (currentTurnData.format === 12 && currentTurnData.f12AskCapital);
         
-        // --- FIX ALIAS CON ASTERISCO E NOMI UFFICIALI ---
-        let dName = capitalize(res.matchedCountry.nome);
-        if (currentTurnData.reqInit && !res.matchedCountry.nome.toLowerCase().startsWith(currentTurnData.reqInit.toLowerCase())) {
-            let offAlias = res.matchedCountry.alias_paese_ufficiali.find(a => a.toLowerCase().startsWith(currentTurnData.reqInit.toLowerCase()));
-            if (offAlias) dName = capitalize(offAlias);
-        }
-        dName = dName.replace(/\*/g, '');
-
-        let cName = res.matchedCountry.capitale ? capitalize(res.matchedCountry.capitale) : "";
-        if (isCapitalReq) {
-            let officialFailsConstraint = false;
-            if (currentTurnData.reqCapInit || currentTurnData.reqCapFin) {
-                let cnLower = res.matchedCountry.capitale ? res.matchedCountry.capitale.toLowerCase() : "";
-                let starts = currentTurnData.reqCapInit ? cnLower.startsWith(currentTurnData.reqCapInit.toLowerCase()) : true;
-                let ends = currentTurnData.reqCapFin ? cnLower.endsWith(currentTurnData.reqCapFin.toLowerCase()) : true;
-                if (!(starts && ends)) officialFailsConstraint = true;
-            }
-            if (officialFailsConstraint && res.matchedCountry.alias_capitale_ufficiali) {
-                let offCapAlias = res.matchedCountry.alias_capitale_ufficiali.find(c => {
-                    let cLow = c.toLowerCase();
-                    let s = currentTurnData.reqCapInit ? cLow.startsWith(currentTurnData.reqCapInit.toLowerCase()) : true;
-                    let e = currentTurnData.reqCapFin ? cLow.endsWith(currentTurnData.reqCapFin.toLowerCase()) : true;
-                    return s && e;
-                });
-                if (offCapAlias) cName = capitalize(offCapAlias);
-            }
-            cName = cName.replace(/\*/g, '');
-        }
+        let dName = getBestDisplayName(res.matchedCountry, inputStr, currentTurnData.reqInit);
+        let cName = isCapitalReq ? getBestDisplayCapital(res.matchedCountry, inputStr, currentTurnData.reqCapInit, currentTurnData.reqCapFin) : "";
 
         // FIX SINTASSI: Usa i backtick normali e le variabili pulite!
         let nomeInserito = isCapitalReq ? `${cName} (${dName})` : dName;
@@ -2233,7 +2254,17 @@ function eseguiValidazioneMultipla(isTimeout = false) {
         let res = checkSingleAnswer(ans, currentTurnData, currentLevel);
         if (res.isCorrect) {
             if (matchedSiglas.includes(res.matchedCountry.sigla)) allCorrect = false; 
-            else { matchedSiglas.push(res.matchedCountry.sigla); matchedCountriesInfos.push(res); }
+            else { 
+                matchedSiglas.push(res.matchedCountry.sigla); 
+                matchedCountriesInfos.push(res); 
+                
+                // --- DINAMICA ALIAS SEGRETO PER LE COMBO ---
+                if (currentTurnData.validSiglas && !currentTurnData.validSiglas.includes(res.matchedCountry.sigla)) {
+                    currentTurnData.validSiglas.push(res.matchedCountry.sigla);
+                    currentTurnData.maxPossible++; // Aumenta il divisore per abbassare il punteggio
+                }
+                // ------------------------------------------
+            }
         } else allCorrect = false; 
     }
 
@@ -2357,37 +2388,21 @@ function eseguiValidazioneMultipla(isTimeout = false) {
         else if (currentTurnData.isComboInception && (currentTurnData.format === 0 || currentTurnData.format === 10)) isCapitalRequired = true;
 
         if (isCapitalRequired) {
-            arrayNomiTrovati = matchedCountriesInfos.map(info => `${getPrintedCapital(info.matchedCountry, info.matchedCapitalStr)} (${getPrintedName(info.matchedCountry, info.matchedNameStr)})`);
-            arrayNomiPrimariTrovati = matchedCountriesInfos.map(info => {
-                let country = info.matchedCountry; let pNameBase = capitalize(country.nome);
-                if (currentTurnData.reqInit && !country.nome.toLowerCase().startsWith(currentTurnData.reqInit.toLowerCase())) {
-                    let offAlias = country.alias_paese_ufficiali.find(a => a.toLowerCase().startsWith(currentTurnData.reqInit.toLowerCase()));
-                    if (offAlias) pNameBase = capitalize(offAlias);
-                }
-                let cName = capitalize(country.capitale); let textMatchBase = false; let cnLower = country.capitale ? country.capitale.toLowerCase() : "";
-                if (currentTurnData.reqCapInit && cnLower.startsWith(currentTurnData.reqCapInit.toLowerCase())) textMatchBase = true;
-                if (currentTurnData.format === 6 && cnLower) {
-                    let starts = currentTurnData.reqCapInit ? cnLower.startsWith(currentTurnData.reqCapInit.toLowerCase()) : true;
-                    let ends = currentTurnData.reqCapFin ? cnLower.endsWith(currentTurnData.reqCapFin.toLowerCase()) : true;
-                    if (starts && ends) textMatchBase = true;
-                }
-                if (!textMatchBase && country.alias_capitale_ufficiali) {
-                    let offCapAlias = country.alias_capitale_ufficiali.find(c => { let cLow = c.toLowerCase(); let s = currentTurnData.reqCapInit ? cLow.startsWith(currentTurnData.reqCapInit.toLowerCase()) : true; let e = currentTurnData.reqCapFin ? cLow.endsWith(currentTurnData.reqCapFin.toLowerCase()) : true; return s && e; });
-                    if (offCapAlias) cName = capitalize(offCapAlias);
-                }
-                return `${cName} (${pNameBase})`;
+            arrayNomiTrovati = matchedCountriesInfos.map((info, idx) => {
+                let inputUtente = comboInserted[idx];
+                let capStr = getBestDisplayCapital(info.matchedCountry, inputUtente, currentTurnData.reqCapInit, currentTurnData.reqCapFin);
+                let nameStr = getBestDisplayName(info.matchedCountry, inputUtente, currentTurnData.reqInit);
+                return `\({capStr} (\){nameStr})`;
             });
+            arrayNomiPrimariTrovati = arrayNomiTrovati;
         } else {
-            arrayNomiTrovati = matchedCountriesInfos.map(info => getPrintedName(info.matchedCountry, info.matchedNameStr));
-            arrayNomiPrimariTrovati = matchedCountriesInfos.map(info => {
-                let pNameBase = capitalize(info.matchedCountry.nome);
-                if (currentTurnData.reqInit && !info.matchedCountry.nome.toLowerCase().startsWith(currentTurnData.reqInit.toLowerCase())) {
-                    let offAlias = info.matchedCountry.alias_paese_ufficiali.find(a => a.toLowerCase().startsWith(currentTurnData.reqInit.toLowerCase()));
-                    if (offAlias) pNameBase = capitalize(offAlias);
-                }
-                return pNameBase;
+            arrayNomiTrovati = matchedCountriesInfos.map((info, idx) => {
+                let inputUtente = comboInserted[idx];
+                return getBestDisplayName(info.matchedCountry, inputUtente, currentTurnData.reqInit);
             });
+            arrayNomiPrimariTrovati = arrayNomiTrovati;
         }
+
         nomiTrovati = arrayNomiTrovati.join(", ");
 
         let isEndlessTrig = false;
