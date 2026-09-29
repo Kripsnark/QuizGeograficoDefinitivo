@@ -2192,10 +2192,15 @@ function processaRisposta() {
                 badgeText = `<span style="color:#4caf50; font-size:16px;">🏆 VITTORIA! Livello Superato!</span><br>` + badgeText;
                 badgeBorder = "#4caf50";
             }
-            UI.mostraSuccesso(null, nomeInserito, badgeText, badgeBorder);
+            // Assegna il punteggio corretto tranne che per il Livello 6
+            let ptiVittoria = currentLevel === 6 ? null : puntiGuadagnati;
+            UI.mostraSuccesso(ptiVittoria, nomeInserito, badgeText, badgeBorder);
+            
             window.pendingVictory = true;
             nextBtn.innerText = "VAI AI RISULTATI ➔";
-        } else if (isEndlessTrig) {
+        }
+        
+	else if (isEndlessTrig) {
             if (currentLevel === 0) {
                 badgeText = `<span style="color:#4caf50; font-size:16px;">🎓 LIVELLO COMPLETATO!</span><br>` + badgeText;
                 badgeBorder = "#4caf50";
@@ -2392,7 +2397,7 @@ function eseguiValidazioneMultipla(isTimeout = false) {
                 let inputUtente = comboInserted[idx];
                 let capStr = getBestDisplayCapital(info.matchedCountry, inputUtente, currentTurnData.reqCapInit, currentTurnData.reqCapFin);
                 let nameStr = getBestDisplayName(info.matchedCountry, inputUtente, currentTurnData.reqInit);
-                return `\({capStr} (\){nameStr})`;
+                return capStr + " (" + nameStr + ")"; 
             });
             arrayNomiPrimariTrovati = arrayNomiTrovati;
         } else {
