@@ -1010,8 +1010,8 @@ td.buildQuestionText = (num) => {
             
             let allowSmartNeg = lvlCheckNeg;
             
-            // FIX PALETTO INVISIBILE: Disabilita i vincoli negativi per domande dirette e confini
-            if ([0, 1, 9, 10].includes(td.format)) allowSmartNeg = false;
+            // FIX PALETTO INVISIBILE: Disabilita i vincoli negativi per domande dirette, confini e multi-variabili visive
+            if ([0, 1, 9, 10, 11, 12].includes(td.format)) allowSmartNeg = false;
             
             if (tempValid.length > 1 && allowSmartNeg && !td.disableSmartNeg && Math.random() < negProb) {
                 let possibleNegColors = new Set();
@@ -3040,7 +3040,7 @@ if (SpeechRecognition) {
             let grammarList = new SpeechGrammarList();
             let grammar = '#JSGF V1.0; grammar geo; public  = ' + paroleValide.join(' | ') + ' ;';
             grammarList.addFromString(grammar, 1);
-            assistantRec.grammars = grammarList;
+            //	assistantRec.grammars = grammarList;
         }
     } catch (e) {
         console.log("Grammatica chiusa ignorata dal browser.");
