@@ -68,11 +68,11 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 15px;
-    width: 85% !important; 
-    max-width: 360px !important; 
+    width: 96% !important; /* Si allarga prendendo quasi tutto lo schermo */
+    max-width: 600px !important; /* Limite alzato drasticamente per i tablet/PC */
     margin: 60px auto 20px auto !important; 
     background: #1e1e1e;
-    padding: 25px 20px;
+    padding: 25px 8px; /* Padding laterale ridotto per lasciare più spazio ai bottoni */
     border-radius: 16px;
     border: 2px solid #ffd700;
     animation: fadeIn 0.3s;
@@ -89,11 +89,33 @@ body {
 
 .custom-group { width: 100%; display: flex; flex-direction: column; gap: 8px; }
 .custom-group label { font-weight: bold; color: #ffd700; font-size: 14px; text-transform: uppercase; }
-.custom-options { display: flex; gap: 10px; flex-wrap: wrap; }
-.custom-opt-btn {
-    flex: 1; background: #2a2a2a; border: 1px solid #555; color: #ccc;
-    padding: 10px; border-radius: 4px; cursor: pointer; text-align: center; font-weight: bold; font-size: 13px;
+.custom-options { 
+    display: flex; 
+    gap: 5px; /* Spazio ridotto tra i pulsanti per recuperare larghezza */
+    flex-wrap: nowrap; /* IMPEDISCE di andare a capo, forza tutto su una riga */
+    width: 100%;
 }
+
+.custom-opt-btn {
+    flex: 1; /* Costringe i pulsanti ad allargarsi equamente */
+    background: #2a2a2a; 
+    border: 1px solid #555; 
+    color: #ccc;
+    padding: 10px 0px; /* Rimosso il padding laterale per farli stare tutti */
+    border-radius: 4px; 
+    cursor: pointer; 
+    text-align: center; 
+    font-weight: bold; 
+    font-size: 13px;    white-space: nowrap; /* Il testo dentro i pulsanti non andrà a capo */
+    overflow: hidden;
+}
+
+/* Regola specifica per restringere ancora un po' il testo della riga dei 5 continenti */
+.custom-opt-btn.cont-btn {
+    font-size: 13px; 
+    letter-spacing: -0.5px;
+}
+
 .custom-opt-btn.selected { background: #ffd700; color: #121212; border-color: #ffd700; }
 .custom-opt-btn.cont-btn.selected { background: #4caf50; color: #fff; border-color: #4caf50; }
 
@@ -202,4 +224,15 @@ table.db-table th.sticky-col { z-index: 4; background-color: #333 !important; }
     #bandiera-container { margin-bottom: 10px; }
     #bandiera-img { max-width: 120px; } 
     #input-area { gap: 12px; }
+}
+
+/* --- FIX LARGHEZZA E ALLINEAMENTO LIVELLO 6 --- */
+#l6-setup-screen > div {
+    width: 100%; /* Forza i blocchi del L6 ad allargarsi fino ai bordi */
+    box-sizing: border-box;
+}
+
+#l6-setup-screen p {
+    text-align: left; /* Assicura che le etichette siano allineate a sinistra */
+    width: 100%;
 }
