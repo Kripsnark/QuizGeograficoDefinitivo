@@ -3033,8 +3033,8 @@ window.innescaMicrofonoConDing = function() {
     if (assistantRec && !isListening) {
         playSound("ding");
         setTimeout(() => { 
-            window.innescaMicrofonoConDing(); 
-        }, 500);
+            try { assistantRec.start(); } catch(e) {} 
+        }, 250);
     }
 };
 
@@ -3065,15 +3065,6 @@ if (SpeechRecognition) {
         console.log("Grammatica chiusa ignorata dal browser.");
     }
 
-function innescaMicrofonoConDing() {
-    if (assistantRec && !isListening) {
-        playSound("ding");
-        // Aspettiamo mezzo secondo per non far accavallare il suono con il microfono
-        setTimeout(() => { 
-            innescaMicrofonoConDing(); 
-        }, 250);
-    }
-}
     assistantRec.onstart = function() {
         isListening = true;
         let inputEl = document.getElementById("answer-input");
