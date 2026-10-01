@@ -497,13 +497,13 @@ if (bestMatches.length > 0) {
 	function generateQuestion() {
             let availableFormats = [];
             
-            if (currentLevel === 0) {
+                        if (currentLevel === 0) {
                 availableFormats = [0, 1, 7, 9, 13];
             } else if (currentLevel === 7) {
-                // IL LIVELLO SEGRETO "SENZA MANI" (Solo Nazione -> Capitale e viceversa)
-                availableFormats = [0, 1];
+                // IL LIVELLO SEGRETO "SENZA MANI" (Tutti i formati del Livello 2)
+                availableFormats = [0, 1, 2, 3, 4, 5, 6, 7, 8, 11, 12];
             } else if (currentLevel === 6) {
-                availableFormats = [configL6.formato]; // Forza il formato scelto!
+                availableFormats = [configL6.formato]; 
             } else if (currentLevel === 5) {
                 if (customConfig.stati) availableFormats.push(2, 3, 4, 5, 7, 8);
                 if (customConfig.capitali) availableFormats.push(0, 1, 6, 10);
@@ -515,9 +515,9 @@ if (bestMatches.length > 0) {
                 if (currentLevel > 1) availableFormats.push(10); 
             }
 
-            // 🛑 SE IL MICROFONO È ACCESO, RIMUOVE TUTTI I FORMATI VISIVI
+            // 🛑 SE IL MICROFONO È ACCESO, RIMUOVE SOLO LE DOMANDE CON IMMAGINI A SCHERMO
             if (voiceModeActive) {
-                availableFormats = availableFormats.filter(f => ![9, 10, 11, 12, 13].includes(f));
+                availableFormats = availableFormats.filter(f => ![9, 10, 13].includes(f));
                 if (availableFormats.length === 0) availableFormats = [0, 1]; // Rete di sicurezza
             }
 
