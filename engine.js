@@ -1156,15 +1156,24 @@ td.buildQuestionText = (num) => {
                 if ([0, 1, 9, 10].includes(format) && !td.isComboInception) {
                     td.numReq = 1; 
                 } else {
-                    // CONTA QUANTE DELLE RISPOSTE VALIDE SONO PRESENTI NELLA TUA DIFFICOLTÀ
-                    let localCount = 0;
+                    // CONTA QUANTE RISPOSTE UNICHE DIGITABILI SONO PRESENTI NELLA TUA DIFFICOLTÀ
+                    let localTypeableSet = new Set();
                     td.validSiglas.forEach(s => {
-                        if (levelDb.some(n => n.sigla === s)) localCount++;
+                        let node = levelDb.find(n => n.sigla === s);
+                        if (node) {
+                            if (isCapRequired && node.capitale) {
+                                localTypeableSet.add(normalizzaTesto(node.capitale));
+                            } else {
+                                localTypeableSet.add(normalizzaTesto(node.nome));
+                            }
+                        }
                     });
-                    if (localCount === 0) localCount = 1; // Sicurezza anti-crash
                     
-                    // IL LIMITE DELLA RICHIESTA USA localCount, MA maxPossible RESTA GLOBALE!
-                    let maxR = Math.min(limitCombo, localCount); 
+                    let maxUniche = localTypeableSet.size;
+                    if (maxUniche === 0) maxUniche = 1; // Sicurezza anti-crash
+                    
+                    // IL LIMITE DELLA RICHIESTA ORA USA I NOMI UNICI (maxUniche)
+                    let maxR = Math.min(limitCombo, maxUniche); 
                     td.numReq = Math.floor(Math.random() * maxR) + 1;
                 }
             }
@@ -2824,15 +2833,6 @@ function eseguiValidazioneMultipla(isTimeout = false) {
             }
             debugGameLog += "========================================\n";
 
-            // --- AGGIUNTA DEI RISULTATI DEL L7 ALL'UI ---
-            // (La UI non mostrava lo storico del L7 perché avevamo escluso i livelli speciali)
-            if (currentLevel === 7) {
-                if (punteggio > allTimeBestScore) allTimeBestScore = punteggio;
-                if (bestStreak > allTimeBestStreak) allTimeBestStreak = bestStreak;
-                for (let sigla in nazioniDigitateCount) { allTimeNazioniCount[sigla] = (allTimeNazioniCount[sigla] || 0) + nazioniDigitateCount[sigla]; }
-                for (let sigla in nazioniIgnorateCount) { allTimeNazioniIgnorate[sigla] = (allTimeNazioniIgnorate[sigla] || 0) + nazioniIgnorateCount[sigla]; }
-            }
-
             // --- VOCE AUTOMATICA DEI RISULTATI ---
             if (voiceModeActive) {
                 let txt = "";
@@ -3117,6 +3117,20 @@ if (SpeechRecognition) {
     assistantRec.onresult = function(event) {
         let parolaDetta = event.results[0][0].transcript.replace(/\.$/, '').trim().toLowerCase();
         
+        // --- FIX SENSIBILITÀ PAROLE CORTE E RIMOZIONE ARTICOLI ---
+        // Rimuove filler e articoli per valutare solo la radice del nome
+        const paroleInutili = [
+            "la risposta è ", "la risposta ", "risposta ", "capitale ", "nazione ", "paese ", "stato ", "è ", "dico ",
+            "il ", "lo ", "la ", "l'", "i ", "gli ", "le "
+        ];
+        
+        for (let filler of paroleInutili) {
+            if (parolaDetta.startsWith(filler)) {
+                parolaDetta = parolaDetta.substring(filler.length).trim();
+                break; 
+            }
+        }
+        
         // INTERCETTAZIONE MENU PRINCIPALE E LIVELLO SEGRETO
         if (document.getElementById("start-screen").style.display !== "none") {
             if (parolaDetta.includes("senza mani")) {
@@ -3125,7 +3139,6 @@ if (SpeechRecognition) {
                 });
             }
             else if (parolaDetta.includes("zero") || parolaDetta.includes("0")) startGame(0);
-            // ... (il resto rimane uguale, uno, due, tre, ecc.)
             else if (parolaDetta.includes("uno") || parolaDetta.includes("1")) startGame(1);
             else if (parolaDetta.includes("due") || parolaDetta.includes("2")) startGame(2);
             else if (parolaDetta.includes("tre") || parolaDetta.includes("3")) startGame(3);
