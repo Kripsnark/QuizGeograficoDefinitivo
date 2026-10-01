@@ -497,13 +497,13 @@ if (bestMatches.length > 0) {
 	function generateQuestion() {
             let availableFormats = [];
             
-                        if (currentLevel === 0) {
+            if (currentLevel === 0) {
                 availableFormats = [0, 1, 7, 9, 13];
             } else if (currentLevel === 7) {
-                // IL LIVELLO SEGRETO "SENZA MANI" (Tutti i formati del Livello 2)
-                availableFormats = [0, 1, 2, 3, 4, 5, 6, 7, 8, 11, 12];
+                // IL LIVELLO SEGRETO "SENZA MANI" (Solo Nazione -> Capitale e viceversa)
+                availableFormats = [0, 1];
             } else if (currentLevel === 6) {
-                availableFormats = [configL6.formato]; 
+                availableFormats = [configL6.formato]; // Forza il formato scelto!
             } else if (currentLevel === 5) {
                 if (customConfig.stati) availableFormats.push(2, 3, 4, 5, 7, 8);
                 if (customConfig.capitali) availableFormats.push(0, 1, 6, 10);
@@ -515,9 +515,10 @@ if (bestMatches.length > 0) {
                 if (currentLevel > 1) availableFormats.push(10); 
             }
 
-            // 🛑 SE IL MICROFONO È ACCESO, RIMUOVE SOLO LE DOMANDE CON IMMAGINI A SCHERMO
+            // 🛑 SE IL MICROFONO È ACCESO, RIMUOVE TUTTI I FORMATI VISIVI
             if (voiceModeActive) {
-                availableFormats = availableFormats.filter(f => ![9, 10, 13].includes(f));
+                availableFormats = availableFormats.filter(f => ![9, 10, 11, 12, 13].includes(f));
+                if (availableFormats.length === 0) availableFormats = [0, 1]; // Rete di sicurezza
             }
 
             let format = availableFormats[Math.floor(Math.random() * availableFormats.length)];
@@ -2596,13 +2597,31 @@ function eseguiValidazioneMultipla(isTimeout = false) {
             gameOverScreen.style.display = "flex";
             
             let avgTime = totalAnswersSubmitted > 0 ? (totalActiveTimeMs / totalAnswersSubmitted / 1000).toFixed(1) : "0.0";
-            let avgTimeFloat = parseFloat(avgTime);
-            document.getElementById("final-avg-time").innerText = avgTime + "s";
-            
-            globalPlays++;
-            statsByLevel[currentLevel].plays++;
-            
-            let isNewRecord = false;
+            // --- VOCE AUTOMATICA DEI RISULTATI ---
+            if (voiceModeActive) {
+                let txt = "";
+                if (isVictory) {
+                    if (currentLevel === 6) txt = "Incredibile. Hai completato l'intero database.";
+                    else txt = "Vittoria! Hai superato il livello.";
+                } else {
+                    txt = "Game over.";
+                }
+
+                if (currentLevel === 6) {
+                    txt += " Hai indovinato " + esatte + " nazioni su " + levelDb.length + ".";
+                } else {
+                    txt += " Hai totalizzato " + punteggio + " punti con " + esatte + " risposte esatte.";
+                }
+                
+                setTimeout(() => { 
+                    parla(txt, function() {
+                        let btn = document.getElementById("assistant-btn");
+                        if(btn) btn.style.transform = "scale(1)";
+                        isListening = false;
+                    }); 
+                }, 1000); 
+            }
+
             if (punteggio > statsByLevel[currentLevel].bestScore && punteggio > 0) {
                 statsByLevel[currentLevel].bestScore = punteggio;
                 isNewRecord = true;
@@ -2839,6 +2858,40 @@ function eseguiValidazioneMultipla(isTimeout = false) {
                 if (document.activeElement !== inputEl) {
                     inputEl.focus();
                 }
+            }
+// --- AGGIUNTA DEI RISULTATI DEL L7 ALL'UI ---
+            // (La UI non mostrava lo storico del L7 perché avevamo escluso i livelli speciali)
+            if (currentLevel === 7) {
+                if (punteggio > allTimeBestScore) allTimeBestScore = punteggio;
+                if (bestStreak > allTimeBestStreak) allTimeBestStreak = bestStreak;
+                for (let sigla in nazioniDigitateCount) { allTimeNazioniCount[sigla] = (allTimeNazioniCount[sigla] || 0) + nazioniDigitateCount[sigla]; }
+                for (let sigla in nazioniIgnorateCount) { allTimeNazioniIgnorate[sigla] = (allTimeNazioniIgnorate[sigla] || 0) + nazioniIgnorateCount[sigla]; }
+            }
+
+            // --- VOCE AUTOMATICA DEI RISULTATI ---
+            if (voiceModeActive) {
+                let txt = "";
+                if (isVictory) {
+                    if (currentLevel === 6) txt = "Straordinario. Hai completato il database. ";
+                    else txt = "Vittoria! ";
+                } else {
+                    txt = "Game over. ";
+                }
+
+                if (currentLevel === 6) {
+                    txt += "Hai indovinato " + esatte + " nazioni su " + levelDb.length + ".";
+                } else {
+                    txt += "Hai totalizzato " + punteggio + " punti con " + esatte + " risposte esatte.";
+                }
+                
+                // Legge i risultati e si ferma (non riapre il microfono)
+                setTimeout(() => { 
+                    parla(txt, function() {
+                        let btn = document.getElementById("assistant-btn");
+                        if(btn) btn.style.transform = "scale(1)";
+                        isListening = false;
+                    }); 
+                }, 1000); 
             }
         });
 
@@ -3172,7 +3225,7 @@ if (!window.voiceHooksAdded) {
         origSurrenderTurn();
         if (voiceModeActive) {
             if (window.pendingDefeat) {
-                setTimeout(() => parla("Ti sei arreso. Hai perso. Partita terminata."), 200);
+                setTimeout(() => nextTurnMulti(), 800); // Salta subito ai risultati
             } else {
                 let correctAns = currentTurnData.validAnswersCache[0].split(" (")[0];
                 setTimeout(() => {
@@ -3190,12 +3243,12 @@ if (!window.voiceHooksAdded) {
         origFailStandard(wrongInput);
         if (voiceModeActive) {
             if (window.pendingDefeat) {
-                setTimeout(() => parla("Hai perso. Partita terminata."), 200);
+                setTimeout(() => nextTurnMulti(), 800); // Salta subito ai risultati
             } else {
                 let correctAns = currentTurnData.validAnswersCache[0].split(" (")[0];
                 setTimeout(() => {
                     parla("Sbagliato, era " + correctAns, function() {
-                        setTimeout(() => nextTurnMulti(), 300); // Ritardo extra prima di girare pagina
+                        setTimeout(() => nextTurnMulti(), 300); 
                     });
                 }, 200);
             }
@@ -3208,7 +3261,7 @@ if (!window.voiceHooksAdded) {
         origFailMulti(reason, wrongInput);
         if (voiceModeActive) {
             if (window.pendingDefeat) {
-                setTimeout(() => parla("Hai perso. Partita terminata."), 200);
+                setTimeout(() => nextTurnMulti(), 800); // Salta subito ai risultati
             } else {
                 setTimeout(() => {
                     parla("Sbagliato.", function() {
