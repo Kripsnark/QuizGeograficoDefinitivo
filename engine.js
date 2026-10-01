@@ -500,10 +500,10 @@ if (bestMatches.length > 0) {
             if (currentLevel === 0) {
                 availableFormats = [0, 1, 7, 9, 13];
             } else if (currentLevel === 7) {
-                // IL LIVELLO SEGRETO "SENZA MANI" (Solo Nazione -> Capitale e viceversa)
-                availableFormats = [0, 1];
+                // IL LIVELLO SEGRETO "SENZA MANI" (Tutti i formati testuali del Livello 2)
+                availableFormats = [0, 1, 2, 3, 4, 5, 6, 7, 8, 11, 12];
             } else if (currentLevel === 6) {
-                availableFormats = [configL6.formato]; // Forza il formato scelto!
+                availableFormats = [configL6.formato]; 
             } else if (currentLevel === 5) {
                 if (customConfig.stati) availableFormats.push(2, 3, 4, 5, 7, 8);
                 if (customConfig.capitali) availableFormats.push(0, 1, 6, 10);
@@ -515,10 +515,10 @@ if (bestMatches.length > 0) {
                 if (currentLevel > 1) availableFormats.push(10); 
             }
 
-            // 🛑 SE IL MICROFONO È ACCESO, RIMUOVE TUTTI I FORMATI VISIVI
+            // 🛑 SE IL MICROFONO È ACCESO, RIMUOVE SOLO LE DOMANDE CON IMMAGINI A SCHERMO
             if (voiceModeActive) {
-                availableFormats = availableFormats.filter(f => ![9, 10, 11, 12, 13].includes(f));
-                if (availableFormats.length === 0) availableFormats = [0, 1]; // Rete di sicurezza
+                availableFormats = availableFormats.filter(f => ![9, 10, 13].includes(f));
+                if (availableFormats.length === 0) availableFormats = [0, 1]; // ⚠️ La rete di sicurezza vitale!
             }
 
             let format = availableFormats[Math.floor(Math.random() * availableFormats.length)];
@@ -2597,36 +2597,23 @@ function eseguiValidazioneMultipla(isTimeout = false) {
             gameOverScreen.style.display = "flex";
             
             let avgTime = totalAnswersSubmitted > 0 ? (totalActiveTimeMs / totalAnswersSubmitted / 1000).toFixed(1) : "0.0";
-            // --- VOCE AUTOMATICA DEI RISULTATI ---
-            if (voiceModeActive) {
-                let txt = "";
-                if (isVictory) {
-                    if (currentLevel === 6) txt = "Incredibile. Hai completato l'intero database.";
-                    else txt = "Vittoria! Hai superato il livello.";
-                } else {
-                    txt = "Game over.";
-                }
-
-                if (currentLevel === 6) {
-                    txt += " Hai indovinato " + esatte + " nazioni su " + levelDb.length + ".";
-                } else {
-                    txt += " Hai totalizzato " + punteggio + " punti con " + esatte + " risposte esatte.";
-                }
-                
-                setTimeout(() => { 
-                    parla(txt, function() {
-                        let btn = document.getElementById("assistant-btn");
-                        if(btn) btn.style.transform = "scale(1)";
-                        isListening = false;
-                    }); 
-                }, 1000); 
-            }
-
-            if (punteggio > statsByLevel[currentLevel].bestScore && punteggio > 0) {
-                statsByLevel[currentLevel].bestScore = punteggio;
-                isNewRecord = true;
-            }
-            if (bestStreak > statsByLevel[currentLevel].bestStreak) statsByLevel[currentLevel].bestStreak = bestStreak;
+        let avgTimeFloat = parseFloat(avgTime);
+        document.getElementById("final-avg-time").innerText = avgTime + "s";
+        
+        // FIX CRITICO: Inizializza le statistiche del livello se non esistono (es. Livello 7)
+        if (!statsByLevel[currentLevel]) {
+            statsByLevel[currentLevel] = { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0, fotofinish: 0, grazie: 0 };
+        }
+        
+        globalPlays++;
+        statsByLevel[currentLevel].plays++;
+        
+        let isNewRecord = false;
+        if (punteggio > statsByLevel[currentLevel].bestScore && punteggio > 0) {
+            statsByLevel[currentLevel].bestScore = punteggio;
+            isNewRecord = true;
+        }
+        if (bestStreak > statsByLevel[currentLevel].bestStreak) statsByLevel[currentLevel].bestStreak = bestStreak;
             
             // FIX RECORD TEMPO: Evita i record falsati. Si aggiorna solo se fai almeno 5 risposte esatte.
             if (avgTimeFloat > 0 && esatte >= 5) {
@@ -2835,31 +2822,8 @@ function eseguiValidazioneMultipla(isTimeout = false) {
                 debugGameLog += "Top 20 Ignorate: " + (logIgnorate.length > 0 ? logIgnorate.map(i => i.nome + " (" + i.count + ")").join(", ") : "Nessuna") + "\n";
             }
             debugGameLog += "========================================\n";
-        }
 
-	document.addEventListener("keydown", function(event) {
-            if (document.getElementById("input-area").style.display !== "flex") return;
-
-            if (event.key === "Enter") {
-                if (document.getElementById("continua-btn").style.display === "block") {
-                    continuaSfida();
-                    event.preventDefault();
-                } else if (nextBtn.style.display === "block") {
-                    nextTurnMulti(); 
-                    event.preventDefault(); 
-                } else if (!inputEl.disabled && errPanel.style.display !== "flex") {
-                    processaRisposta(); 
-                    event.preventDefault();
-                }
-                return;
-            }
-
-            if (event.key.length === 1 && !event.ctrlKey && !event.altKey && !event.metaKey && !inputEl.disabled) {
-                if (document.activeElement !== inputEl) {
-                    inputEl.focus();
-                }
-            }
-// --- AGGIUNTA DEI RISULTATI DEL L7 ALL'UI ---
+            // --- AGGIUNTA DEI RISULTATI DEL L7 ALL'UI ---
             // (La UI non mostrava lo storico del L7 perché avevamo escluso i livelli speciali)
             if (currentLevel === 7) {
                 if (punteggio > allTimeBestScore) allTimeBestScore = punteggio;
@@ -2893,7 +2857,30 @@ function eseguiValidazioneMultipla(isTimeout = false) {
                     }); 
                 }, 1000); 
             }
-        });
+        } // <--- QUESTA È LA PARENTESI CHE CHIUDE POPOLAGAMEOVER
+
+	document.addEventListener("keydown", function(event) {
+            if (document.getElementById("input-area").style.display !== "flex") return;
+
+            if (event.key === "Enter") {
+                if (document.getElementById("continua-btn").style.display === "block") {
+                    continuaSfida();
+                    event.preventDefault();
+                } else if (nextBtn.style.display === "block") {
+                    nextTurnMulti(); 
+                    event.preventDefault(); 
+                } else if (!inputEl.disabled && errPanel.style.display !== "flex") {
+                    processaRisposta(); 
+                    event.preventDefault();
+                }
+                return;
+            }
+
+            if (event.key.length === 1 && !event.ctrlKey && !event.altKey && !event.metaKey && !inputEl.disabled) {
+                if (document.activeElement !== inputEl) {
+                    inputEl.focus();
+                }
+            }
 
 	function terminaPartitaVolontaria() {
             let conf = confirm("Vuoi davvero terminare la partita e salvare i tuoi record?");
