@@ -518,7 +518,6 @@ if (bestMatches.length > 0) {
             // 🛑 SE IL MICROFONO È ACCESO, RIMUOVE SOLO LE DOMANDE CON IMMAGINI A SCHERMO
             if (voiceModeActive) {
                 availableFormats = availableFormats.filter(f => ![9, 10, 13].includes(f));
-                if (availableFormats.length === 0) availableFormats = [0, 1]; // Rete di sicurezza
             }
 
             let format = availableFormats[Math.floor(Math.random() * availableFormats.length)];
