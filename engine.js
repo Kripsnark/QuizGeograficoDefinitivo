@@ -2629,6 +2629,7 @@ function eseguiValidazioneMultipla(isTimeout = false) {
                 esatte: esatte,
                 log: debugGameLog
             };
+            if (!recentGamesHistory[currentLevel]) recentGamesHistory[currentLevel] = []; // Salvavita per i vecchi salvataggi
             recentGamesHistory[currentLevel].unshift(gameRecord); // Inserisce in cima
             if (recentGamesHistory[currentLevel].length > 5) {
                 recentGamesHistory[currentLevel].pop(); // Mantiene solo le ultime 5
@@ -2881,7 +2882,7 @@ function eseguiValidazioneMultipla(isTimeout = false) {
                     inputEl.focus();
                 }
             }
-	});
+        })
 
 	function terminaPartitaVolontaria() {
             let conf = confirm("Vuoi davvero terminare la partita e salvare i tuoi record?");
@@ -2988,6 +2989,7 @@ document.addEventListener("visibilitychange", async () => {
         try { wakeLock = await navigator.wakeLock.request('screen'); } catch(e){}
     }
 });
+
 
 function creaBottoneAssistente() {
     let oldBtn = document.getElementById("assistant-btn");
