@@ -275,7 +275,7 @@ if (bestMatches.length > 0) {
 	window.startLevel6Game = function() {
             document.body.style.overscrollBehavior = "none"; 
             currentLevel = 6;
-            vite = 100; 
+            vite = 1; 
             
             // 1. Assegna il formato corretto per il motore logico
             if (configL6.argomento === 'bandiere') configL6.formato = 9;  // Bandiera -> Nazione
