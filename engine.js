@@ -2881,7 +2881,7 @@ function eseguiValidazioneMultipla(isTimeout = false) {
                     inputEl.focus();
                 }
             }
-
+	}
 	function terminaPartitaVolontaria() {
             let conf = confirm("Vuoi davvero terminare la partita e salvare i tuoi record?");
             if (conf) {
