@@ -2987,7 +2987,7 @@ document.addEventListener("visibilitychange", async () => {
         try { wakeLock = await navigator.wakeLock.request('screen'); } catch(e){}
     }
 });
-
+}
 
 function creaBottoneAssistente() {
     let oldBtn = document.getElementById("assistant-btn");
