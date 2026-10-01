@@ -2,6 +2,7 @@
 // Gestione dei salvataggi, statistiche locali, backup e impostazioni (vibrazione)
 
 let vibrationEnabled = true;
+let voiceSpeed = 1.1; // Velocità di default
 
 function toggleVibration() {
     vibrationEnabled = !vibrationEnabled;
@@ -17,12 +18,18 @@ function triggerVibration(pattern) {
     }
 }
 
+window.updateVoiceSpeed = function(val) {
+    voiceSpeed = parseFloat(val);
+    document.getElementById('voice-speed-label').innerText = voiceSpeed.toFixed(1) + 'x';
+    saveStats();
+};
+
 let allTimeBestScore = 0; let allTimeBestStreak = 0;
 let allTimeFotofinish = 0; let allTimeGrazie = 0;
 let allTimeNazioniCount = {}; let allTimeNazioniIgnorate = {}; 
 let allTimeBestAvgTime = 0;
 let globalPlays = 0;
-let recentGamesHistory = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [] };
+let recentGamesHistory = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [] }; // Aggiunti livelli 6 e 7
 
 let statsByLevel = {
     0: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 },
@@ -47,9 +54,8 @@ function loadStats() {
         if (data.statsByLevel) { statsByLevel = Object.assign({}, statsByLevel, data.statsByLevel); }
         globalPlays = data.globalPlays || 0;
         if (data.recentGamesHistory) { recentGamesHistory = data.recentGamesHistory; }
-        if (data.vibrationEnabled !== undefined) {
-            vibrationEnabled = data.vibrationEnabled;
-        }
+        if (data.vibrationEnabled !== undefined) vibrationEnabled = data.vibrationEnabled;
+        if (data.voiceSpeed !== undefined) voiceSpeed = data.voiceSpeed; // AGGIUNTO
     }
     let btn = document.getElementById("vibe-toggle");
     if (btn) btn.innerText = vibrationEnabled ? "📳" : "📴";
@@ -67,7 +73,8 @@ function saveStats() {
         statsByLevel: statsByLevel,
         globalPlays: globalPlays,
         recentGamesHistory: recentGamesHistory,
-        vibrationEnabled: vibrationEnabled
+        vibrationEnabled: vibrationEnabled,
+        voiceSpeed: voiceSpeed // AGGIUNTO
     };
     localStorage.setItem('geoQuizStats', JSON.stringify(data));
 }

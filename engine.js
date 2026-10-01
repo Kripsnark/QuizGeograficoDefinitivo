@@ -28,7 +28,8 @@ const EffettiSonori = {
     errore: new Audio("suoni/errore.wav"),
     battito: new Audio("suoni/battito.wav"),
     sconfitta: new Audio("suoni/sconfitta.mp3"),
-    vittoria: new Audio("suoni/vittoria.mp3")
+    vittoria: new Audio("suoni/vittoria.mp3"),
+    ding: new Audio("suoni/ding.wav")
 };
 
 // Funzione per riprodurre un suono
@@ -191,6 +192,12 @@ if (bestMatches.length > 0) {
         function startGame(lvl) {
             document.body.style.overscrollBehavior = "none"; 
             currentLevel = lvl;
+            // Se è il Livello 7 Segreto, usa il bacino di Nazioni del Livello 2
+            if (lvl === 7) {
+                levelDb = globalDb.filter(n => n.livello <= 2);
+            } else {
+                levelDb = globalDb.filter(n => n.livello <= (lvl === 0 ? 2 : (lvl === 5 ? 3 : lvl))); 
+            }
             levelDb = globalDb.filter(n => n.livello <= (lvl === 0 ? 2 : (lvl === 5 ? 3 : lvl))); 
             
             vite = 3; 
@@ -268,7 +275,7 @@ if (bestMatches.length > 0) {
 	window.startLevel6Game = function() {
             document.body.style.overscrollBehavior = "none"; 
             currentLevel = 6;
-            vite = 1; 
+            vite = 100; 
             
             // 1. Assegna il formato corretto per il motore logico
             if (configL6.argomento === 'bandiere') configL6.formato = 9;  // Bandiera -> Nazione
@@ -492,6 +499,9 @@ if (bestMatches.length > 0) {
             
             if (currentLevel === 0) {
                 availableFormats = [0, 1, 7, 9, 13];
+            } else if (currentLevel === 7) {
+                // IL LIVELLO SEGRETO "SENZA MANI" (Solo Nazione -> Capitale e viceversa)
+                availableFormats = [0, 1];
             } else if (currentLevel === 6) {
                 availableFormats = [configL6.formato]; // Forza il formato scelto!
             } else if (currentLevel === 5) {
@@ -503,6 +513,12 @@ if (bestMatches.length > 0) {
             } else {
                 availableFormats = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12]; 
                 if (currentLevel > 1) availableFormats.push(10); 
+            }
+
+            // 🛑 SE IL MICROFONO È ACCESO, RIMUOVE TUTTI I FORMATI VISIVI
+            if (voiceModeActive) {
+                availableFormats = availableFormats.filter(f => ![9, 10, 11, 12, 13].includes(f));
+                if (availableFormats.length === 0) availableFormats = [0, 1]; // Rete di sicurezza
             }
 
             let format = availableFormats[Math.floor(Math.random() * availableFormats.length)];
@@ -1847,7 +1863,7 @@ td.buildQuestionText = (num) => {
                 parla(currentTurnData.questionText, function() {
                     // Appena la voce robotica finisce di leggere la domanda, si mette in ascolto
                     if (assistantRec && !isListening) {
-                        try { assistantRec.start(); } catch(e) {}
+                        innescaMicrofonoConDing();
                     }
                 });
             }
@@ -1913,16 +1929,12 @@ td.buildQuestionText = (num) => {
                     opzioni.forEach(opz => {
                         let btn = document.createElement("button");
                         btn.className = "mc-option-btn"; 
-                        btn.style.cssText = "width:100%; padding:15px; background:#2a2a2a; color:#fff; border:2px solid #555; border-radius:8px; font-size:18px; font-weight:bold; cursor:pointer; transition: 0.2s;";
                         
                         if (currentTurnData.format === 13) {
                             btn.innerHTML = `<img src="GIF/${opz.sigla.toLowerCase()}.jpg" style="height:60px; border-radius:4px; box-shadow:0 2px 5px rgba(0,0,0,0.5);">`;
                         } else {
                             btn.innerText = opz.text;
                         }
-                        
-                        btn.onmouseover = function() { if(!inputEl.disabled) this.style.borderColor = "#ffd700"; };
-                        btn.onmouseout = function() { if(!inputEl.disabled) this.style.borderColor = "#555"; };
                         
                         btn.onclick = function() {
                             if (inputEl.disabled) return; 
@@ -1932,13 +1944,11 @@ td.buildQuestionText = (num) => {
                             }
                             
                             if (opz.isCorrect) {
-                                this.style.borderColor = "#4caf50";
-                                this.style.backgroundColor = "rgba(76, 175, 80, 0.2)";
+                                this.classList.add("correct-choice");
                             } else {
-                                this.style.borderColor = "#f44336";
-                                this.style.backgroundColor = "rgba(244, 67, 54, 0.2)";
-                                let btnCorretto = document.createElement("button");
-                                btnCorretto.style.cssText = "width:100%; padding:15px; background:rgba(76, 175, 80, 0.1); color:#4caf50; border:2px dashed #4caf50; border-radius:8px; font-size:16px; font-weight:bold; margin-top:10px; cursor:default;";
+                                this.classList.add("wrong-choice");
+                                let btnCorretto = document.createElement("div");
+                                btnCorretto.className = "mc-correct-btn";
                                 let corrOpz = opzioni.find(o => o.isCorrect);
                                 if (currentTurnData.format === 13) {
                                     btnCorretto.innerHTML = `Era questa: <br><img src="GIF/${corrOpz.sigla.toLowerCase()}.jpg" onclick="window.openFlagModal(this.src)" style="height:40px; margin-top:5px; border-radius:4px; cursor:pointer;" onerror="this.style.display='none'">`;
@@ -2082,7 +2092,6 @@ function processaRisposta() {
         // -----------------------------
 
         nazioniDigitateCount[sigla] = (nazioniDigitateCount[sigla] || 0) + 1;
-        nazioniDigitateCount[sigla] = (nazioniDigitateCount[sigla] || 0) + 1;
 
         if (currentTurnData.validSiglas && currentTurnData.validSiglas.length <= 30) {
             currentTurnData.validSiglas.forEach(s => {
@@ -2143,11 +2152,11 @@ function processaRisposta() {
             if (currentTurnData.isComboInception) {
                 let gridContainer = document.createElement("div");
                 gridContainer.id = "combo-flags-grid";
-                gridContainer.style.display = "flex"; gridContainer.style.justifyContent = "center"; gridContainer.style.marginTop = "15px";
+                gridContainer.className = "combo-flag-grid";
                 let img = document.createElement("img");
                 img.src = "GIF/" + sigla.toLowerCase() + ".jpg";
-                img.style.width = "70px"; img.style.borderRadius = "4px"; img.style.boxShadow = "0 3px 6px rgba(0,0,0,0.6)"; img.style.border = "1px solid #444";
-                img.style.cursor = "pointer"; img.onclick = function() { window.openFlagModal(this.src); };
+                img.className = "combo-flag-img";
+                img.onclick = function() { window.openFlagModal(this.src); };
                 img.onerror = function() { this.style.display = 'none'; };
                 gridContainer.appendChild(img);
                 bandieraContainer.appendChild(gridContainer);
@@ -2372,12 +2381,12 @@ function eseguiValidazioneMultipla(isTimeout = false) {
         if (currentTurnData.format === 9 || currentTurnData.format === 10) bandieraImg.style.display = "block"; else bandieraImg.style.display = "none"; 
 
         if (currentTurnData.format !== 9 && currentTurnData.format !== 10 || currentTurnData.isComboInception) {
-            let gridContainer = document.createElement("div"); gridContainer.id = "combo-flags-grid"; gridContainer.style.display = "flex"; gridContainer.style.flexDirection = "column"; gridContainer.style.gap = "10px"; gridContainer.style.alignItems = "center"; gridContainer.style.marginTop = "15px";
-            let row1 = document.createElement("div"); row1.style.display = "flex"; row1.style.gap = "10px"; row1.style.justifyContent = "center";
-            let row2 = document.createElement("div"); row2.style.display = "flex"; row2.style.gap = "10px"; row2.style.justifyContent = "center";
+            let gridContainer = document.createElement("div"); gridContainer.id = "combo-flags-grid"; gridContainer.className = "combo-flag-grid";
+            let row1 = document.createElement("div"); row1.className = "combo-flag-row";
+            let row2 = document.createElement("div"); row2.className = "combo-flag-row";
 
             matchedCountriesInfos.forEach((info, index) => {
-                let img = document.createElement("img"); img.src = "GIF/" + info.matchedCountry.sigla.toLowerCase() + ".jpg"; img.style.width = "70px"; img.style.borderRadius = "4px"; img.style.boxShadow = "0 3px 6px rgba(0,0,0,0.6)"; img.style.border = "1px solid #444"; img.style.cursor = "pointer";
+                let img = document.createElement("img"); img.src = "GIF/" + info.matchedCountry.sigla.toLowerCase() + ".jpg"; img.className = "combo-flag-img";
                 img.onclick = function() { window.openFlagModal(this.src); }; img.onerror = function() { this.style.display = 'none'; };
                 if (matchedCountriesInfos.length === 5) { if (index < 3) row1.appendChild(img); else row2.appendChild(img); } else row1.appendChild(img);
             });
@@ -2749,12 +2758,12 @@ function eseguiValidazioneMultipla(isTimeout = false) {
                 if (arr.length === 0) return `<p style="font-size:13px; color:#888;">Nessun dato</p>`;
                 let h = `<div style="display:flex; flex-direction:column;">`;
                 arr.forEach((sn, idx) => {
-                    h += `<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; height:40px;">
-                            <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:0; padding-right:8px;">
-                                <img src="GIF/${sn.sigla.toLowerCase()}.jpg" onclick="window.openFlagModal(this.src)" style="width:16px; border-radius:2px; flex-shrink:0; cursor:pointer;" onerror="this.style.display='none'">
-                                <span style="color:#ccc; font-size:12px; line-height:1.2; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; text-overflow:ellipsis;">${sn.nome.toUpperCase()}</span>
+                    h += `<div class="top5-list-item">
+                            <div class="top5-list-left">
+                                <img src="GIF/${sn.sigla.toLowerCase()}.jpg" class="top5-list-img" onclick="window.openFlagModal(this.src)" onerror="this.style.display='none'">
+                                <span class="top5-list-name">${sn.nome.toUpperCase()}</span>
                             </div>
-                            <span style="color:${color}; font-weight:bold; font-size:13px; flex-shrink:0;">${sn.count}</span>
+                            <span class="top5-list-count" style="color:${color};">${sn.count}</span>
                           </div>`;
                 });
                 return h + `</div>`;
@@ -2963,7 +2972,7 @@ function creaBottoneAssistente() {
             gestisciSchermo(true); // Tieni acceso lo schermo del telefono!
             parla("Modalità vocale attivata. Quale livello vuoi giocare?", function() {
                 if (assistantRec && !isListening) {
-                    try { assistantRec.start(); } catch(e) {}
+                    innescaMicrofonoConDing();
                 }
             });
         } else {
@@ -2987,7 +2996,7 @@ function parla(testo, callbackTermine) {
     let testoPulito = testo.replace(/<[^>]*>?/gm, '');
     let utterance = new SpeechSynthesisUtterance(testoPulito);
     utterance.lang = 'it-IT';
-    utterance.rate = 1.1; 
+    utterance.rate = voiceSpeed;
     
     window.speechUtterances.push(utterance); // Salva l'audio globalmente per ingannare la Garbage Collection
     
@@ -3019,6 +3028,16 @@ creaBottoneAssistente();
 
 let isListening = false;
 
+// Funzione globale accessibile ovunque per il DING
+window.innescaMicrofonoConDing = function() {
+    if (assistantRec && !isListening) {
+        playSound("ding");
+        setTimeout(() => { 
+            window.innescaMicrofonoConDing(); 
+        }, 500);
+    }
+};
+
 if (SpeechRecognition) {
     assistantRec = new SpeechRecognition();
     assistantRec.lang = 'it-IT';
@@ -3046,6 +3065,15 @@ if (SpeechRecognition) {
         console.log("Grammatica chiusa ignorata dal browser.");
     }
 
+function innescaMicrofonoConDing() {
+    if (assistantRec && !isListening) {
+        playSound("ding");
+        // Aspettiamo mezzo secondo per non far accavallare il suono con il microfono
+        setTimeout(() => { 
+            innescaMicrofonoConDing(); 
+        }, 250);
+    }
+}
     assistantRec.onstart = function() {
         isListening = true;
         let inputEl = document.getElementById("answer-input");
@@ -3057,9 +3085,15 @@ if (SpeechRecognition) {
     assistantRec.onresult = function(event) {
         let parolaDetta = event.results[0][0].transcript.replace(/\.$/, '').trim().toLowerCase();
         
-        // INTERCETTAZIONE MENU PRINCIPALE
+        // INTERCETTAZIONE MENU PRINCIPALE E LIVELLO SEGRETO
         if (document.getElementById("start-screen").style.display !== "none") {
-            if (parolaDetta.includes("zero") || parolaDetta.includes("0")) startGame(0);
+            if (parolaDetta.includes("senza mani")) {
+                parla("Livello segreto attivato. Nessuna distrazione visiva. Sfida di livello 2.", function() {
+                    startGame(7);
+                });
+            }
+            else if (parolaDetta.includes("zero") || parolaDetta.includes("0")) startGame(0);
+            // ... (il resto rimane uguale, uno, due, tre, ecc.)
             else if (parolaDetta.includes("uno") || parolaDetta.includes("1")) startGame(1);
             else if (parolaDetta.includes("due") || parolaDetta.includes("2")) startGame(2);
             else if (parolaDetta.includes("tre") || parolaDetta.includes("3")) startGame(3);
@@ -3076,7 +3110,7 @@ if (SpeechRecognition) {
             }
             else {
                 parla("Livello non riconosciuto. Ripeti numero.", function() {
-                    try { assistantRec.start(); } catch(e) {}
+                    innescaMicrofonoConDing();
                 });
             }
             return; 
@@ -3085,7 +3119,7 @@ if (SpeechRecognition) {
         // --- INTERCETTAZIONE NUOVI COMANDI EXTRA IN PARTITA ---
         if (parolaDetta.includes("ripeti") || parolaDetta.includes("domanda")) {
             parla(currentTurnData.questionText, function() {
-                if (assistantRec && !isListening) { try { assistantRec.start(); } catch(e){} }
+                if (assistantRec && !isListening) { window.innescaMicrofonoConDing(); }
             });
             return;
         }
@@ -3121,7 +3155,7 @@ if (SpeechRecognition) {
         
         if (voiceModeActive && !window.speechSynthesis.speaking && (gameIsActive || waitContinua) && !waitNext && !window.pendingDefeat && !window.pendingVictory) {
             setTimeout(() => {
-                try { assistantRec.start(); } catch(e) {}
+                innescaMicrofonoConDing();
             }, 100);
         } else {
             // Spegnimento effettivo se usciamo dalla partita
@@ -3240,14 +3274,14 @@ if (!window.voiceHooksAdded) {
             if (comboInserted.length > comboPrima) {
                  setTimeout(() => {
                      parla("Presa.", function() { // Sostituito "Corretto" con "Presa" per non confondere
-                         if (assistantRec && !isListening) { try { assistantRec.start(); } catch(e){} }
+                         if (assistantRec && !isListening) { window.innescaMicrofonoConDing(); }
                      });
                  }, 150);
                  return;
             }
 
             // Se non ha riconosciuto la parola o hai detto un doppione, riapre il mic silenziosamente
-            if (assistantRec && !isListening) { try { assistantRec.start(); } catch(e){} }
+            if (assistantRec && !isListening) { window.innescaMicrofonoConDing(); }
         }
     };
 }

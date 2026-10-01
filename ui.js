@@ -132,19 +132,27 @@ function closeModal() {
 
 window.openSettings = function() {
     let html = `
-    <div style="display:flex; flex-direction:column; gap:15px; text-align:center;">
-        <div style="display:flex; gap:10px; justify-content:center;">
+    <div class="settings-container">
+        <div class="menu-btn-group" style="margin-bottom: 0;">
             <button onclick="toggleVibration(); document.getElementById('btn-vibe-ui').innerText = vibrationEnabled ? '📳 VIBRAZIONE: ON' : '📴 VIBRAZIONE: OFF';" id="btn-vibe-ui" class="menu-btn" style="margin:0;">${vibrationEnabled ? '📳 VIBRAZIONE: ON' : '📴 VIBRAZIONE: OFF'}</button>
             <button onclick="toggleSuoni(); document.getElementById('btn-sound-ui').innerText = suoniAttivi ? '🔊 SUONI: ON' : '🔇 SUONI: OFF';" id="btn-sound-ui" class="menu-btn" style="margin:0;">${suoniAttivi ? '🔊 SUONI: ON' : '🔇 SUONI: OFF'}</button>
         </div>
-        <h3 style="color:#f44336; margin:10px 0 0 0; font-size:14px; text-transform:uppercase;">Gestione Dati Avanzata</h3>
-        <div style="display:flex; gap:10px; justify-content:center;">
-            <button onclick="exportBackup()" style="flex:1; background:#2a2a2a; color:#fff; border:1px solid #444; padding:10px 0; border-radius:4px; font-weight:bold; cursor:pointer;">💾 ESPORTA</button>
-            <label style="flex:1; background:#2a2a2a; color:#fff; border:1px solid #444; padding:10px 0; border-radius:4px; font-weight:bold; cursor:pointer; margin:0; display:flex; align-items:center; justify-content:center;">
+        
+        <div style="background:#2a2a2a; border:1px solid #444; border-radius:6px; padding:15px; margin-top:5px; text-align:left;">
+            <label style="color:#ffd700; font-size:12px; font-weight:bold; display:block; margin-bottom:12px;">VELOCITÀ ASSISTENTE VOCALE: <span id="voice-speed-label" style="color:#fff;">${voiceSpeed.toFixed(1)}x</span></label>
+            <input type="range" min="0.8" max="1.5" step="0.1" value="${voiceSpeed}" onchange="updateVoiceSpeed(this.value)" oninput="document.getElementById('voice-speed-label').innerText = parseFloat(this.value).toFixed(1) + 'x'" style="width:100%; cursor:pointer;">
+        </div>
+        
+        <h3 class="settings-title">Gestione Dati Avanzata</h3>
+        
+        <div class="menu-btn-group" style="margin-bottom: 0;">
+            <button onclick="exportBackup()" class="menu-btn">💾 ESPORTA</button>
+            <label class="menu-btn btn-import">
                 📂 IMPORTA <input type='file' accept='.json' style='display:none;' onchange='importBackup(event)'>
             </label>
         </div>
-        <button onclick="clearAllData()" style="background:#b71c1c; color:#fff; border:1px solid #f44336; padding:10px 0; border-radius:4px; font-weight:bold; cursor:pointer; width:100%;">🗑️ CANCELLA TUTTI I DATI</button>
+        
+        <button onclick="clearAllData()" class="menu-btn btn-danger">🗑️ CANCELLA TUTTI I DATI</button>
     </div>
     `;
     openModal("⚙️ IMPOSTAZIONI", html);
@@ -238,21 +246,17 @@ window.closeL6Setup = function() {
 window.setL6Bacino = function(val) {
     configL6.bacino = val;
     ['sprint', 'onu', 'totale'].forEach(b => {
-        let btn = document.getElementById(`opt-l6-${b}`);
-        btn.style.background = (b === val) ? "#ffd700" : "#2a2a2a";
-        btn.style.color = (b === val) ? "#121212" : "#ccc";
-        btn.style.borderColor = (b === val) ? "#ffd700" : "#444";
+        document.getElementById(`opt-l6-${b}`).classList.remove('selected');
     });
+    document.getElementById(`opt-l6-${val}`).classList.add('selected');
 };
 
 window.setL6Argomento = function(val) {
     configL6.argomento = val;
     ['bandiere', 'stati', 'capitali'].forEach(a => {
-        let btn = document.getElementById(`opt-l6-${a}`);
-        btn.style.background = (a === val) ? "#ffd700" : "#2a2a2a";
-        btn.style.color = (a === val) ? "#121212" : "#ccc";
-        btn.style.borderColor = (a === val) ? "#ffd700" : "#444";
+        document.getElementById(`opt-l6-${a}`).classList.remove('selected');
     });
+    document.getElementById(`opt-l6-${val}`).classList.add('selected');
 };
 
 window.openRecords = function(defaultTab = 'global') {
@@ -319,7 +323,7 @@ window.renderRecordTab = function(tabName) {
     else if (tabName === 'levels') {
         html += `
         <div style="display:flex; gap:5px; margin-bottom:10px; flex-wrap:wrap; justify-content:center;">
-            ${[0,1,2,3,4,5,6].map(l => `<button onclick="switchLevelTab(${l})" class="ui-tab-btn" id="lvl-btn-${l}" style="padding:6px; font-size:11px;">${l===5?'CUST':l===6?'SUDDEN':'L'+l}</button>`).join('')}
+            ${[0,1,2,3,4,5,6,7].map(l => `<button onclick="switchLevelTab(${l})" class="ui-tab-btn" id="lvl-btn-${l}" style="padding:6px; font-size:11px;">${l===5?'CUST':l===6?'SUDDEN':'L'+l}</button>`).join('')}
         </div>
         <div id="level-detail-container" style="background:#2a2a2a; border:1px solid #444; border-radius:6px; padding:15px; text-align:center;">
             <!-- Contenuto dinamico -->
@@ -362,13 +366,42 @@ window.renderRecordTab = function(tabName) {
 }
 
 window.switchLevelTab = function(lvl) {
-    for(let i=0; i<=6; i++) {
+    for(let i=0; i<=7; i++) {
         let btn = document.getElementById(`lvl-btn-${i}`);
         if(btn) { btn.style.background = (i===lvl) ? "#ffd700" : "#2a2a2a"; btn.style.color = (i===lvl) ? "#121212" : "#ccc"; }
     }
     
+    // Gestisce il caso in cui il lvl 7 (Segreto) non abbia statistiche inizializzate
+    if (!statsByLevel[lvl]) statsByLevel[lvl] = { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 };
     let s = statsByLevel[lvl];
-    let html = `<div style="display:flex; justify-content:space-around; font-size:12px; color:#aaa; margin-bottom:10px;">`;
+    
+    let html = ``;
+
+    // Calcolo Medaglia / Rank (Solo per L1, L2, L3, L4, L7)
+    if (lvl > 0 && lvl !== 5 && lvl !== 6) {
+        let rankColor = "#aaa"; let rankName = "Nessun Grado";
+        if (s.bestScore >= 10000) { rankColor = "#ffd700"; rankName = "LEGGENDA"; }
+        else if (s.bestScore >= 5000) { rankColor = "#e5e4e2"; rankName = "PLATINO"; }
+        else if (s.bestScore >= 2500) { rankColor = "#ffeb3b"; rankName = "ORO"; }
+        else if (s.bestScore >= 1000) { rankColor = "#c0c0c0"; rankName = "ARGENTO"; }
+        else if (s.bestScore > 0) { rankColor = "#cd7f32"; rankName = "BRONZO"; }
+        
+        let pctLeggenda = s.bestScore >= 10000 ? 100 : ((s.bestScore / 10000) * 100).toFixed(1);
+
+        html += `
+        <div style="background:#1a1a1a; padding:15px; border-radius:6px; border:2px solid ${rankColor}; margin-bottom:15px; text-align:center; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
+            <div style="font-size:11px; color:#aaa; text-transform:uppercase; letter-spacing:1px;">Grado Attuale</div>
+            <div style="font-size:24px; font-weight:bold; color:${rankColor}; margin-bottom:8px; text-shadow: 0 0 5px ${rankColor}40;">${rankName}</div>
+            
+            <div style="font-size:10px; color:#888; text-align:left; margin-bottom:4px;">Progresso verso Leggenda (10.000 pt)</div>
+            <div style="width:100%; height:8px; background:#222; border-radius:4px; overflow:hidden;">
+                <div style="height:100%; width:${pctLeggenda}%; background: linear-gradient(90deg, #4caf50, ${rankColor});"></div>
+            </div>
+            <div style="font-size:11px; color:#ccc; margin-top:4px; text-align:right;">${s.bestScore} / 10.000</div>
+        </div>`;
+    }
+
+    html += `<div style="display:flex; justify-content:space-around; font-size:12px; color:#aaa; margin-bottom:10px;">`;
     html += `<div style="display:flex; flex-direction:column;"><span>Partite</span><strong style="font-size:18px; color:#fff;">${s.plays}</strong></div>`;
     
     if (lvl === 6) {

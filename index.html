@@ -60,7 +60,7 @@
         </div>
 
         <div id="custom-setup-screen">
-            <h2 style="color: #ffd700; margin: 0; font-size: 18px; text-align: center;">CONFIGURA PARTITA PERSONALIZZATA</h2>
+            <h2>Configura Partita Personalizzata</h2>
             
             <div class="custom-group">
                 <label>Difficoltà (Bacino Nazioni):</label>
@@ -118,37 +118,37 @@
                 </div>
             </div>
 
-            <div style="display: flex; gap: 10px; width: 100%; margin-top: 10px;">
-                <button class="menu-btn" onclick="closeCustomSetup()" style="background: #444;">ANNULLA</button>
-                <button class="menu-btn" onclick="startCustomGame()" style="background: #4caf50; color: #fff;">GIOCA ➔</button>
+            <div class="setup-actions">
+                <button class="menu-btn btn-cancel" onclick="closeCustomSetup()">ANNULLA</button>
+                <button class="menu-btn btn-play-l5" onclick="startCustomGame()">GIOCA ➔</button>
             </div>
-        </div> <!-- ⚠️ QUESTA È LA CHIUSURA CORRETTA DELLA PARTITA PERSONALIZZATA (NON CANCELLARLA) ⚠️ -->
+        </div>
 
         <!-- SCHERMATA IMPOSTAZIONI LIVELLO 6 -->
         <div id="l6-setup-screen">
-            <h2 style="color: #9c27b0; text-align: center; text-transform: uppercase; margin-bottom: 20px; font-size: 18px;">Configura Morte Improvvisa</h2>
+            <h2>Configura Morte Improvvisa</h2>
             
-            <div style="margin-bottom: 20px;">
-                <p style="color: #ffd700; font-size: 15px; font-weight: bold; margin-bottom: 8px; text-transform: uppercase;">Bacino Nazioni (Traguardo):</p>
-                <div style="display: flex; gap: 8px;">
-                    <button id="opt-l6-sprint" onclick="setL6Bacino('sprint')" style="flex: 1; background: #ffd700; color: #121212; border: 1px solid #ffd700; padding: 12px 5px; border-radius: 4px; font-weight: bold; font-size: 13px; cursor: pointer;">Sprint (50)</button>
-                    <button id="opt-l6-onu" onclick="setL6Bacino('onu')" style="flex: 1; background: #2a2a2a; color: #ccc; border: 1px solid #444; padding: 12px 5px; border-radius: 4px; font-weight: bold; font-size: 13px; cursor: pointer;">ONU (193)</button>
-                    <button id="opt-l6-totale" onclick="setL6Bacino('totale')" style="flex: 1; background: #2a2a2a; color: #ccc; border: 1px solid #444; padding: 12px 5px; border-radius: 4px; font-weight: bold; font-size: 13px; cursor: pointer;">Totale (253)</button>
+            <div class="custom-group">
+                <label>Bacino Nazioni (Traguardo):</label>
+                <div class="custom-options">
+                    <div class="custom-opt-btn selected" id="opt-l6-sprint" onclick="setL6Bacino('sprint')">Sprint (50)</div>
+                    <div class="custom-opt-btn" id="opt-l6-onu" onclick="setL6Bacino('onu')">ONU (193)</div>
+                    <div class="custom-opt-btn" id="opt-l6-totale" onclick="setL6Bacino('totale')">Totale (253)</div>
                 </div>
             </div>
 
-            <div style="margin-bottom: 25px;">
-                <p style="color: #ffd700; font-size: 15px; font-weight: bold; margin-bottom: 8px; text-transform: uppercase;">Argomento Sfida:</p>
-                <div style="display: flex; gap: 8px;">
-                    <button id="opt-l6-bandiere" onclick="setL6Argomento('bandiere')" style="flex: 1; background: #ffd700; color: #121212; border: 1px solid #ffd700; padding: 12px 5px; border-radius: 4px; font-weight: bold; font-size: 13px; cursor: pointer;">🏳️ Bandiere</button>
-                    <button id="opt-l6-stati" onclick="setL6Argomento('stati')" style="flex: 1; background: #2a2a2a; color: #ccc; border: 1px solid #444; padding: 12px 5px; border-radius: 4px; font-weight: bold; font-size: 13px; cursor: pointer;">🏛️ Stati</button>
-                    <button id="opt-l6-capitali" onclick="setL6Argomento('capitali')" style="flex: 1; background: #2a2a2a; color: #ccc; border: 1px solid #444; padding: 12px 5px; border-radius: 4px; font-weight: bold; font-size: 13px; cursor: pointer;">🌍 Capitali</button>
+            <div class="custom-group">
+                <label>Argomento Sfida:</label>
+                <div class="custom-options">
+                    <div class="custom-opt-btn selected" id="opt-l6-bandiere" onclick="setL6Argomento('bandiere')">🏳️ Bandiere</div>
+                    <div class="custom-opt-btn" id="opt-l6-stati" onclick="setL6Argomento('stati')">🏛️ Stati</div>
+                    <div class="custom-opt-btn" id="opt-l6-capitali" onclick="setL6Argomento('capitali')">🌍 Capitali</div>
                 </div>
             </div>
 
-            <div style="display: flex; gap: 10px;">
-                <button onclick="closeL6Setup()" style="flex: 1; background: #444; color: #fff; border: none; padding: 15px; border-radius: 4px; font-weight: bold; cursor: pointer;">ANNULLA</button>
-                <button onclick="startLevel6Game()" style="flex: 1; background: #9c27b0; color: #fff; border: none; padding: 15px; border-radius: 4px; font-weight: bold; cursor: pointer;">INIZIA SFIDA ➔</button>
+            <div class="setup-actions">
+                <button class="menu-btn btn-cancel" onclick="closeL6Setup()">ANNULLA</button>
+                <button class="menu-btn btn-play-l6" onclick="startLevel6Game()">INIZIA SFIDA ➔</button>
             </div>
         </div>
         <!-- FINE SCHERMATA SETUP LIVELLO 6 -->
@@ -217,41 +217,42 @@
             
 	    <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; align-items: center; margin-top: 15px;">
     
-	    <!-- TASTO ALTO: RIGIOCA -->
-	    <button onclick="playAgain()" style="background:#2196f3; color:#fff; border:none; padding:10px 0; border-radius:4px; font-weight:bold; font-size:12px; cursor:pointer; width:200px; box-shadow:0 2px 4px rgba(0,0,0,0.3); text-transform:uppercase;">
-        🔁 Rigioca il livello
-	    </button>
+	<div class="game-over-actions">
+            <!-- TASTO ALTO: RIGIOCA -->
+            <button class="action-btn secondary" onclick="playAgain()">
+                🔁 Rigioca il livello
+            </button>
 
-	    <!-- TASTO CENTRALE: HOME (Mantieni le tue classi o stili per il blocco grigio) -->
-	    <button onclick="resetGame()" style="background:#333; color:#fff; border:1px solid #555; padding:20px; border-radius:4px; font-weight:bold; font-size:16px; cursor:pointer; width:200px; text-transform:uppercase; line-height:1.2;">
-        Ritorna<br>Alla<br>Home
-	    </button>
+            <!-- TASTO CENTRALE: HOME -->
+            <button class="action-btn primary" onclick="resetGame()">
+                Ritorna<br>Alla<br>Home
+            </button>
 
-	    <!-- TASTO BASSO: SCARICA LOG -->
-	    <button onclick="window.scaricaLog()" style="background:#2196f3; color:#fff; border:none; padding:10px 0; border-radius:4px; font-weight:bold; font-size:12px; cursor:pointer; width:200px; box-shadow:0 2px 4px rgba(0,0,0,0.3); text-transform:uppercase;">
-	        🐞 Scarica Log di Test
-	    </button>
-
-	</div>
-    </div>
-    
-    <div id="version-badge">v2.2.3</div>
-
-    <div id="modal-overlay">
-        <div id="modal-content">
-            <div id="modal-header">
-                <h2 id="modal-title">Titolo</h2>
-                <button id="modal-close" onclick="closeModal()">✖</button>
-            </div>
-            <div id="modal-body"></div>
+            <!-- TASTO BASSO: SCARICA LOG -->
+            <button class="action-btn secondary" onclick="window.scaricaLog()">
+                🐞 Scarica Log di Test
+            </button>
         </div>
-    </div>
+    </div> <!-- ⚠️ CHIUSURA DEL GAME OVER SCREEN -->
+</div> <!-- ⚠️ CHIUSURA DEL GAME CONTAINER -->
 
-	<script src="database.js"></script>
-	<script src="utils.js"></script>
-	<script src="storage.js"></script>
-	<script src="ui.js"></script>
-	<script src="engine.js"></script>
+<div id="version-badge">v2.2.4</div>
+
+<div id="modal-overlay">
+    <div id="modal-content">
+        <div id="modal-header">
+            <h2 id="modal-title">Titolo</h2>
+            <button id="modal-close" onclick="closeModal()">✖</button>
+        </div>
+        <div id="modal-body"></div>
+    </div>
+</div>
+
+<script src="database.js"></script>
+<script src="utils.js"></script>
+<script src="storage.js"></script>
+<script src="ui.js"></script>
+<script src="engine.js"></script>
 
 </body>
 </html>
