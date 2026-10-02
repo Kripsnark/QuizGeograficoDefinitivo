@@ -2858,7 +2858,7 @@ function eseguiValidazioneMultipla(isTimeout = false) {
                     }); 
                 }, 1000); 
             }
-        } // <--- QUESTA È LA PARENTESI CHE CHIUDE POPOLAGAMEOVER
+        }
 
 	document.addEventListener("keydown", function(event) {
             if (document.getElementById("input-area").style.display !== "flex") return;
@@ -3011,7 +3011,7 @@ function creaBottoneAssistente() {
             this.style.filter = "grayscale(0%) drop-shadow(0px 0px 8px #4caf50)";
             this.style.opacity = "1";
             gestisciSchermo(true); // Tieni acceso lo schermo del telefono!
-            parla("Modalità vocale attivata. Quale livello vuoi giocare?", function() {
+            parla("Modalità vocale attivata. Quale livello vuoi giocare? Dire: livello + nr", function() {
                 if (assistantRec && !isListening) {
                     innescaMicrofonoConDing();
                 }
@@ -3088,7 +3088,7 @@ if (SpeechRecognition) {
     try {
         if (SpeechGrammarList) {
             // Aggiunti i nuovi comandi alla grammatica del browser
-            let paroleValide = ["zero", "uno", "due", "tre", "quattro", "cinque", "sei", "morte improvvisa", "ripeti", "mi arrendo", "arrendo"];
+            let paroleValide = ["livello zero", "livello 0", "livello uno", "livello 1", "livello due", "livello 2", "livello tre", "livello 3", "livello quattro", "livello 4", "livello cinque", "livello 5", "livello sei", "livello 6", "morte improvvisa", "ripeti", "mi arrendo", "arrendo"];
             globalDb.forEach(n => {
                 paroleValide.push(n.nome.toLowerCase());
                 if(n.capitale) paroleValide.push(n.capitale.toLowerCase());
@@ -3100,7 +3100,7 @@ if (SpeechRecognition) {
             let grammarList = new SpeechGrammarList();
             let grammar = '#JSGF V1.0; grammar geo; public  = ' + paroleValide.join(' | ') + ' ;';
             grammarList.addFromString(grammar, 1);
-            //	assistantRec.grammars = grammarList;
+            assistantRec.grammars = grammarList;
         }
     } catch (e) {
         console.log("Grammatica chiusa ignorata dal browser.");
@@ -3134,27 +3134,27 @@ if (SpeechRecognition) {
         // INTERCETTAZIONE MENU PRINCIPALE E LIVELLO SEGRETO
         if (document.getElementById("start-screen").style.display !== "none") {
             if (parolaDetta.includes("senza mani")) {
-                parla("Livello segreto attivato. Nessuna distrazione visiva. Sfida di livello 2.", function() {
+                parla("Livello segreto attivato. Nessuna distrazione visiva.", function() {
                     startGame(7);
                 });
             }
-            else if (parolaDetta.includes("zero") || parolaDetta.includes("0")) startGame(0);
-            else if (parolaDetta.includes("uno") || parolaDetta.includes("1")) startGame(1);
-            else if (parolaDetta.includes("due") || parolaDetta.includes("2")) startGame(2);
-            else if (parolaDetta.includes("tre") || parolaDetta.includes("3")) startGame(3);
-            else if (parolaDetta.includes("quattro") || parolaDetta.includes("4")) startGame(4);
-            else if (parolaDetta.includes("cinque") || parolaDetta.includes("5")) {
+            else if (parolaDetta.includes("livello zero") || parolaDetta.includes("livello 0")) startGame(0);
+            else if (parolaDetta.includes("livello uno") || parolaDetta.includes("livello 1")) startGame(1);
+            else if (parolaDetta.includes("livello due") || parolaDetta.includes("livello 2")) startGame(2);
+            else if (parolaDetta.includes("livello tre") || parolaDetta.includes("livello 3")) startGame(3);
+            else if (parolaDetta.includes("livello quattro") || parolaDetta.includes("livello 4")) startGame(4);
+            else if (parolaDetta.includes("livello cinque") || parolaDetta.includes("livello 5")) {
                 document.getElementById("start-screen").style.display = "none";
                 document.getElementById("custom-setup-screen").style.display = "flex";
                 parla("Configura la partita e premi inizia.");
             }
-            else if (parolaDetta.includes("sei") || parolaDetta.includes("6") || parolaDetta.includes("morte")) {
+            else if (parolaDetta.includes("livello sei") || parolaDetta.includes("livello 6") || parolaDetta.includes("morte")) {
                 document.getElementById("start-screen").style.display = "none";
                 document.getElementById("l6-setup-screen").style.display = "flex";
                 parla("Configura la morte improvvisa e premi inizia.");
             }
             else {
-                parla("Livello non riconosciuto. Ripeti numero.", function() {
+                parla("Livello non riconosciuto. Pronuncia la parola Livello seguita dal numero.", function() {
                     innescaMicrofonoConDing();
                 });
             }

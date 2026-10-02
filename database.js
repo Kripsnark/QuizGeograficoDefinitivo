@@ -122,7 +122,7 @@ IL	Israele		Gerusalemme		egitto, giordania, libano, siria, mare	Asia, medio orie
 IT	Italia		Roma		san marino, città del vaticano, francia, svizzera, austria, slovenia, mare	Europa, Mediterraneo	verde, bianco, rosso				strisce verticali	1
 KZ	Kazakistan		Astana		turkmenistan, uzbekistan, kirghizistan, cina, russia	Asia, Asia Centrale	azzurro, giallo		sole, aquila, animale, uccello		lenzuolo azzurro	1
 KE	Kenya		Nairobi		somalia, etiopia, uganda, tanzania, sudan del sud, mare	africa, africa orientale	nero, rosso, verde, bianco		lancia, arma, scudo		strisce orizzontali	1
-KG	Kirghizistan		Biškek	Bishkek, Biscake	kazakistan, uzbekistan, tagikistan, cina	Asia, Asia Centrale	rosso, giallo	giallo	sole		lenzuolo rosso	2
+KG	Kirghizistan		Biškek	Bishkek, Biscake, Bistecca	kazakistan, uzbekistan, tagikistan, cina	Asia, Asia Centrale	rosso, giallo	giallo	sole		lenzuolo rosso	2
 KI	Kiribati		Tarawa Sud	Tarawa, Sud Tarawa		Oceania	rosso, blu, bianco, giallo	giallo	sole, uccello, animale			2
 XK	Kosovo		Pristina		serbia, montenegro, albania, macedonia del nord	europa, Balcani	blu, giallo	giallo, bianco	sagoma paese, stella	x	stella bianca, lenzuolo blu	3
 KW	Kuwait	Q8	Madinat al-Kuwait	Al-Kuwait, Kuwait city, Q8, Madina al Q8	iraq, arabia saudita, mare	Asia, medio oriente	nero, rosso, verde, bianco				triangolo a sinistra nero	2
@@ -145,7 +145,7 @@ ML	Mali		Bamako		algeria, niger, burkina faso, costa d'avorio, guinea, senegal, 
 MT	Malta		La Valletta	Valletta		Europa, Mediterraneo	bianco, rosso		croce simmetrica		strisce verticali	1
 MA	Marocco		Rabat		spagna, algeria, mauritania, mare	Africa, Africa settentrionale, Mediterraneo	rosso, verde	verde	stella		stella verde, lenzuolo rosso	1
 MQ	Martinica		Fort-de-France	Fort de France		nord america, caraibi	rosso, verde, nero			x	triangolo a sinistra rosso	3
-MR	Mauritania		Nouakchott	Nuakchot, No rock shot, Workshop	algeria, marocco, mali, senegal, mare	africa, africa occidentale	rosso, verde	giallo	mezzaluna, stella		strisce orizzontali, mezzaluna gialla, stella gialla	2
+MR	Mauritania		Nouakchott	Nuakchot, No rock shot, Workshop, mokchott	algeria, marocco, mali, senegal, mare	africa, africa occidentale	rosso, verde	giallo	mezzaluna, stella		strisce orizzontali, mezzaluna gialla, stella gialla	2
 MU	Mauritius		Port Louis	Porti Lui		africa, africa orientale	rosso, blu, giallo, verde				strisce orizzontali	2
 YT	Mayotte	Maiott	Mamoudzou	Mamodzu, Mamotzu		africa, africa orientale	bianco, rosso, blu		emblema nazionale, animale, scritta, mezzaluna	x	mezzaluna bianca, lenzuolo bianco	3
 MX	Messico	Mexico	Città del Messico	Messico	stati uniti d'America, guatemala, belize, mare	nord america, america centrale	verde, bianco, rosso		emblema nazionale, aquila, uccello, animale		strisce verticali	1
@@ -187,7 +187,7 @@ SM	Repubblica di San Marino	*San Marino	Città di San Marino	San Marino	Italia	e
 DO	Repubblica Dominicana	Rep Dominicana	Santo Domingo		haiti, mare	Nord America, caraibi	blu, bianco, rosso		emblema nazionale			1
 RE	Riunione	Reunion	Saint-Denis	S Denis, Saint Denis, San Denis		africa, africa orientale	blu, rosso, giallo			x		3
 RO	Romania		Bucarest		moldavia, ucraina, bulgaria, serbia, ungheria, mare	europa, Balcani	blu, giallo, rosso				strisce verticali	1
-RW	Ruanda		Kigali	Cigali	uganda, tanzania, burundi, repubblica democratica del congo	africa, africa orientale	azzurro, giallo, verde	giallo	sole		strisce orizzontali	2
+RW	Ruanda		Kigali	Cigali, Cialis	uganda, tanzania, burundi, repubblica democratica del congo	africa, africa orientale	azzurro, giallo, verde	giallo	sole		strisce orizzontali	2
 RU	Russia		Mosca		norvegia, finlandia, estonia, lettonia, lituania, polonia, bielorussia, ucraina, georgia, azerbaigian, kazakistan, cina, mongolia, corea del nord, mare	europa	bianco, blu, rosso				strisce orizzontali	1
 SAB	Saba		The Bottom	Bottom, de botto		nord america, caraibi	rosso, bianco, blu	giallo	stella	x	stella gialla	3
 EH	Sahara Occidentale	Sara Occidentale	El Aaiún	el aiun, aaiun, Ela jun, Aiun	marocco, mauritania, mare	Africa, Africa settentrionale	rosso, nero, bianco, verde	rosso	mezzaluna, stella, 	x	triangolo a sinistra rosso, mezzaluna rossa, stella rossa	3
