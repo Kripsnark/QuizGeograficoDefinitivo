@@ -3224,10 +3224,11 @@ if (!window.voiceHooksAdded) {
 // 0. Intercetta la resa del giocatore ("Mi arrendo")
     const origSurrenderTurn = surrenderTurn;
     surrenderTurn = function() {
+        try { assistantRec.stop(); isListening = false; } catch(e) {} // 🛡️ SPEGNE SUBITO IL MIC
         origSurrenderTurn();
         if (voiceModeActive) {
             if (window.pendingDefeat) {
-                setTimeout(() => nextTurnMulti(), 800); // Salta subito ai risultati
+                setTimeout(() => nextTurnMulti(), 800); 
             } else {
                 let correctAns = currentTurnData.validAnswersCache[0].split(" (")[0];
                 setTimeout(() => {
@@ -3242,10 +3243,11 @@ if (!window.voiceHooksAdded) {
     // 1. Intercetta gli errori standard
     const origFailStandard = failStandard;
     failStandard = function(wrongInput) {
+        try { assistantRec.stop(); isListening = false; } catch(e) {} // 🛡️ SPEGNE SUBITO IL MIC
         origFailStandard(wrongInput);
         if (voiceModeActive) {
             if (window.pendingDefeat) {
-                setTimeout(() => nextTurnMulti(), 800); // Salta subito ai risultati
+                setTimeout(() => nextTurnMulti(), 800); 
             } else {
                 let correctAns = currentTurnData.validAnswersCache[0].split(" (")[0];
                 setTimeout(() => {
@@ -3260,10 +3262,11 @@ if (!window.voiceHooksAdded) {
     // 2. Intercetta gli errori nelle combo multiple
     const origFailMulti = failMulti;
     failMulti = function(reason, wrongInput) {
+        try { assistantRec.stop(); isListening = false; } catch(e) {} // 🛡️ SPEGNE SUBITO IL MIC
         origFailMulti(reason, wrongInput);
         if (voiceModeActive) {
             if (window.pendingDefeat) {
-                setTimeout(() => nextTurnMulti(), 800); // Salta subito ai risultati
+                setTimeout(() => nextTurnMulti(), 800); 
             } else {
                 setTimeout(() => {
                     parla("Sbagliato.", function() {

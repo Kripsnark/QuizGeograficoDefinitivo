@@ -461,21 +461,55 @@ if (typeof bandieraImg !== 'undefined' && bandieraImg) {
 }
 window.scaricaLog = function() {
     let testo = typeof debugGameLog !== 'undefined' ? debugGameLog : "Nessun dato registrato.";
-    let blob = new Blob([testo], { type: "text/plain" });
+    
+    // Crea la data: sostituisce la virgola/spazio centrale con "_" e barre/due punti con "-"
+    let dataAttuale = new Date().toLocaleString();
+    let dataPulita = dataAttuale.replace(", ", "_").replace(" ", "_").replace(/[\/:]/g, "-");
+    
+    // Recupera il livello appena giocato
+    let livelloLog = typeof currentLevel !== 'undefined' ? currentLevel : "X";
+    
+    let nomeFile = `GeoQuiz_Log_L${livelloLog}_${dataPulita}.txt`;
+
+    let blob = new Blob([testo], { type: "text/plain;charset=utf-8" });
     let url = URL.createObjectURL(blob);
+    
     let a = document.createElement('a');
+    a.style.display = "none";
     a.href = url;
-    a.download = "GeoQuiz_Log_" + new Date().toISOString().slice(0,10) + ".txt";
+    a.download = nomeFile;
     document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    
+    setTimeout(() => {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    }, 100);
 };
 
-// Forza l'aggancio del click sulla bandiera principale durante il gioco
-if (bandieraImg) {
-    bandieraImg.style.cursor = "pointer";
-    bandieraImg.addEventListener("click", function() {
-        if (this.src) window.openFlagModal(this.src);
-    });
-}
+window.downloadSpecificLog = function(livello, indice) {
+    let record = recentGamesHistory[livello][indice];
+    if (!record || !record.log) {
+        alert("Impossibile recuperare il log.");
+        return;
+    }
+
+    // Applica la stessa formattazione (Data_Ora) per i file dello storico
+    let dataPulita = record.date.replace(", ", "_").replace(" ", "_").replace(/[\/:]/g, "-");
+    let nomeFile = `GeoQuiz_Log_L${livello}_${dataPulita}.txt`;
+
+    let blob = new Blob([record.log], { type: "text/plain;charset=utf-8" });
+    let url = URL.createObjectURL(blob);
+
+    let a = document.createElement("a");
+    a.style.display = "none";
+    a.href = url;
+    a.download = nomeFile;
+    document.body.appendChild(a);
+    a.click();
+
+    setTimeout(() => {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    }, 100);
+};
