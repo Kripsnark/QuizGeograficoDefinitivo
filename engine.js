@@ -3011,7 +3011,7 @@ function creaBottoneAssistente() {
             this.style.filter = "grayscale(0%) drop-shadow(0px 0px 8px #4caf50)";
             this.style.opacity = "1";
             gestisciSchermo(true); // Tieni acceso lo schermo del telefono!
-            parla("Modalità vocale attivata. Quale livello vuoi giocare? Dire: livello + nr", function() {
+            parla("Modalità vocale attivata. Quale livello vuoi giocare? Dire: livello + numero", function() {
                 if (assistantRec && !isListening) {
                     innescaMicrofonoConDing();
                 }
