@@ -586,7 +586,7 @@ if (bestMatches.length > 0) {
                 td.reqGeo = td.targetNode.tipoGeo; 
                 if (['isola', 'costiera'].includes(td.reqGeo) && Math.random() > 0.5) td.reqGeo = 'marittima';
                 if (lvlCheckNeg && td.targetNode.aree.length > 0) { td.reqArea = td.selectedArea; td.numVariables++; }
-                if (currentLevel >= 3 || currentLevel === 5) { td.reqInit = td.targetNode.nome.charAt(0).toUpperCase(); td.numVariables++; }
+                if ((currentLevel >= 3 && currentLevel !== 7) || currentLevel === 5) { td.reqInit = td.targetNode.nome.charAt(0).toUpperCase(); td.numVariables++; }
                 
                 if (!td.reqArea && !td.reqInit && !td.negColor) {
                     if (td.targetNode.aree && td.targetNode.aree.length > 0) {
@@ -602,7 +602,7 @@ if (bestMatches.length > 0) {
                 if (td.targetNode.colori_base.length > 0) pool.push('colore');
                 pool.push('geo');
                 if (lvlCheckNeg && td.targetNode.capitale) pool.push('capitale');
-                if (currentLevel >= 3 || currentLevel === 5) pool.push('iniziale');
+                if ((currentLevel >= 3 && currentLevel !== 7) || currentLevel === 5) pool.push('iniziale');
                 
                 pool.sort(() => 0.5 - Math.random());
                 let numConditions = (currentLevel === 1 || (currentLevel === 5 && customConfig.difficolta === 'facile')) ? 1 : (Math.random() > 0.5 ? 1 : 2);
@@ -639,7 +639,7 @@ if (bestMatches.length > 0) {
                 if (numCol === 3) td.numVariables++;
                 
                 td.f12AskCapital = false;
-                let allowCap = (currentLevel >= 3 || currentLevel === 5);
+                let allowCap = ((currentLevel >= 3 && currentLevel !== 7) || currentLevel === 5);
                 if (currentLevel === 5 && !customConfig.capitali) allowCap = false;
                 if (allowCap && td.targetNode.capitale && Math.random() < 0.5) {
                     td.f12AskCapital = true;
@@ -1019,7 +1019,7 @@ td.buildQuestionText = (num) => {
             
             let maxNegs = 0;
             let negProb = 0;
-            if (currentLevel === 2) { maxNegs = 1; negProb = 0.40; } 
+            if (currentLevel === 2 || currentLevel === 7) { maxNegs = 1; negProb = 0.40; } 
             else if (isCecchino || isMitragliatrice) { maxNegs = 2; negProb = 0.85; }
             
             td.negBorders = []; 
@@ -1124,7 +1124,7 @@ td.buildQuestionText = (num) => {
                 }
             }
 
-            if (currentLevel >= 3 && ![0, 1, 9, 10].includes(td.format) && td.numVariables < 2) {
+            if (currentLevel >= 3 && currentLevel !== 7 && ![0, 1, 9, 10].includes(td.format) && td.numVariables < 2) {
                 return generateQuestion(); 
             }
 
@@ -1921,7 +1921,7 @@ td.buildQuestionText = (num) => {
                 timerContainer.style.display = "none";
             }
             
-            if(currentLevel === 5) document.getElementById("termina-custom-btn").style.display = "block";
+            if(currentLevel === 5 || currentLevel === 7) document.getElementById("termina-custom-btn").style.display = "block";
 
 	    let mcContainer = document.getElementById("mc-container");
             
@@ -2109,7 +2109,7 @@ function processaRisposta() {
         }
 
         let lazyMargin = 2; 
-        let applyMalus = (currentLevel >= 1 && currentLevel <= 3) || (currentLevel === 5 && !customConfig.timer);
+        let applyMalus = (currentLevel >= 1 && currentLevel <= 3) || currentLevel === 7 || (currentLevel === 5 && !customConfig.timer);
         let isLazy = (applyMalus && nazioniUsate.includes(sigla) && currentTurnData.maxPossible > currentTurnData.numReq + lazyMargin);
         if (!nazioniUsate.includes(sigla)) nazioniUsate.push(sigla);
 
@@ -2140,7 +2140,7 @@ function processaRisposta() {
         debugGameLog += `-> ESITO [${actionTime}s] [${puntiGuadagnati}pti]: ✅ CORRETTO (Input: ` + inputStr + " -> Riconosciuto: " + res.matchedCountry.nome + ")\n\n";
 
         let hasWon = (currentLevel === 6 && esatte >= levelDb.length) || (currentLevel === 1 && punteggio >= 2500) || (currentLevel === 2 && punteggio >= 3500);
-        let isEndlessTrig = ((currentLevel === 3 || currentLevel === 4) && punteggio >= 10000 && !endlessVittoriaSbloccata) || (currentLevel === 0 && punteggio >= 1500 && !endlessVittoriaSbloccata);
+        let isEndlessTrig = ((currentLevel === 3 || currentLevel === 4 || currentLevel === 7) && punteggio >= 10000 && !endlessVittoriaSbloccata) || (currentLevel === 0 && punteggio >= 1500 && !endlessVittoriaSbloccata);
         if (isEndlessTrig) endlessVittoriaSbloccata = true;
 
         let currentMaxVite = customConfig.vite > 5 ? customConfig.vite : maxVite;
@@ -2349,7 +2349,7 @@ function eseguiValidazioneMultipla(isTimeout = false) {
 
         let puntiRound = 0; let lazyNames = []; let audaceNames = [];
         let isL5Relax = (currentLevel === 5 && !customConfig.timer);
-        let virtualLevel = currentLevel === 5 ? (customConfig.difficolta === 'facile' ? 1 : (customConfig.difficolta === 'medio' ? 2 : 3)) : currentLevel;
+        let virtualLevel = currentLevel === 5 ? (customConfig.difficolta === 'facile' ? 1 : (customConfig.difficolta === 'medio' ? 2 : 3)) : (currentLevel === 7 ? 2 : currentLevel);
 
         if (isGrazia) {
             let mancanti = currentTurnData.numReq - comboInserted.length;
@@ -2884,17 +2884,18 @@ function eseguiValidazioneMultipla(isTimeout = false) {
             }
         })
 
-	function terminaPartitaVolontaria() {
-            let conf = confirm("Vuoi davvero terminare la partita e salvare i tuoi record?");
+	window.terminaPartitaVolontaria = function(daVoce = false) {
+            let conf = daVoce ? true : confirm("Vuoi davvero terminare la partita e salvare i tuoi record?");
             if (conf) {
                 if (currentLevel === 4 || currentLevel === 6 || (currentLevel === 5 && customConfig.timer)) stopTimer();
+                if (voiceModeActive) { try { assistantRec.stop(); isListening = false; } catch(e) {} }
                 inputEl.disabled = true;
                 popolaGameOver(false); 
                 document.getElementById("game-over-title").innerText = "PARTITA CONCLUSA";
                 document.getElementById("game-over-title").style.color = "#2196f3";
-                document.getElementById("game-over-msg").innerHTML = "Ti sei ritirato con onore dalla Sandbox.<br>Ottimo allenamento!";
+                document.getElementById("game-over-msg").innerHTML = "Hai terminato la sfida con onore. Ottimo allenamento!";
             }
-        }
+        };
         
         // --- AVVIO SERVICE WORKER (PWA) ---
         let newWorker;
@@ -3088,7 +3089,7 @@ if (SpeechRecognition) {
     try {
         if (SpeechGrammarList) {
             // Aggiunti i nuovi comandi alla grammatica del browser
-            let paroleValide = ["livello zero", "livello 0", "livello uno", "livello 1", "livello due", "livello 2", "livello tre", "livello 3", "livello quattro", "livello 4", "livello cinque", "livello 5", "livello sei", "livello 6", "morte improvvisa", "ripeti", "mi arrendo", "arrendo"];
+            let paroleValide = ["livello zero", "livello 0", "livello uno", "livello 1", "livello due", "livello 2", "livello tre", "livello 3", "livello quattro", "livello 4", "livello cinque", "livello 5", "livello sei", "livello 6", "morte improvvisa", "ripeti", "mi arrendo", "arrendo", "termina partita", "termina"];
             globalDb.forEach(n => {
                 paroleValide.push(n.nome.toLowerCase());
                 if(n.capitale) paroleValide.push(n.capitale.toLowerCase());
@@ -3174,6 +3175,11 @@ if (SpeechRecognition) {
             return;
         }
 
+	if (parolaDetta.includes("termina partita") || parolaDetta === "termina") {
+            terminaPartitaVolontaria(true);
+            return;
+        }
+
         // Gestione risposte normali
         let inputEl = document.getElementById("answer-input");
         if(inputEl) inputEl.value = parolaDetta;
@@ -3221,18 +3227,19 @@ if (SpeechRecognition) {
 if (!window.voiceHooksAdded) {
     window.voiceHooksAdded = true;
 
-// 0. Intercetta la resa del giocatore ("Mi arrendo")
+    // 0. Intercetta la resa del giocatore ("Mi arrendo")
     const origSurrenderTurn = surrenderTurn;
     surrenderTurn = function() {
-        try { assistantRec.stop(); isListening = false; } catch(e) {} // 🛡️ SPEGNE SUBITO IL MIC
+        try { assistantRec.stop(); isListening = false; } catch(e) {} 
         origSurrenderTurn();
         if (voiceModeActive) {
             if (window.pendingDefeat) {
-                setTimeout(() => nextTurnMulti(), 800); 
+                setTimeout(() => nextTurnMulti(), 800);
             } else {
                 let correctAns = currentTurnData.validAnswersCache[0].split(" (")[0];
                 setTimeout(() => {
-                    parla("Ti sei arreso. La risposta era " + correctAns, function() {
+                    let testoVite = vite === 1 ? "Ti resta una vita." : `Ti restano ${vite} vite.`;
+                    parla(`Ti sei arreso. La risposta era \({correctAns}.\){testoVite}`, function() {
                         setTimeout(() => nextTurnMulti(), 300);
                     });
                 }, 200);
@@ -3243,15 +3250,16 @@ if (!window.voiceHooksAdded) {
     // 1. Intercetta gli errori standard
     const origFailStandard = failStandard;
     failStandard = function(wrongInput) {
-        try { assistantRec.stop(); isListening = false; } catch(e) {} // 🛡️ SPEGNE SUBITO IL MIC
+        try { assistantRec.stop(); isListening = false; } catch(e) {}
         origFailStandard(wrongInput);
         if (voiceModeActive) {
             if (window.pendingDefeat) {
-                setTimeout(() => nextTurnMulti(), 800); 
+                setTimeout(() => nextTurnMulti(), 800);
             } else {
                 let correctAns = currentTurnData.validAnswersCache[0].split(" (")[0];
                 setTimeout(() => {
-                    parla("Sbagliato, era " + correctAns, function() {
+                    let testoVite = vite === 1 ? "Ti resta una vita." : `Ti restano ${vite} vite.`;
+                    parla(`Sbagliato, era \({correctAns}.\){testoVite}`, function() {
                         setTimeout(() => nextTurnMulti(), 300); 
                     });
                 }, 200);
@@ -3262,14 +3270,15 @@ if (!window.voiceHooksAdded) {
     // 2. Intercetta gli errori nelle combo multiple
     const origFailMulti = failMulti;
     failMulti = function(reason, wrongInput) {
-        try { assistantRec.stop(); isListening = false; } catch(e) {} // 🛡️ SPEGNE SUBITO IL MIC
+        try { assistantRec.stop(); isListening = false; } catch(e) {}
         origFailMulti(reason, wrongInput);
         if (voiceModeActive) {
             if (window.pendingDefeat) {
-                setTimeout(() => nextTurnMulti(), 800); 
+                setTimeout(() => nextTurnMulti(), 800);
             } else {
                 setTimeout(() => {
-                    parla("Sbagliato.", function() {
+                    let testoVite = vite === 1 ? "Ti resta una vita." : `Ti restano ${vite} vite.`;
+                    parla(`Sbagliato. ${testoVite}`, function() {
                         setTimeout(() => nextTurnMulti(), 300);
                     });
                 }, 200);
@@ -3277,14 +3286,15 @@ if (!window.voiceHooksAdded) {
         }
     };
 
-// 3. Intercetta le risposte corrette
+    // 3. Intercetta le risposte corrette
     const origProcessaRisposta = processaRisposta;
     processaRisposta = function() {
         let esattePrima = esatte;
-        let vitePrima = vite; // Aggiunto per tracciare gli errori e fermare i loop!
+        let vitePrima = vite; 
         let comboPrima = comboInserted.length;
+        let puntiPrima = punteggio; 
         
-        origProcessaRisposta(); // Esegue il controllo normale
+        origProcessaRisposta(); 
         
         if (voiceModeActive) {
             if (window.pendingVictory) {
@@ -3302,33 +3312,51 @@ if (!window.voiceHooksAdded) {
                 return; 
             }
 
-            // 🔴 FIX CRITICO: Se hai perso una vita, failStandard o failMulti hanno già agito.
-            // Ci fermiamo all'istante per evitare il "doppio avanzamento" che sfasa il microfono!
             if (vite < vitePrima) {
                 return; 
             }
 
-            // Se la risposta finale o l'intera combo è esatta (esatte sale)
+            // Se la risposta finale o l'intera combo è esatta
             if (esatte > esattePrima) {
+                 let puntiGuadagnati = punteggio - puntiPrima;
+                 let testoEsatto = (currentLevel === 6) ? "Esatto!" : `Esatto! Più ${puntiGuadagnati} punti.`;
+                 
+                 // --- LETTURA BONUS DAL BADGE A SCHERMO ---
+                 let badgeEl = document.getElementById("event-badge");
+                 let badgeTesto = (badgeEl && badgeEl.style.display !== "none") ? badgeEl.innerText.toLowerCase() : "";
+                 let extraTesto = "";
+                 
+                 if (badgeTesto.includes("grazia")) {
+                     testoEsatto = `Combo salvata per grazia ricevuta! Più ${puntiGuadagnati} punti.`;
+                 } else {
+                     if (badgeTesto.includes("audacia")) extraTesto += " Doppio punteggio per audacia.";
+                     if (badgeTesto.includes("pigrizia") || badgeTesto.includes("déjà vu")) extraTesto += " Punteggio dimezzato per pigrizia.";
+                 }
+                 
+                 if (badgeTesto.includes("vita extra")) extraTesto += " Hai ottenuto una vita extra.";
+                 
+                 testoEsatto += extraTesto;
+                 // -----------------------------------------
+                 
                  setTimeout(() => {
-                     parla("Esatto!", function() {
-                         setTimeout(() => nextTurnMulti(), 300); // Avanza pulito
+                     parla(testoEsatto, function() {
+                         setTimeout(() => nextTurnMulti(), 300);
                      });
                  }, 150);
                  return;
             } 
             
-            // Se sei a metà di una combo e hai appena inserito una parola nel calderone
+            // Se sei a metà di una combo
             if (comboInserted.length > comboPrima) {
                  setTimeout(() => {
-                     parla("Presa.", function() { // Sostituito "Corretto" con "Presa" per non confondere
+                     parla("Presa.", function() { 
                          if (assistantRec && !isListening) { window.innescaMicrofonoConDing(); }
                      });
                  }, 150);
                  return;
             }
 
-            // Se non ha riconosciuto la parola o hai detto un doppione, riapre il mic silenziosamente
+            // Se non ha riconosciuto la parola, riapre il microfono in silenzio
             if (assistantRec && !isListening) { window.innescaMicrofonoConDing(); }
         }
     };
