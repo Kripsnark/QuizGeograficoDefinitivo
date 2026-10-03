@@ -3259,7 +3259,7 @@ if (!window.voiceHooksAdded) {
                 let correctAns = currentTurnData.validAnswersCache[0].split(" (")[0];
                 setTimeout(() => {
                     let testoVite = vite === 1 ? "Ti resta una vita." : `Ti restano ${vite} vite.`;
-                    parla(`Sbagliato, era \({correctAns}.\){testoVite}`, function() {
+                    parla(`Sbagliato, era ${correctAns}.${testoVite}`, function() {
                         setTimeout(() => nextTurnMulti(), 300); 
                     });
                 }, 200);
@@ -3319,7 +3319,7 @@ if (!window.voiceHooksAdded) {
             // Se la risposta finale o l'intera combo è esatta
             if (esatte > esattePrima) {
                  let puntiGuadagnati = punteggio - puntiPrima;
-                 let testoEsatto = (currentLevel === 6) ? "Esatto!" : `Esatto! Più ${puntiGuadagnati} punti.`;
+                 let testoEsatto = (currentLevel === 6) ? "Esatto!" : `Esatto! ${puntiGuadagnati} punti.`;
                  
                  // --- LETTURA BONUS DAL BADGE A SCHERMO ---
                  let badgeEl = document.getElementById("event-badge");
