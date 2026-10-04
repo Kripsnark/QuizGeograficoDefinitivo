@@ -293,7 +293,7 @@ if (bestMatches.length > 0) {
             }
             
             debugGameLog = `=== GEOQUIZ DEBUG LOG ===\nData: ${new Date().toLocaleString()}\nLivello Giocato: 6 (Morte Improvvisa)\n`;
-            debugGameLog += `Modalità: \({configL6.bacino.toUpperCase()} | Argomento:\){configL6.argomento.toUpperCase()}\n\n`;
+            debugGameLog += `Modalità: ${configL6.bacino.toUpperCase()} | Argomento:${configL6.argomento.toUpperCase()}\n\n`;
                         
             document.getElementById("l6-setup-screen").style.display = "none";
             document.getElementById("start-screen").style.display = "none";
@@ -574,10 +574,13 @@ if (bestMatches.length > 0) {
             if (format === 6) {
                 if (!td.targetNode.capitale || td.targetNode.aree.length === 0) return generateQuestion();
                 td.varEnigmistica = Math.floor(Math.random() * 3);
-                td.reqCapInit = td.targetNode.capitale.charAt(0).toUpperCase();
-                td.reqCapFin = td.targetNode.capitale.charAt(td.targetNode.capitale.length - 1).toUpperCase();
+                // Rimuove gli accenti prima di estrarre la lettera
+                let capPulita = td.targetNode.capitale.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                td.reqCapInit = capPulita.charAt(0).toUpperCase();
+                td.reqCapFin = capPulita.charAt(capPulita.length - 1).toUpperCase();
                 td.numVariables++;
             }
+
             if (format === 7) {
                 if (!td.targetNode.indipendente || td.targetNode.confini.length === 0) return generateQuestion();
             }
@@ -1203,13 +1206,15 @@ td.buildQuestionText = (num) => {
             
             const checkInitAny = (country, req) => {
                 if (!req) return true;
-                return country.nome.toLowerCase().startsWith(req.toLowerCase());
+                let pulito = country.nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+                return pulito.startsWith(req.toLowerCase());
             };
             
             const checkCapInitAny = (country, req) => {
                 if (!req) return true;
                 if (!country.capitale) return false;
-                return country.capitale.toLowerCase().startsWith(req.toLowerCase());
+                let pulito = country.capitale.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+                return pulito.startsWith(req.toLowerCase());
             };
 
             for (let country of getAnswerPool(level)) {
@@ -1282,13 +1287,12 @@ td.buildQuestionText = (num) => {
                         }
                     }
                     else if (td.format === 6) {
-                        let capPaese = country.capitale ? country.capitale.toLowerCase() : "";
+                        let capPaese = country.capitale ? country.capitale.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() : "";
                         if (capPaese && country.aree.includes(td.selectedArea)) {
                             let textMatch = false;
-                            let cn = capPaese;
-                            if (td.varEnigmistica === 0 && cn.startsWith(td.reqCapInit.toLowerCase())) textMatch = true;
-                            if (td.varEnigmistica === 1 && cn.endsWith(td.reqCapFin.toLowerCase())) textMatch = true;
-                            if (td.varEnigmistica === 2 && cn.startsWith(td.reqCapInit.toLowerCase()) && cn.endsWith(td.reqCapFin.toLowerCase())) textMatch = true;
+                            if (td.varEnigmistica === 0 && capPaese.startsWith(td.reqCapInit.toLowerCase())) textMatch = true;
+                            if (td.varEnigmistica === 1 && capPaese.endsWith(td.reqCapFin.toLowerCase())) textMatch = true;
+                            if (td.varEnigmistica === 2 && capPaese.startsWith(td.reqCapInit.toLowerCase()) && capPaese.endsWith(td.reqCapFin.toLowerCase())) textMatch = true;
                             if (textMatch) match = true;
                         }
                     }
@@ -1403,20 +1407,28 @@ td.buildQuestionText = (num) => {
 
         function checkInit(country, matchedName, reqI) {
             if (!reqI) return true;
-            if (country.nome.toLowerCase().startsWith(reqI.toLowerCase())) return true;
-            if (country.alias_paese_ufficiali.map(a=>a.toLowerCase()).includes(matchedName.toLowerCase())) {
-                if (matchedName.toLowerCase().startsWith(reqI.toLowerCase())) return true;
-            }
+            let reqClean = reqI.toLowerCase();
+            let nClean = country.nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            if (nClean.startsWith(reqClean)) return true;
+            
+            let matchedClean = matchedName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            let aliasCleanList = country.alias_paese_ufficiali.map(a => a.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase());
+            
+            if (aliasCleanList.includes(matchedClean) && matchedClean.startsWith(reqClean)) return true;
             return false;
         }
 
         function checkCapInit(country, matchedCap, reqCapI) {
             if (!reqCapI) return true;
             if (!country.capitale) return false;
-            if (country.capitale.toLowerCase().startsWith(reqCapI.toLowerCase())) return true;
-            if (country.alias_capitale_ufficiali.map(a=>a.toLowerCase()).includes(matchedCap.toLowerCase())) {
-                if (matchedCap.toLowerCase().startsWith(reqCapI.toLowerCase())) return true;
-            }
+            let reqClean = reqCapI.toLowerCase();
+            let cClean = country.capitale.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            if (cClean.startsWith(reqClean)) return true;
+            
+            let matchedClean = matchedCap.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            let aliasCleanList = country.alias_capitale_ufficiali.map(a => a.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase());
+            
+            if (aliasCleanList.includes(matchedClean) && matchedClean.startsWith(reqClean)) return true;
             return false;
         }
 
@@ -1535,13 +1547,16 @@ td.buildQuestionText = (num) => {
                         }
                     }
                     else if (td.format === 6) {
-                        let capPaese = country.capitale ? country.capitale.toLowerCase() : "";
+                        let capPaese = country.capitale ? country.capitale.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() : "";
                         if (capPaese && country.aree.includes(td.selectedArea) && capitalMatch) {
                             let textMatch = false;
-                            let stringToTest = country.capitale.toLowerCase();
-                            if (!stringToTest.startsWith(td.reqCapInit.toLowerCase()) && 
-                                country.alias_capitale_ufficiali.map(a=>a.toLowerCase()).includes(matchedCapitalStr.toLowerCase())) {
-                                stringToTest = matchedCapitalStr.toLowerCase();
+                            let stringToTest = capPaese;
+                            
+                            let matchedClean = matchedCapitalStr.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+                            let aliasCleanList = country.alias_capitale_ufficiali.map(a => a.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase());
+                            
+                            if (!stringToTest.startsWith(td.reqCapInit.toLowerCase()) && aliasCleanList.includes(matchedClean)) {
+                                stringToTest = matchedClean;
                             }
 
                             if (td.varEnigmistica === 0 && stringToTest.startsWith(td.reqCapInit.toLowerCase())) textMatch = true;
@@ -3007,45 +3022,85 @@ function creaBottoneAssistente() {
             alert("Il tuo browser non supporta il riconoscimento vocale avanzato.");
             return;
         }
-        voiceModeActive = !voiceModeActive;
-        if (voiceModeActive) {
+        
+        if (!voiceModeActive) {
+            // PRIMO CLICK: Accende il sistema e imposta l'alone verde originale
+            voiceModeActive = true;
             this.style.filter = "grayscale(0%) drop-shadow(0px 0px 8px #4caf50)";
             this.style.opacity = "1";
-            gestisciSchermo(true); // Tieni acceso lo schermo del telefono!
+            
+            gestisciSchermo(true); // Tieni acceso lo schermo
+            
+            if (suoniAttivi) playSound("ding");
+
             parla("Modalità vocale attivata. Quale livello vuoi giocare? Dire: livello + numero", function() {
                 if (assistantRec && !isListening) {
-                    innescaMicrofonoConDing();
+                    window.innescaMicrofonoConDing();
                 }
             });
         } else {
-            this.style.filter = "grayscale(100%)";
-            this.style.opacity = "0.5";
-            gestisciSchermo(false); // Sblocca il risparmio energetico
-            synth.cancel();
-            if (isListening && assistantRec) {
-                try { assistantRec.stop(); } catch(e) {}
+            // CLICK SUCCESSIVI: Forza il riavvio immediato del microfono (Override manuale)
+            if (suoniAttivi) playSound("ding");
+            synth.cancel(); // Zittisce eventuali letture del robot in corso
+            if (assistantRec) {
+                try { assistantRec.abort(); } catch(e) {}
+                setTimeout(() => {
+                    window.innescaMicrofonoConDing();
+                }, 150);
             }
         }
     };
     document.body.appendChild(btnAss);
 }
+
 window.speechUtterances = []; // TRUCCO: Evita che il browser mobile cancelli la voce dalla RAM
 
+// === LA FUNZIONE PARLA DINAMICA E IBRIDA ===
 function parla(testo, callbackTermine) {
     if (!voiceModeActive) return;
     synth.cancel(); 
     
+    // Rimuove i tag HTML
     let testoPulito = testo.replace(/<[^>]*>?/gm, '');
+    
+    // --- 1. CORREZIONI FISSE PER TERMINI DI SISTEMA E CONTINENTI ---
+    const correzioniGlobali = {
+        "Asia": "Àsia",       // Forza l'accento italiano
+        "Oceania": "Oceània"  // Previene pronunce strane
+    };
+    for (const [parola, pronuncia] of Object.entries(correzioniGlobali)) {
+        let regex = new RegExp("\\b" + parola + "\\b", "gi");
+        testoPulito = testoPulito.replace(regex, pronuncia);
+    }
+
+    // --- 2. INIEZIONE CORREZIONE FONETICA DAL DATABASE (Paesi e Capitali) ---
+    if (typeof globalDb !== 'undefined') {
+        globalDb.forEach(n => {
+            // Sostituisce il nome del paese se esiste una correzione fonetica
+            if (n.pronuncia_paese && n.pronuncia_paese.trim() !== "") {
+                let nomePulito = n.nome.replace(/\*/g, '');
+                let regexPaese = new RegExp("\\b" + nomePulito + "\\b", "gi");
+                testoPulito = testoPulito.replace(regexPaese, n.pronuncia_paese);
+            }
+            // Sostituisce il nome della capitale se esiste una correzione fonetica
+            if (n.pronuncia_capitale && n.pronuncia_capitale.trim() !== "") {
+                let capPulita = n.capitale.replace(/\*/g, '');
+                let regexCapitale = new RegExp("\\b" + capPulita + "\\b", "gi");
+                testoPulito = testoPulito.replace(regexCapitale, n.pronuncia_capitale);
+            }
+        });
+    }
+    // --------------------------------------------------
+
     let utterance = new SpeechSynthesisUtterance(testoPulito);
     utterance.lang = 'it-IT';
     utterance.rate = voiceSpeed;
     
-    window.speechUtterances.push(utterance); // Salva l'audio globalmente per ingannare la Garbage Collection
+    window.speechUtterances.push(utterance); 
     
     if (callbackTermine) {
         let callbackEseguita = false;
         
-        // Funzione blindata che scatta una volta sola
         let eseguiCallback = function() {
             if (!callbackEseguita) {
                 callbackEseguita = true;
@@ -3053,12 +3108,9 @@ function parla(testo, callbackTermine) {
             }
         };
         
-        // Metodo standard
         utterance.onend = eseguiCallback;
         utterance.onerror = eseguiCallback;
         
-        // PARACADUTE DI EMERGENZA: Calcola quanto ci mette a leggere (circa 65ms a lettera) 
-        // e forza l'avanzamento se il browser si addormenta.
         let tempoDiLetturaStimato = (testoPulito.length * 65) + 800; 
         setTimeout(eseguiCallback, tempoDiLetturaStimato);
     }
@@ -3239,7 +3291,7 @@ if (!window.voiceHooksAdded) {
                 let correctAns = currentTurnData.validAnswersCache[0].split(" (")[0];
                 setTimeout(() => {
                     let testoVite = vite === 1 ? "Ti resta una vita." : `Ti restano ${vite} vite.`;
-                    parla(`Ti sei arreso. La risposta era \({correctAns}.\){testoVite}`, function() {
+                    parla(`Ti sei arreso. La risposta era ${correctAns}.${testoVite}`, function() {
                         setTimeout(() => nextTurnMulti(), 300);
                     });
                 }, 200);
@@ -3259,7 +3311,7 @@ if (!window.voiceHooksAdded) {
                 let correctAns = currentTurnData.validAnswersCache[0].split(" (")[0];
                 setTimeout(() => {
                     let testoVite = vite === 1 ? "Ti resta una vita." : `Ti restano ${vite} vite.`;
-                    parla(`Sbagliato, era ${correctAns}.${testoVite}`, function() {
+                    parla(`Sbagliato, era ${correctAns}${testoVite}`, function() {
                         setTimeout(() => nextTurnMulti(), 300); 
                     });
                 }, 200);
@@ -3319,7 +3371,7 @@ if (!window.voiceHooksAdded) {
             // Se la risposta finale o l'intera combo è esatta
             if (esatte > esattePrima) {
                  let puntiGuadagnati = punteggio - puntiPrima;
-                 let testoEsatto = (currentLevel === 6) ? "Esatto!" : `Esatto! ${puntiGuadagnati} punti.`;
+                 let testoEsatto = (currentLevel === 6) ? "Esatto!" : `Esatto! Più ${puntiGuadagnati} punti.`;
                  
                  // --- LETTURA BONUS DAL BADGE A SCHERMO ---
                  let badgeEl = document.getElementById("event-badge");
