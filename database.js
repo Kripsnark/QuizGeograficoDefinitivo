@@ -264,10 +264,10 @@ righe.forEach((riga, index) => {
     let colonne = riga.split(separatore);
     
     if(colonne.length >= 10) {
-        let isIndipendente = !(colonne[10] && colonne[10].trim().toLowerCase() === "x");
-        let livello = (colonne.length > 12 && colonne[12]) ? parseInt(colonne[12].trim()) : 1;
+        // SLITTAMENTO INDICI (Dipendente passa da 10 a 12, Livello da 12 a 14)
+        let isIndipendente = !(colonne[12] && colonne[12].trim().toLowerCase() === "x");
+        let livello = (colonne.length > 14 && colonne[14]) ? parseInt(colonne[14].trim()) : 1;
         
-        // Funzione DRY per parsing veloce degli array separati da virgola
         const parseList = (str) => str ? str.split(",").map(s => s.trim().toLowerCase()).filter(Boolean) : [];
         
         let nazione = {
@@ -275,25 +275,26 @@ righe.forEach((riga, index) => {
             nome: colonne[1].trim(),
             alias_paese: [],
             alias_paese_ufficiali: [],
-            capitale: colonne[3] ? colonne[3].trim() : "",
+            pronuncia_paese: (colonne[3] ? colonne[3].trim() : ""), 
+            capitale: colonne[4] ? colonne[4].trim() : "",          
             alias_capitale: [],
             alias_capitale_ufficiali: [],
-            confini: parseList(colonne[5]),
-            aree: parseList(colonne[6]).map(a => {
+            pronuncia_capitale: (colonne[6] ? colonne[6].trim() : ""),
+            confini: parseList(colonne[7]),
+            aree: parseList(colonne[8]).map(a => {
                 let area = a.toUpperCase();
                 if(area === "AMERICA DEL NORD") return "NORD AMERICA";
                 if(area === "AMERICA DEL SUD") return "SUD AMERICA";
                 return area;
             }), 
-            colori_base: parseList(colonne[7]), 
-            colori_emblema: parseList(colonne[8]), 
-            simboli: parseList(colonne[9]), 
+            colori_base: parseList(colonne[9]),
+            colori_emblema: parseList(colonne[10]),                 
+            simboli: parseList(colonne[11]),                        
             indipendente: isIndipendente,
-            formati_bandiera: parseList(colonne[11]),
+            formati_bandiera: parseList(colonne[13]),               
             livello: isNaN(livello) ? 1 : livello 
         };
 
-        // Funzione DRY per gli alias
         const processAliases = (rawAliasStr, targetArr, targetOfficialArr) => {
             parseList(rawAliasStr).forEach(a => {
                 if (a.startsWith('*')) {
@@ -306,8 +307,9 @@ righe.forEach((riga, index) => {
             });
         };
 
+        // Gli alias paese restano a 2, gli alias capitale slittano a 5
         processAliases(colonne[2], nazione.alias_paese, nazione.alias_paese_ufficiali);
-        processAliases(colonne[4], nazione.alias_capitale, nazione.alias_capitale_ufficiali);
+        processAliases(colonne[5], nazione.alias_capitale, nazione.alias_capitale_ufficiali); 
 
         let hasSea = false;
         let landBorders = [];
