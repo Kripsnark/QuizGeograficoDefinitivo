@@ -200,9 +200,27 @@ function openRules() {
     `;
     openModal("📜 REGOLAMENTO UFFICIALE", html);
 }
+
 function openDB() {
-    let tableHTML = `<div class="db-table-container"><table class="db-table">
+    // 1. Aggiungiamo il Laboratorio Fonetico in cima al contenuto della modale
+    let tableHTML = `
+    <!-- 🧪 LABORATORIO FONETICO -->
+    <div style="margin: 0 auto 20px auto; padding: 15px; background: #1a1a1a; border: 2px dashed #4caf50; border-radius: 8px; max-width: 400px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.5);">
+        <h3 style="color: #4caf50; margin-top: 0;">🧪 Laboratorio Fonetico</h3>
+        <p style="font-size: 12px; color: #aaa; margin-bottom: 15px;">Prova la pronuncia maccheronica in tempo reale sul telefono.</p>
+        
+        <input type="text" id="test-pronuncia-input" placeholder="Es: Pnom Pèn..." 
+               style="width: 85%; padding: 10px; margin-bottom: 10px; border-radius: 4px; border: none; font-size: 16px; text-align: center; color: #000; outline: none;">
+               
+        <button onclick="parla(document.getElementById('test-pronuncia-input').value, null, true)" 
+                style="background: #4caf50; color: white; padding: 12px; width: 85%; border: none; border-radius: 4px; font-weight: bold; font-size: 16px; cursor: pointer;">
+            🔊 Ascolta Prova
+        </button>
+    </div>
+
+    <div class="db-table-container"><table class="db-table">
         <thead><tr><th>Bandiera</th><th>Sigla</th><th class="sticky-col">Paese</th><th>Capitale</th><th>Confini</th><th>Aree</th><th>Colori Base</th><th>Colori Emblema</th><th>Simboli</th><th>Formati</th><th>Tipo Geo</th><th>Indipendente</th><th>Livello</th></tr></thead><tbody>`;
+    
     globalDb.forEach(n => {
         let nCapitale = n.capitale ? capitalize(n.capitale.replace(/\*/g, '')) : "-";
         let nConfini = n.confini && n.confini.length > 0 ? n.confini.map(b => capitalize(b)).join(', ') : "Nessuno";
@@ -213,12 +231,23 @@ function openDB() {
         let nForm = n.formati_bandiera && n.formati_bandiera.length > 0 ? n.formati_bandiera.map(f => capitalize(f)).join(', ') : "-";
         let nInd = n.indipendente ? "Sì" : "No";
 
+        // 2. Creiamo le celle con l'evento vocale integrato
+        let cellaPaese = `<td class="sticky-col" onclick="parla(this.innerText, null, true)" style="cursor:pointer; font-weight:bold; color:#ffd700;" title="Ascolta la pronuncia">${capitalize(n.nome.replace(/\*/g, ''))}</td>`;
+        
+        let cellaCapitale = nCapitale !== "-" 
+            ? `<td onclick="parla(this.innerText, null, true)" style="cursor:pointer; color:#ffd700;" title="Ascolta la pronuncia">${nCapitale}</td>` 
+            : `<td>-</td>`;
+
+        // 3. Compiliamo la riga della tabella
         tableHTML += `<tr>
             <td style="text-align:center;"><img src="GIF/${n.sigla.toLowerCase()}.jpg" onclick="window.openFlagModal(this.src)" style="width:40px; border-radius:2px; cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,0.5);" onerror="this.style.display='none'"></td>
-            <td>${n.sigla.toUpperCase()}</td><td class="sticky-col" style="font-weight:bold;">${capitalize(n.nome.replace(/\*/g, ''))}</td>
-            <td>${nCapitale}</td><td>${nConfini}</td><td>${nAree}</td><td>${nColB}</td><td>${nColE}</td><td>${nSim}</td><td>${nForm}</td><td>${capitalize(n.tipoGeo)}</td><td>${nInd}</td><td style="text-align:center;">L${n.livello}</td>
+            <td>${n.sigla.toUpperCase()}</td>
+            ${cellaPaese}
+            ${cellaCapitale}
+            <td>${nConfini}</td><td>${nAree}</td><td>${nColB}</td><td>${nColE}</td><td>${nSim}</td><td>${nForm}</td><td>${capitalize(n.tipoGeo)}</td><td>${nInd}</td><td style="text-align:center;">L${n.livello}</td>
         </tr>`;
     });
+    
     tableHTML += `</tbody></table></div>`;
     openModal("📚 ENCICLOPEDIA", tableHTML);
 }

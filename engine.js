@@ -3056,12 +3056,13 @@ function creaBottoneAssistente() {
 window.speechUtterances = []; // TRUCCO: Evita che il browser mobile cancelli la voce dalla RAM
 
 // === LA FUNZIONE PARLA DINAMICA E IBRIDA ===
-function parla(testo, callbackTermine) {
-    if (!voiceModeActive) return;
+function parla(testo, callbackTermine, force = false) {
+    // Ora si ferma solo se non è attiva la voce E non c'è la forzatura "force"
+    if (!voiceModeActive && !force) return;
     synth.cancel(); 
     
-    // Rimuove i tag HTML
-    let testoPulito = testo.replace(/<[^>]*>?/gm, '');
+    // Rimuove i tag HTML e gli eventuali asterischi dei nomi ufficiali
+    let testoPulito = testo.replace(/<[^>]*>?/gm, '').replace(/\*/g, '');
     
     // --- 1. CORREZIONI FISSE PER TERMINI DI SISTEMA E CONTINENTI ---
     const correzioniGlobali = {
