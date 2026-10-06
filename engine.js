@@ -1371,7 +1371,7 @@ td.buildQuestionText = (num) => {
                     }
 
                     // --- INIZIO FIX ASTERISCHI E NOMI UFFICIALI ---
-                    dName = dName.replace(/\*/g, '');
+                    dName = dName.replace(/\*/g, '').trim();
                     
                     if (td.format === 0 || td.format === 10 || td.format === 6 || (td.format === 12 && td.f12AskCapital)) {
                         let cName = capitalize(country.capitale);
@@ -1868,6 +1868,9 @@ td.buildQuestionText = (num) => {
 }
 
         function playTurn() {
+            // SCUDO ANTI-DOMANDE FANTASMA: Se la partita è finita, abortisce immediatamente
+            if (document.getElementById("game-over-screen").style.display === "flex") return;
+
             turnStartTime = Date.now();
             bandieraContainer.style.display = "none";
             
@@ -2004,19 +2007,17 @@ td.buildQuestionText = (num) => {
         }
 
 function getBestDisplayName(country, userInput, reqInit) {
-    // 1. Cerca il nome ufficiale che rispetta l'iniziale
     if (reqInit) {
-        if (country.nome.toLowerCase().startsWith(reqInit.toLowerCase())) return capitalize(country.nome);
+        if (country.nome.toLowerCase().startsWith(reqInit.toLowerCase())) return capitalize(country.nome.replace(/\*/g, ''));
         let offAlias = country.alias_paese_ufficiali.find(a => a.toLowerCase().startsWith(reqInit.toLowerCase()));
-        if (offAlias) return capitalize(offAlias).replace(/\*/g, '');
+        if (offAlias) return capitalize(offAlias.replace(/\*/g, ''));
     }
-    // 2. Se l'utente ha digitato un alias ufficiale (es. swaziland), mostra quello
+    
     let cleanInput = userInput.trim().toLowerCase();
     let matchedOffAlias = country.alias_paese_ufficiali.find(a => a.replace(/\*/g, '').toLowerCase() === cleanInput);
-    if (matchedOffAlias) return capitalize(matchedOffAlias).replace(/\*/g, '');
+    if (matchedOffAlias) return capitalize(matchedOffAlias.replace(/\*/g, ''));
     
-    // 3. Fallback sul nome principale
-    return capitalize(country.nome);
+    return capitalize(country.nome.replace(/\*/g, ''));
 }
 
 function getBestDisplayCapital(country, userInput, reqCapInit, reqCapFin) {
@@ -2028,16 +2029,16 @@ function getBestDisplayCapital(country, userInput, reqCapInit, reqCapFin) {
             let okEnd = reqCapFin ? s.endsWith(reqCapFin.toLowerCase()) : true;
             return okStart && okEnd;
         };
-        if (check(country.capitale)) return capitalize(country.capitale);
+        if (check(country.capitale)) return capitalize(country.capitale.replace(/\*/g, ''));
         let offAlias = (country.alias_capitale_ufficiali || []).find(a => check(a));
-        if (offAlias) return capitalize(offAlias).replace(/\*/g, '');
+        if (offAlias) return capitalize(offAlias.replace(/\*/g, ''));
     }
     
     let cleanInput = userInput.trim().toLowerCase();
     let matchedOffAlias = (country.alias_capitale_ufficiali || []).find(a => a.replace(/\*/g, '').toLowerCase() === cleanInput);
-    if (matchedOffAlias) return capitalize(matchedOffAlias).replace(/\*/g, '');
+    if (matchedOffAlias) return capitalize(matchedOffAlias.replace(/\*/g, ''));
     
-    return capitalize(country.capitale);
+    return capitalize(country.capitale.replace(/\*/g, ''));
 }
 
 function processaRisposta() {
@@ -3169,6 +3170,9 @@ if (SpeechRecognition) {
     };
 
     assistantRec.onresult = function(event) {
+        // SCUDO ANTI-SPILLOVER: Ignora i frammenti audio se il turno è appena iniziato
+        if (Date.now() - turnStartTime < 800) return;
+
         let parolaDetta = event.results[0][0].transcript.replace(/\.$/, '').trim().toLowerCase();
         
         // --- FIX SENSIBILITÀ PAROLE CORTE E RIMOZIONE ARTICOLI ---
