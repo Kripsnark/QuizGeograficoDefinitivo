@@ -1886,9 +1886,21 @@ td.buildQuestionText = (num) => {
             currentTurnData = generateQuestion();
             questionEl.innerHTML = currentTurnData.questionText;
 
-	if (voiceModeActive) {
-                parla(currentTurnData.questionText, function() {
-                    // Appena la voce robotica finisce di leggere la domanda, si mette in ascolto
+            // --- NUOVA LOGICA: Generiamo le opzioni subito per il Livello 0 ---
+            let opzioniL0 = [];
+            if (currentLevel === 0) {
+                opzioniL0 = generaDistrattori(currentTurnData);
+            }
+
+            if (voiceModeActive) {
+                let testoDaLeggere = currentTurnData.questionText;
+                
+                // Visto che i formati visivi sono già bloccati a monte, aggiunge le opzioni a occhi chiusi
+                if (currentLevel === 0) {
+                    testoDaLeggere += "... Le opzioni sono: " + opzioniL0[0].text + ", " + opzioniL0[1].text + ", oppure " + opzioniL0[2].text;
+                }
+
+                parla(testoDaLeggere, function() {
                     if (assistantRec && !isListening) {
                         innescaMicrofonoConDing();
                     }
@@ -1943,17 +1955,22 @@ td.buildQuestionText = (num) => {
 
 	    let mcContainer = document.getElementById("mc-container");
             
-            // Seleziona il Livello 0 GIOCATO A MANO (microfono spento)
-            if (currentLevel === 0 && !voiceModeActive) {
-                inputEl.style.display = "none";
+            // Se siamo al Livello 0 (sia a mano che a voce)
+            if (currentLevel === 0) {
+                if (!voiceModeActive) {
+                    inputEl.style.display = "none"; // Nasconde l'input se giochi a mano
+                } else {
+                    inputEl.style.display = "block"; // Mostra l'input per la barra "In ascolto..."
+                }
+                
                 submitBtn.style.display = "none"; 
                 
                 if (mcContainer) {
-                    mcContainer.style.display = "flex"; // RIMOSSO IL RITARDO: compaiono subito!
+                    mcContainer.style.display = "flex";
                     mcContainer.innerHTML = "";
                     
-                    let opzioni = generaDistrattori(currentTurnData);
-                    opzioni.forEach(opz => {
+                    // Usiamo le opzioni generate a inizio turno
+                    opzioniL0.forEach(opz => {
                         let btn = document.createElement("button");
                         btn.className = "mc-option-btn"; 
                         
@@ -1976,7 +1993,7 @@ td.buildQuestionText = (num) => {
                                 this.classList.add("wrong-choice");
                                 let btnCorretto = document.createElement("div");
                                 btnCorretto.className = "mc-correct-btn";
-                                let corrOpz = opzioni.find(o => o.isCorrect);
+                                let corrOpz = opzioniL0.find(o => o.isCorrect);
                                 if (currentTurnData.format === 13) {
                                     btnCorretto.innerHTML = `Era questa: <br><img src="GIF/${corrOpz.sigla.toLowerCase()}.jpg" onclick="window.openFlagModal(this.src)" style="height:40px; margin-top:5px; border-radius:4px; cursor:pointer;" onerror="this.style.display='none'">`;
                                 } else {
@@ -1992,16 +2009,9 @@ td.buildQuestionText = (num) => {
                     });
                 }
             } else {
-                // Per TUTTI GLI ALTRI LIVELLI o per il Livello 0 VOCALE
+                // Per TUTTI GLI ALTRI LIVELLI (1-7)
                 inputEl.style.display = "block";
-                
-                // Se siamo nel livello 0 a voce, non serve il tasto INVIA (fa tutto il microfono)
-                if (currentLevel === 0) {
-                    submitBtn.style.display = "none";
-                } else {
-                    submitBtn.style.display = "block"; 
-                }
-                
+                submitBtn.style.display = "block"; 
                 if (mcContainer) mcContainer.style.display = "none";
             }
         }
