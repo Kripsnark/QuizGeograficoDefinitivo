@@ -202,10 +202,11 @@ function openRules() {
 }
 
 function openDB() {
-    // 1. Aggiungiamo il Laboratorio Fonetico in cima al contenuto della modale
+    // 1. Il Laboratorio Fonetico è ora NASCOSTO (display: none;). 
+    // Per riattivarlo in futuro, basterà cancellare "display: none;" dalla riga qui sotto.
     let tableHTML = `
-    <!-- 🧪 LABORATORIO FONETICO -->
-    <div style="margin: 0 auto 20px auto; padding: 15px; background: #1a1a1a; border: 2px dashed #4caf50; border-radius: 8px; max-width: 400px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.5);">
+    <!-- 🧪 LABORATORIO FONETICO (Nascosto) -->
+    <div style="display: none; margin: 0 auto 20px auto; padding: 15px; background: #1a1a1a; border: 2px dashed #4caf50; border-radius: 8px; max-width: 400px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.5);">
         <h3 style="color: #4caf50; margin-top: 0;">🧪 Laboratorio Fonetico</h3>
         <p style="font-size: 12px; color: #aaa; margin-bottom: 15px;">Prova la pronuncia maccheronica in tempo reale sul telefono.</p>
         

@@ -383,8 +383,8 @@ if (bestMatches.length > 0) {
             if (aUpper === "ANDE") return "sulle <strong>ANDE</strong>";
             if (aUpper === "MEDITERRANEO" || aUpper === "GOLFO DI GUINEA") return "sul <strong>" + aUpper + "</strong>";
             if (aUpper === "CARAIBI" || aUpper === "BALCANI" || aUpper === "PAESI BALTICI") return "nei <strong>" + aUpper + "</strong>";
-            if (aUpper === "SUBCONTINENTE INDIANO" || aUpper === "SUD-EST ASIATICO" || aUpper === "MEDIO ORIENTE") return "nel <strong>" + aUpper + "</strong>";
-            if (aUpper === "PENISOLA ARABICA" || aUpper === "PENISOLA INDOCINESE") return "nella <strong>" + aUpper + "</strong>";
+            if (aUpper === "SUBCONTINENTE INDIANO" || aUpper === "SUD-EST ASIATICO" || aUpper === "MEDIO ORIENTE" || aUpper === "CAUCASO" || aUpper === "CORNO D'AFRICA" || aUpper === "BENELUX") return "nel <strong>" + aUpper + "</strong>";
+            if (aUpper.startsWith("PENISOLA")) return "nella <strong>" + aUpper + "</strong>";
             return "in <strong>" + aUpper + "</strong>";
         }
         
@@ -396,8 +396,8 @@ if (bestMatches.length > 0) {
             if (a === "ANDE") return "che <span class='negative-constraint'>NON</span> " + verbo + " sulle <strong>ANDE</strong>";
             if (a === "MEDITERRANEO" || a === "GOLFO DI GUINEA") return "che <span class='negative-constraint'>NON</span> " + verbo + " sul <strong>" + a + "</strong>";
             if (a === "CARAIBI" || a === "BALCANI" || a === "PAESI BALTICI") return "che <span class='negative-constraint'>NON</span> " + verbo + " nei <strong>" + a + "</strong>";
-            if (a === "SUBCONTINENTE INDIANO" || a === "SUD-EST ASIATICO" || a === "MEDIO ORIENTE") return "che <span class='negative-constraint'>NON</span> " + verbo + " nel <strong>" + a + "</strong>";
-            if (a === "PENISOLA ARABICA" || a === "PENISOLA INDOCINESE") return "che <span class='negative-constraint'>NON</span> " + verbo + " nella <strong>" + a + "</strong>";
+            if (a === "SUBCONTINENTE INDIANO" || a === "SUD-EST ASIATICO" || a === "MEDIO ORIENTE" || a === "CAUCASO" || a === "CORNO D'AFRICA" || a === "BENELUX") return "che <span class='negative-constraint'>NON</span> " + verbo + " nel <strong>" + a + "</strong>";
+            if (a.startsWith("PENISOLA")) return "che <span class='negative-constraint'>NON</span> " + verbo + " nella <strong>" + a + "</strong>";
             return "che <span class='negative-constraint'>NON</span> " + verbo + " in <strong>" + a + "</strong>";
         }
         
@@ -739,8 +739,9 @@ td.buildQuestionText = (num) => {
                     if (cloniSempre.includes(td.targetNode.sigla) || (currentLevel === 2 && cloniLvl2.includes(td.targetNode.sigla))) {
                         let areaPrincipale = td.targetNode.aree[0] || "";
                         if (areaPrincipale) {
-                            areaPrincipale = areaPrincipale.toLowerCase();
-                            cloneHint = ` (in ${areaPrincipale})`;
+                            // Usa la funzione corretta, toglie i tag in grassetto e la mette in minuscolo
+                            let areaCorretta = getPreposizioneArea(areaPrincipale).replace(/<\/?strong>/g, '').toLowerCase();
+                            cloneHint = ` (${areaCorretta})`;
                         }
                     }
                 }
@@ -3035,7 +3036,7 @@ function creaBottoneAssistente() {
         }
         
         if (!voiceModeActive) {
-            // PRIMO CLICK: Accende il sistema e imposta l'alone verde originale
+            // PRIMO CLICK: Accende il sistema e imposta l'alone verde
             voiceModeActive = true;
             this.style.filter = "grayscale(0%) drop-shadow(0px 0px 8px #4caf50)";
             this.style.opacity = "1";
@@ -3050,14 +3051,28 @@ function creaBottoneAssistente() {
                 }
             });
         } else {
-            // CLICK SUCCESSIVI: Forza il riavvio immediato del microfono (Override manuale)
-            if (suoniAttivi) playSound("ding");
-            synth.cancel(); // Zittisce eventuali letture del robot in corso
+            // SECONDO CLICK: Spegne il microfono, zittisce la voce e torna in modalità manuale
+            voiceModeActive = false;
+            this.style.filter = "grayscale(100%)";
+            this.style.opacity = "0.5";
+            
+            gestisciSchermo(false); // Rilascia il blocco dello schermo
+            synth.cancel(); // Zittisce all'istante eventuali letture del robot in corso
+            
             if (assistantRec) {
-                try { assistantRec.abort(); } catch(e) {}
-                setTimeout(() => {
-                    window.innescaMicrofonoConDing();
-                }, 150);
+                try { assistantRec.stop(); } catch(e) {}
+                isListening = false;
+            }
+            
+            // Ripristina il placeholder testuale
+            let inputEl = document.getElementById("answer-input");
+            if (inputEl && inputEl.placeholder === "🎤 In ascolto...") {
+                inputEl.placeholder = "Scrivi la risposta...";
+            }
+            
+            // Se eravamo al Livello 0, rimette a posto la UI nascondendo l'input testuale
+            if (currentLevel === 0 && document.getElementById("input-area").style.display === "flex") {
+                if (inputEl) inputEl.style.display = "none";
             }
         }
     };
@@ -3068,41 +3083,45 @@ window.speechUtterances = []; // TRUCCO: Evita che il browser mobile cancelli la
 
 // === LA FUNZIONE PARLA DINAMICA E IBRIDA ===
 function parla(testo, callbackTermine, force = false) {
-    // Ora si ferma solo se non è attiva la voce E non c'è la forzatura "force"
     if (!voiceModeActive && !force) return;
     synth.cancel(); 
     
-    // Rimuove i tag HTML e gli eventuali asterischi dei nomi ufficiali
+    // Rimuove i tag HTML e gli asterischi dei nomi ufficiali
     let testoPulito = testo.replace(/<[^>]*>?/gm, '').replace(/\*/g, '');
     
-    // --- 1. CORREZIONI FISSE PER TERMINI DI SISTEMA E CONTINENTI ---
+    // 1. CORREZIONI FISSE PER TERMINI DI SISTEMA E CONTINENTI
     const correzioniGlobali = {
-        "Asia": "Àsia",       // Forza l'accento italiano
-        "Oceania": "Oceània"  // Previene pronunce strane
+        "Asia": "Àsia",       
+        "Oceania": "Oceània"  
     };
     for (const [parola, pronuncia] of Object.entries(correzioniGlobali)) {
         let regex = new RegExp("\\b" + parola + "\\b", "gi");
         testoPulito = testoPulito.replace(regex, pronuncia);
     }
 
-    // --- 2. INIEZIONE CORREZIONE FONETICA DAL DATABASE (Paesi e Capitali) ---
+    // 2. INIEZIONE CORREZIONE FONETICA DAL DATABASE (OTTIMIZZATA)
     if (typeof globalDb !== 'undefined') {
+        let sostituzioni = [];
+        
         globalDb.forEach(n => {
-            // Sostituisce il nome del paese se esiste una correzione fonetica
             if (n.pronuncia_paese && n.pronuncia_paese.trim() !== "") {
-                let nomePulito = n.nome.replace(/\*/g, '');
-                let regexPaese = new RegExp("\\b" + nomePulito + "\\b", "gi");
-                testoPulito = testoPulito.replace(regexPaese, n.pronuncia_paese);
+                sostituzioni.push({ originale: n.nome.replace(/\*/g, ''), pronuncia: n.pronuncia_paese });
             }
-            // Sostituisce il nome della capitale se esiste una correzione fonetica
             if (n.pronuncia_capitale && n.pronuncia_capitale.trim() !== "") {
-                let capPulita = n.capitale.replace(/\*/g, '');
-                let regexCapitale = new RegExp("\\b" + capPulita + "\\b", "gi");
-                testoPulito = testoPulito.replace(regexCapitale, n.pronuncia_capitale);
+                sostituzioni.push({ originale: n.capitale.replace(/\*/g, ''), pronuncia: n.pronuncia_capitale });
             }
         });
+
+        // Ordine decrescente per lunghezza per impedire sovrascritture errate (es. Guinea prima di Guinea Equatoriale)
+        sostituzioni.sort((a, b) => b.originale.length - a.originale.length);
+
+        sostituzioni.forEach(sost => {
+            let testoEscaped = sost.originale.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+            // Regex di precisione chirurgica che riconosce anche gli accenti italiani ed esteri
+            let regex = new RegExp("(?<=^|[^a-zA-ZÀ-ÿ])" + testoEscaped + "(?=[^a-zA-ZÀ-ÿ]|$)", "gi");
+            testoPulito = testoPulito.replace(regex, sost.pronuncia);
+        });
     }
-    // --------------------------------------------------
 
     let utterance = new SpeechSynthesisUtterance(testoPulito);
     utterance.lang = 'it-IT';
@@ -3112,7 +3131,6 @@ function parla(testo, callbackTermine, force = false) {
     
     if (callbackTermine) {
         let callbackEseguita = false;
-        
         let eseguiCallback = function() {
             if (!callbackEseguita) {
                 callbackEseguita = true;
@@ -3123,7 +3141,8 @@ function parla(testo, callbackTermine, force = false) {
         utterance.onend = eseguiCallback;
         utterance.onerror = eseguiCallback;
         
-        let tempoDiLetturaStimato = (testoPulito.length * 65) + 800; 
+        // Timer di sicurezza calibrato (85ms per lettera + 1500ms di margine)
+        let tempoDiLetturaStimato = (testoPulito.length * 85) + 1500; 
         setTimeout(eseguiCallback, tempoDiLetturaStimato);
     }
     
@@ -3307,7 +3326,7 @@ if (!window.voiceHooksAdded) {
                 setTimeout(() => {
                     let testoVite = vite === 1 ? "Ti resta una vita." : `Ti restano ${vite} vite.`;
                     parla(`Ti sei arreso. La risposta era ${correctAns}.${testoVite}`, function() {
-                        setTimeout(() => nextTurnMulti(), 300);
+                        setTimeout(() => nextTurnMulti(), 1000);
                     });
                 }, 200);
             }
@@ -3327,7 +3346,7 @@ if (!window.voiceHooksAdded) {
                 setTimeout(() => {
                     let testoVite = vite === 1 ? "Ti resta una vita." : `Ti restano ${vite} vite.`;
                     parla(`Sbagliato, era ${correctAns}${testoVite}`, function() {
-                        setTimeout(() => nextTurnMulti(), 300); 
+                        setTimeout(() => nextTurnMulti(), 1000); 
                     });
                 }, 200);
             }
@@ -3346,7 +3365,7 @@ if (!window.voiceHooksAdded) {
                 setTimeout(() => {
                     let testoVite = vite === 1 ? "Ti resta una vita." : `Ti restano ${vite} vite.`;
                     parla(`Sbagliato. ${testoVite}`, function() {
-                        setTimeout(() => nextTurnMulti(), 300);
+                        setTimeout(() => nextTurnMulti(), 1000);
                     });
                 }, 200);
             }
