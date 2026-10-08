@@ -1818,10 +1818,13 @@ td.buildQuestionText = (num) => {
             playTurn();
 
 	setTimeout(() => {
-            inputEl.focus();
-            inputEl.click();
+            // Impedisce alla tastiera di aprirsi da sola se sei tra L0 e L5 col microfono acceso
+            if (!(voiceModeActive && currentLevel <= 5)) {
+                inputEl.focus();
+                inputEl.click();
+            }
         }, 100);
-        }
+    }
 
         function surrenderTurn() {
     if (inputEl.disabled && errPanel.style.display === "flex") return; 
@@ -1958,12 +1961,8 @@ td.buildQuestionText = (num) => {
             
             // Se siamo al Livello 0 (sia a mano che a voce)
             if (currentLevel === 0) {
-                if (!voiceModeActive) {
-                    inputEl.style.display = "none"; // Nasconde l'input se giochi a mano
-                } else {
-                    inputEl.style.display = "block"; // Mostra l'input per la barra "In ascolto..."
-                }
-                
+                // Nascondiamo la barra testuale SEMPRE (elimina il moncherino verde)
+                inputEl.style.display = "none"; 
                 submitBtn.style.display = "none"; 
                 
                 if (mcContainer) {
@@ -2096,7 +2095,10 @@ function processaRisposta() {
         inputEl.classList.add("warning-flash", "shake");
         setTimeout(() => {
             inputEl.classList.remove("warning-flash", "shake");
-            inputEl.focus(); 
+            // Non forza la tastiera se hai il microfono acceso (L0-L5)
+            if (!(voiceModeActive && currentLevel <= 5)) {
+                inputEl.focus(); 
+            }
         }, 400);
         inputEl.value = "";
         
