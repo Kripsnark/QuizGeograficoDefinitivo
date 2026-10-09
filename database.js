@@ -113,7 +113,7 @@ CK	Isole Cook	Cook		Avarua		Ava Rua		Oceania	blu	bianco	stella, union jack	x	ste
 FK	Isole Falkland	Falkland		Stanley		Stènli		Sud America	blu		emblema nazionale, animale, union jack	x		3
 FO	Isole Faroe	Faroer		Tórshavn	Dr Shadn, thor charme	Tòrsciaven		Europa, Europa Settentrionale	bianco, rosso, blu		croce scandinava	x		3
 MP	Isole Marianne Settentrionali	*Marianne Settentrionali, Marianne, Isole Marianne		Saipan	*Capitol Hill			Asia	blu, bianco		emblema nazionale, stella	x	stella bianca, lenzuolo blu	3
-MH	Isole Marshall	Marshall		Majuro	Maiuro, Ma giuro			Oceania	blu, bianco, arancione		stella		stella bianca	2
+MH	Isole Marshall	Marshall		Majuro	Maiuro, Ma giuro	Magiùro		Oceania	blu, bianco, arancione		stella		stella bianca	2
 PN	Isole Pitcairn	Pitcairn		Adamstown	Adam's Town			Oceania	blu		emblema nazionale, union jack	x		3
 SB	Isole Salomone	Salomone		Honiara	Onyara			Oceania	azzurro, giallo, verde	bianco	stella		stella bianca	2
 VI	Isole Vergini americane	Vergini americane		Charlotte Amelie				Nord America, caraibi	bianco, blu, giallo		emblema nazionale, aquila, animale, uccello, scritta	x	lenzuolo bianco	3
@@ -138,7 +138,7 @@ LU	Lussemburgo			Lussemburgo			belgio, germania, francia	Europa, Benelux	azzurro
 MO	Macao			Macao			cina, mare	Asia, Asia Orientale	verde	bianco, giallo	stella	x	stella gialla, lenzuolo verde	3
 MK	Macedonia del Nord	Macedonia		Skopje	Skopie		albania, grecia, bulgaria, serbia, kosovo	europa, Balcani	rosso, giallo		sole			2
 MG	Madagascar			Antananarivo				africa, africa orientale	bianco, rosso, verde					1
-MW	Malawi		Malauui	Lilongwe			tanzania, mozambico, zambia	africa, africa orientale	nero, rosso, verde	rosso	sole		strisce orizzontali	2
+MW	Malawi		Malauui	Lilongwe		Lilòngue	tanzania, mozambico, zambia	africa, africa orientale	nero, rosso, verde	rosso	sole		strisce orizzontali	2
 MY	Malaysia	Malesia, Alessia		Kuala Lumpur			thailandia, singapore, brunei, indonesia, mare	Asia, Sud-Est Asiatico, Penisola indocinese	blu, rosso, bianco	giallo	mezzaluna, stella		mezzaluna gialla, stella gialla	1
 MV	Maldive			Malé	Ma lì			Asia, Subcontinente indiano	rosso, verde	bianco	mezzaluna		mezzaluna bianca	2
 ML	Mali	Mari		Bamako			algeria, niger, burkina faso, costa d'avorio, guinea, senegal, mauritania	africa, africa occidentale	verde, giallo, rosso				strisce verticali	2
@@ -237,7 +237,7 @@ TT	Trinidad e Tobago	Trinidad, Tobago		Port of Spain				Nord America, caraibi	ro
 TA	Tristan da Cunha	Tristan	Trìstan da Cùgna	Edinburgh of the Seven Seas	Edimburgh	Èdinbrha of de Sèven Sìis		africa, Africa occidentale	blu		emblema nazionale, animale, union jack	x	strisce orizzontali	3
 TN	Tunisia			Tunisi			algeria, libia, mare	Africa, Africa settentrionale, Mediterraneo	rosso, bianco	rosso, bianco	mezzaluna, stella, cerchio		cerchio bianco, mezzaluna rossa, stella rossa, lenzuolo rosso	1
 TR	Turchia			Ankara			azerbaigian, grecia, bulgaria, georgia, armenia, iran, iraq, siria, mare	Asia, Mediterraneo	rosso, bianco	bianco	mezzaluna, stella		mezzaluna bianca, stella bianca, lenzuolo rosso	1
-TM	Turkmenistan			Ashgabat	Azkaban, Azkabat	Ashgabàt	kazakistan, uzbekistan, afghanistan, iran	Asia, Asia Centrale	verde, rosso	bianco	mezzaluna, stella		mezzaluna bianca, stella bianca	2
+TM	Turkmenistan			Ashgabat	Azkaban, Azkabat	Ash gabàt	kazakistan, uzbekistan, afghanistan, iran	Asia, Asia Centrale	verde, rosso	bianco	mezzaluna, stella		mezzaluna bianca, stella bianca	2
 TC	Turks e Caicos	Turks, Caicos, turks and caicos		Cockburn Town	Coq burn town			nord america, caraibi	blu		emblema nazionale, union jack	x		3
 TV	Tuvalu			Funafuti	Una foti, fai una foto			Oceania	azzurro	giallo	stella, union jack		stella gialla	2
 UA	Ucraina			Kiev			russia, moldavia, romania, ungheria, slovacchia, polonia, bielorussia, mare	europa	blu, giallo				strisce orizzontali	1
