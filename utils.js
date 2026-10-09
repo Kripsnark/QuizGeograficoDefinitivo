@@ -55,19 +55,65 @@ function levenshteinDistance(a, b) {
     return matrix[aNorm.length][bNorm.length];
 }
 
-// --- FORMATTAZIONE NOMI ---
-function getPrintedName(country, matchedName) {
-    let dName = capitalize(country.nome);
-    if (matchedName && matchedName.toLowerCase() !== country.nome.toLowerCase() && country.alias_paese_ufficiali.map(a=>a.toLowerCase()).includes(matchedName.toLowerCase())) {
-        dName = capitalize(matchedName);
+// --- FORMATTAZIONE NOMI E CONTROLLO STRINGHE ---
+function getBestDisplayName(country, userInput, reqInit) {
+    if (reqInit) {
+        if (country.nome.toLowerCase().startsWith(reqInit.toLowerCase())) return capitalize(country.nome.replace(/\*/g, ''));
+        let offAlias = country.alias_paese_ufficiali.find(a => a.toLowerCase().startsWith(reqInit.toLowerCase()));
+        if (offAlias) return capitalize(offAlias.replace(/\*/g, ''));
     }
-    return dName;
+    
+    let cleanInput = userInput.trim().toLowerCase();
+    let matchedOffAlias = country.alias_paese_ufficiali.find(a => a.replace(/\*/g, '').toLowerCase() === cleanInput);
+    if (matchedOffAlias) return capitalize(matchedOffAlias.replace(/\*/g, ''));
+    
+    return capitalize(country.nome.replace(/\*/g, ''));
 }
 
-function getPrintedCapital(country, matchedCapitalStr) {
-    let cName = capitalize(country.capitale);
-    if (matchedCapitalStr && matchedCapitalStr.toLowerCase() !== country.capitale.toLowerCase() && country.alias_capitale_ufficiali.map(a=>a.toLowerCase()).includes(matchedCapitalStr.toLowerCase())) {
-        cName = capitalize(matchedCapitalStr);
+function getBestDisplayCapital(country, userInput, reqCapInit, reqCapFin) {
+    if (!country.capitale) return "";
+    if (reqCapInit || reqCapFin) {
+        let check = (str) => {
+            let s = str.toLowerCase();
+            let okStart = reqCapInit ? s.startsWith(reqCapInit.toLowerCase()) : true;
+            let okEnd = reqCapFin ? s.endsWith(reqCapFin.toLowerCase()) : true;
+            return okStart && okEnd;
+        };
+        if (check(country.capitale)) return capitalize(country.capitale.replace(/\*/g, ''));
+        let offAlias = (country.alias_capitale_ufficiali || []).find(a => check(a));
+        if (offAlias) return capitalize(offAlias.replace(/\*/g, ''));
     }
-    return cName;
+    
+    let cleanInput = userInput.trim().toLowerCase();
+    let matchedOffAlias = (country.alias_capitale_ufficiali || []).find(a => a.replace(/\*/g, '').toLowerCase() === cleanInput);
+    if (matchedOffAlias) return capitalize(matchedOffAlias.replace(/\*/g, ''));
+    
+    return capitalize(country.capitale.replace(/\*/g, ''));
+}
+
+function checkInit(country, matchedName, reqI) {
+    if (!reqI) return true;
+    let reqClean = reqI.toLowerCase();
+    let nClean = country.nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    if (nClean.startsWith(reqClean)) return true;
+    
+    let matchedClean = matchedName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    let aliasCleanList = country.alias_paese_ufficiali.map(a => a.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase());
+    
+    if (aliasCleanList.includes(matchedClean) && matchedClean.startsWith(reqClean)) return true;
+    return false;
+}
+
+function checkCapInit(country, matchedCap, reqCapI) {
+    if (!reqCapI) return true;
+    if (!country.capitale) return false;
+    let reqClean = reqCapI.toLowerCase();
+    let cClean = country.capitale.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    if (cClean.startsWith(reqClean)) return true;
+    
+    let matchedClean = matchedCap.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    let aliasCleanList = country.alias_capitale_ufficiali.map(a => a.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase());
+    
+    if (aliasCleanList.includes(matchedClean) && matchedClean.startsWith(reqClean)) return true;
+    return false;
 }

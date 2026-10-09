@@ -189,6 +189,100 @@ if (bestMatches.length > 0) {
             });
         }
 
+// ==========================================
+// GESTIONE AUTO-SAVE (Partite in sospeso)
+// ==========================================
+function autoSaveGame() {
+    // Non salva se siamo nel menu o nella schermata di Game Over
+    if (document.getElementById("start-screen").style.display !== "none") return;
+    if (document.getElementById("game-over-screen").style.display === "flex") return;
+    
+    let state = {
+        currentLevel, vite, esatte, punteggio, prossimoCuore,
+        currentStreak, bestStreak, fotofinishCount, grazieRicevuteCount,
+        erroriCommessi, nazioniUsate, recentTargets, logQuestionCounter,
+        totalActiveTimeMs, totalAnswersSubmitted, nazioniDigitateCount, nazioniIgnorateCount,
+        customConfig, configL6, debugGameLog,
+        levelDbSiglas: levelDb.map(n => n.sigla) // Salva l'esatto bacino filtrato!
+    };
+    localStorage.setItem('geoQuizAutoSave', JSON.stringify(state));
+}
+
+function clearAutoSave() {
+    localStorage.removeItem('geoQuizAutoSave');
+}
+
+window.discardAutoSave = function() {
+    clearAutoSave();
+    closeModal();
+};
+
+window.resumeGame = function() {
+    let saved = localStorage.getItem('geoQuizAutoSave');
+    if (!saved) return;
+    let state = JSON.parse(saved);
+
+    // Iniezione dei dati in memoria
+    currentLevel = state.currentLevel; vite = state.vite; esatte = state.esatte;
+    punteggio = state.punteggio; prossimoCuore = state.prossimoCuore;
+    currentStreak = state.currentStreak; bestStreak = state.bestStreak;
+    fotofinishCount = state.fotofinishCount; grazieRicevuteCount = state.grazieRicevuteCount;
+    erroriCommessi = state.erroriCommessi || []; nazioniUsate = state.nazioniUsate || [];
+    recentTargets = state.recentTargets || []; logQuestionCounter = state.logQuestionCounter || 0;
+    totalActiveTimeMs = state.totalActiveTimeMs || 0; totalAnswersSubmitted = state.totalAnswersSubmitted || 0;
+    nazioniDigitateCount = state.nazioniDigitateCount || {}; nazioniIgnorateCount = state.nazioniIgnorateCount || {};
+    if (state.customConfig) customConfig = state.customConfig;
+    if (state.configL6) configL6 = state.configL6;
+    
+    debugGameLog = state.debugGameLog || "";
+    debugGameLog += "\n[!] PARTITA SOSPESA E RIPRISTINATA\n\n";
+
+    // Ricostruisce il bacino nazioni in modo millimetrico (vitale per il L6 Sprint)
+    if (state.levelDbSiglas) levelDb = globalDb.filter(n => state.levelDbSiglas.includes(n.sigla));
+    else levelDb = globalDb; 
+
+    // Setup grafico UI
+    document.body.style.overscrollBehavior = "none"; 
+    document.getElementById("start-screen").style.display = "none";
+    document.getElementById("custom-setup-screen").style.display = "none";
+    document.getElementById("l6-setup-screen").style.display = "none";
+    document.getElementById("header").style.display = "flex";
+    document.getElementById("question").style.display = "block";
+    document.getElementById("input-area").style.display = "flex";
+    homeBtn.style.display = "block"; 
+    
+    history.pushState(null, null, window.location.href);
+
+    if (currentLevel === 6) UI.aggiornaHeader(vite, customConfig.vite, maxVite, esatte, punteggio, currentLevel, levelDb.length);
+    else aggiornaUI();
+    
+    closeModal();
+    playTurn(); // Avvia un nuovo turno
+};
+
+window.checkAutoSave = function() {
+    let saved = localStorage.getItem('geoQuizAutoSave');
+    if (saved) {
+        let state = JSON.parse(saved);
+        let lvlName = state.currentLevel === 0 ? "0 (Cucciolo Spaesato)" :
+                      state.currentLevel === 5 ? "5 (Personalizzata)" :
+                      state.currentLevel === 6 ? "6 (Morte Improvvisa)" :
+                      state.currentLevel === 7 ? "7 (Senza Mani)" :
+                      "Livello " + state.currentLevel;
+        let html = `
+            <div style="text-align: center; color: #fff;">
+                <p style="font-size: 15px; margin-bottom: 20px; line-height: 1.5;">Hai una partita in sospeso:<br><strong style="color:#ffd700; font-size:18px;">${lvlName}</strong><br><br>Punti: <strong style="color:#4caf50;">${state.punteggio}</strong> | Vite: <strong style="color:#f44336;">${state.vite} ❤️</strong></p>
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button onclick="resumeGame()" style="background: #4caf50; color: white; padding: 12px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; flex: 1;">▶️ RIPRENDI</button>
+                    <button onclick="discardAutoSave()" style="background: #f44336; color: white; padding: 12px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; flex: 1;">🗑️ ABBANDONA</button>
+                </div>
+            </div>
+        `;
+        openModal("🔄 BENTORNATO!", html);
+    }
+};
+// ==========================================
+
         function startGame(lvl) {
             document.body.style.overscrollBehavior = "none"; 
             currentLevel = lvl;
@@ -309,6 +403,7 @@ if (bestMatches.length > 0) {
         };
 
         function resetGame() {
+            clearAutoSave();
             debugGameLog = ""; 
             clearTimeout(actionTimeout); 
             stopTimer();
@@ -1474,33 +1569,6 @@ td.buildQuestionText = (num) => {
             return validList;
         }
 
-        function checkInit(country, matchedName, reqI) {
-            if (!reqI) return true;
-            let reqClean = reqI.toLowerCase();
-            let nClean = country.nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-            if (nClean.startsWith(reqClean)) return true;
-            
-            let matchedClean = matchedName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-            let aliasCleanList = country.alias_paese_ufficiali.map(a => a.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase());
-            
-            if (aliasCleanList.includes(matchedClean) && matchedClean.startsWith(reqClean)) return true;
-            return false;
-        }
-
-        function checkCapInit(country, matchedCap, reqCapI) {
-            if (!reqCapI) return true;
-            if (!country.capitale) return false;
-            let reqClean = reqCapI.toLowerCase();
-            let cClean = country.capitale.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-            if (cClean.startsWith(reqClean)) return true;
-            
-            let matchedClean = matchedCap.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-            let aliasCleanList = country.alias_capitale_ufficiali.map(a => a.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase());
-            
-            if (aliasCleanList.includes(matchedClean) && matchedClean.startsWith(reqClean)) return true;
-            return false;
-        }
-
         function checkSingleAnswer(inputStr, td, level) {
             let bestMatch = null;
             let globalMinDist = 999;
@@ -2093,42 +2161,10 @@ td.buildQuestionText = (num) => {
                 submitBtn.style.display = "block"; 
                 if (mcContainer) mcContainer.style.display = "none";
             }
+            
+            // FOTOGRAFA LA PARTITA (Auto-Save invisibile)
+            autoSaveGame();
         }
-
-function getBestDisplayName(country, userInput, reqInit) {
-    if (reqInit) {
-        if (country.nome.toLowerCase().startsWith(reqInit.toLowerCase())) return capitalize(country.nome.replace(/\*/g, ''));
-        let offAlias = country.alias_paese_ufficiali.find(a => a.toLowerCase().startsWith(reqInit.toLowerCase()));
-        if (offAlias) return capitalize(offAlias.replace(/\*/g, ''));
-    }
-    
-    let cleanInput = userInput.trim().toLowerCase();
-    let matchedOffAlias = country.alias_paese_ufficiali.find(a => a.replace(/\*/g, '').toLowerCase() === cleanInput);
-    if (matchedOffAlias) return capitalize(matchedOffAlias.replace(/\*/g, ''));
-    
-    return capitalize(country.nome.replace(/\*/g, ''));
-}
-
-function getBestDisplayCapital(country, userInput, reqCapInit, reqCapFin) {
-    if (!country.capitale) return "";
-    if (reqCapInit || reqCapFin) {
-        let check = (str) => {
-            let s = str.toLowerCase();
-            let okStart = reqCapInit ? s.startsWith(reqCapInit.toLowerCase()) : true;
-            let okEnd = reqCapFin ? s.endsWith(reqCapFin.toLowerCase()) : true;
-            return okStart && okEnd;
-        };
-        if (check(country.capitale)) return capitalize(country.capitale.replace(/\*/g, ''));
-        let offAlias = (country.alias_capitale_ufficiali || []).find(a => check(a));
-        if (offAlias) return capitalize(offAlias.replace(/\*/g, ''));
-    }
-    
-    let cleanInput = userInput.trim().toLowerCase();
-    let matchedOffAlias = (country.alias_capitale_ufficiali || []).find(a => a.replace(/\*/g, '').toLowerCase() === cleanInput);
-    if (matchedOffAlias) return capitalize(matchedOffAlias.replace(/\*/g, ''));
-    
-    return capitalize(country.capitale.replace(/\*/g, ''));
-}
 
 function processaRisposta() {
     let inputStr = inputEl.value.trim().toLowerCase();
@@ -2700,6 +2736,7 @@ function eseguiValidazioneMultipla(isTimeout = false) {
         function popolaGameOver(isVictory = false) {
             if (gameOverScreen.style.display === "flex") return; // BLOCCO DOPPIO LOG E SCHERMATA
             
+            clearAutoSave();
             playSound(isVictory ? "vittoria" : "sconfitta");
             
             document.getElementById("header").style.display = "none";
@@ -2995,6 +3032,7 @@ function eseguiValidazioneMultipla(isTimeout = false) {
 	window.terminaPartitaVolontaria = function(daVoce = false) {
             let conf = daVoce ? true : confirm("Vuoi davvero terminare la partita e salvare i tuoi record?");
             if (conf) {
+                clearAutoSave();
                 if (currentLevel === 4 || currentLevel === 6 || (currentLevel === 5 && customConfig.timer)) stopTimer();
                 if (voiceModeActive) { try { assistantRec.stop(); isListening = false; } catch(e) {} }
                 inputEl.disabled = true;
@@ -3528,3 +3566,8 @@ if (!window.voiceHooksAdded) {
         }
     };
 }
+
+// Controlla se c'è una partita in sospeso appena l'app si carica
+setTimeout(() => {
+    if (typeof checkAutoSave === 'function') checkAutoSave();
+}, 400);
