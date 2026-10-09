@@ -621,7 +621,31 @@ if (bestMatches.length > 0) {
                 td.reqFormato = td.targetNode.formati_bandiera[Math.floor(Math.random() * td.targetNode.formati_bandiera.length)];
 
                 if (selectedConditions.includes('area')) { td.reqArea = td.selectedArea; td.numVariables++; }
-                if (selectedConditions.includes('colore')) { td.reqColor = td.targetNode.colori_base[0]; td.numVariables++; }
+                if (selectedConditions.includes('colore')) { 
+                    // FIX ANTI-RIPETIZIONE: Non dire "contiene X" se la caratteristica visiva ha già quel colore (maschile o femminile)
+                    let coloreScelto = td.targetNode.colori_base[0];
+                    let formatoText = td.reqFormato.toLowerCase();
+                    
+                    // Funzione che taglia la "o" finale (es. "rosso" -> "ross", "bianco" -> "bianc") per beccare anche "rossa" o "bianca". 
+                    // I colori come "verde" o "blu" restano identici.
+                    let getRadice = (col) => col.endsWith("o") ? col.slice(0, -1) : col;
+                    
+                    if (formatoText.includes(getRadice(coloreScelto))) {
+                        let altColors = td.targetNode.colori_base.filter(c => !formatoText.includes(getRadice(c)));
+                        if (altColors.length > 0) {
+                            coloreScelto = altColors[0];
+                            td.reqColor = coloreScelto; 
+                            td.numVariables++;
+                        } else {
+                            // Se l'unico colore base del paese è già nominato, annulliamo questa condizione (silenzio elegante)
+                            let idx = selectedConditions.indexOf('colore');
+                            if (idx > -1) selectedConditions.splice(idx, 1);
+                        }
+                    } else {
+                        td.reqColor = coloreScelto; 
+                        td.numVariables++;
+                    }
+                }
                 if (selectedConditions.includes('geo')) { 
                     td.reqGeo = td.targetNode.tipoGeo; 
                     if (['isola', 'costiera'].includes(td.reqGeo) && Math.random() > 0.5) td.reqGeo = 'marittima';
@@ -708,7 +732,22 @@ if (bestMatches.length > 0) {
                 if (f3Variant === 2 && td.targetNode.colori_base.length === 0) f3Variant = 0;
                 
                 if (f3Variant === 1) { td.reqArea = td.selectedArea; td.numVariables++; }
-                if (f3Variant === 2) { td.reqColor = td.targetNode.colori_base[0]; td.numVariables++; }
+                if (f3Variant === 2) { 
+                    // FIX ANTI-RIPETIZIONE: Se deve chiedere un colore base, controlla che non sia identico a quello dell'emblema
+                    let coloreScelto = td.targetNode.colori_base[0];
+                    if (td.isColoreEmblema && coloreScelto === td.elemScelto) {
+                        let altColors = td.targetNode.colori_base.filter(c => c !== td.elemScelto);
+                        if (altColors.length > 0) {
+                            coloreScelto = altColors[0];
+                        } else {
+                            f3Variant = 0; // Annulla la richiesta colore per non sembrare un robot
+                        }
+                    }
+                    if (f3Variant === 2) {
+                        td.reqColor = coloreScelto; 
+                        td.numVariables++; 
+                    }
+                }
                 if (f3Variant === 3) { td.reqInit = td.targetNode.nome.charAt(0).toUpperCase(); td.numVariables++; }
             }
             if (format === 4) {
@@ -1016,7 +1055,36 @@ td.buildQuestionText = (num) => {
                 return finalQ;
             };
 
-            let tempValid = getValidAnswersArray(td, currentLevel);
+            // --- FIX ELEGANZA: RIMOZIONE VINCOLI POSITIVI INUTILI ---
+            // Impedisce al motore di aggiungere condizioni che non riducono il bacino di soluzioni
+            if ([3, 8, 11, 12].includes(td.format)) {
+                let currentValidCount = getValidAnswersArray(td, currentLevel).length;
+                
+                let optionalKeys = [];
+                if (td.format === 3) optionalKeys = ['reqColor', 'reqInit'];
+                if (td.format === 8) optionalKeys = ['reqInit']; // reqGeo non si tocca (è il nucleo della domanda)
+                if (td.format === 11) optionalKeys = ['reqColor', 'reqInit', 'reqCapInit', 'reqGeo']; 
+                if (td.format === 12) optionalKeys = ['reqInit', 'f12RequiresSymbol'];
+                
+                // Vengono testati e rimossi uno a uno (l'area geografica è salvaguardata per sapore testuale)
+                for (let key of optionalKeys) {
+                    if (td[key]) {
+                        let backup = td[key];
+                        delete td[key]; // Prova a spegnere il vincolo
+                        
+                        let testValidCount = getValidAnswersArray(td, currentLevel).length;
+                        
+                        // Se togliendo il vincolo il numero di risposte resta identico, il vincolo non serviva.
+                        if (testValidCount === currentValidCount) {
+                            td.numVariables--; // Lo lascia eliminato e corregge il calcolo del tempo
+                        } else {
+                            td[key] = backup;  // Serviva a scremare! Lo riaccende.
+                        }
+                    }
+                }
+            }
+
+	    let tempValid = getValidAnswersArray(td, currentLevel);
             
             let isMitragliatrice = (currentLevel === 4) || (currentLevel === 5 && customConfig.maxCombo > 2);
             let isCecchino = (currentLevel === 3) || (currentLevel === 5 && customConfig.maxCombo <= 2);
@@ -1670,10 +1738,16 @@ td.buildQuestionText = (num) => {
             clearInterval(mainTimerInterval);
             
             if (currentLevel === 6) {
-                // LIVELLO 6: Salta la tregua e innesca il timer all'istante!
-                activateMainTimer();
+                // SE C'È LA VOCE, ASPETTA CHE FINISCA DI PARLARE
+                if (voiceModeActive) {
+                    timerBar.style.backgroundColor = "#2196f3"; 
+                    timerStatus.innerText = "ASCOLTA LA DOMANDA...";
+                } else {
+                    // SE GIOCHI A MANO, IL TIMER PARTE ALL'ISTANTE (NESSUNA TREGUA)
+                    activateMainTimer();
+                }
             } else {
-                // LIVELLI 4-5: Tregua Lettura di 5 secondi
+                // LIVELLI 4-5: Tregua Lettura fissa di 5 secondi
                 timerBar.style.backgroundColor = "#2196f3"; 
                 timerStatus.innerText = "TREGUA LETTURA (5s)";
                 readingTimeout = setTimeout(() => {
@@ -1907,6 +1981,11 @@ td.buildQuestionText = (num) => {
                 parla(testoDaLeggere, function() {
                     if (assistantRec && !isListening) {
                         innescaMicrofonoConDing();
+                    }
+                    
+                    // L'ASSISTENTE HA FINITO DI PARLARE: SE SIAMO AL L6, SCATENA IL TIMER!
+                    if (currentLevel === 6 && timerState === "reading") {
+                        activateMainTimer();
                     }
                 });
             }
