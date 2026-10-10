@@ -162,35 +162,46 @@ function openRules() {
             <h3 style="color:#f44336; margin: 20px 0 10px 0; font-size: 16px; border-bottom: 1px solid #444; padding-bottom: 5px; text-transform: uppercase;">❤️ Vite, Sopravvivenza e Punteggio</h3>
             <ul style="margin:0; padding-left:20px; display: flex; flex-direction: column; gap: 8px;">
                 <li><strong>Cuori e Cure:</strong> Inizi la partita standard con <strong>3 vite</strong>. Ottieni un cuore extra ogni <strong>750 punti</strong> accumulati.</li>
-                <li><strong>Bonus Audacia (x2):</strong> Se nei livelli a bassa difficoltà (L1 e L2) utilizzi come risposte nazioni complesse appartenenti a tier superiori, il punteggio della risposta viene raddoppiato.</li>
-                <li><strong>Malus Pigrizia (-50%):</strong> Il motore punisce la ripetitività. Usare nazioni già nominate di recente dimezza il punteggio guadagnato (Attivo nei Livelli 1, 2 e 3).</li>
-                <li><strong>Grazia Ricevuta:</strong> Nelle modalità a Combo (L4 e L5), se scade il timer ma hai inserito correttamente la maggioranza delle risposte richieste (es. 2 su 3), il motore è clemente: ti salvi dalla perdita della vita, ma subisci un punteggio dimezzato per ogni risposta mancante.</li>
-                <li><strong>Salvataggio al Fotofinish:</strong> Inserire l'ultima risposta corretta nell'ultimo 25% del tempo disponibile conferisce un salvataggio in extremis (registrato nelle statistiche).</li>
+                <li><strong>Logica Punteggi - Domande Singole:</strong> Per le domande classiche, il punteggio varia in base alla difficoltà logica della domanda, non alla risposta che inserisci. Una domanda con una sola soluzione possibile (es. "Qual è la capitale dell'Italia?") ti premia con <strong>150 punti</strong>. Se la domanda è molto ampia e ha più di 5 soluzioni valide (es. "Nomina uno stato con il rosso nella bandiera"), prenderai un punteggio base di consolazione (<strong>30 punti</strong>). Più la domanda stringe il cerchio delle risposte corrette, più punti otterrai.</li>
+                <li><strong>Logica Punteggi - Domande Combo:</strong> Nelle combo (es. "Nomina 3 Stati..."), il punteggio abbandona gli scaglioni fissi e usa una proporzione matematica pura, calcolando esattamente quanto è raro trovare la combinazione che ti ha proposto. Per questo motivo, rispondere a una domanda con un'infinità di opzioni ti garantirà pochissimi punti, mentre azzeccare una combo stretta su un bacino minuscolo ti coprirà d'oro.</li>
+                <li><strong>Bonus Audacia (x2):</strong> Se nei livelli a bassa difficoltà (L1 e L2) utilizzi come risposte nazioni non indipendenti o complesse (appartenenti a tier superiori), il punteggio guadagnato su quella risposta viene raddoppiato. Osa con l'esotico!</li>
+                <li><strong>Malus Pigrizia (-50%):</strong> Il motore punisce la ripetitività. Se inserisci nazioni che avevi già nominato in precedenza durante la stessa partita e la domanda offriva svariate alternative in cui pescare, subirai un taglio del 50% al punteggio ottenuto. Cerca di variare il tuo arsenale geografico. (Disattivato solo nei livelli con timer, non serve che ci ringrazi!).</li>
+                <li><strong>Grazia Ricevuta:</strong> Nelle modalità a Combo (L4 e L5), se scade il timer implacabile ma sei riuscito a inserire correttamente almeno due delle risposte richieste, il motore è clemente: ti salvi dalla perdita della vita (niente Game Over!), ma il tuo punteggio verrà dimezzato per ognuna delle risposte mancanti.</li>
+                <li><strong>Salvataggio al Fotofinish:</strong> Inserire l'ultima risposta corretta nell'ultimo 25% del tempo disponibile conferisce un salvataggio in extremis (registrato nelle statistiche finali).</li>
             </ul>
 
             <h3 style="color:#2196f3; margin: 25px 0 10px 0; font-size: 16px; border-bottom: 1px solid #444; padding-bottom: 5px; text-transform: uppercase;">🗺️ Terminologia e Definizioni Geografiche</h3>
             <p style="margin-top: 0; font-size: 13px; color: #aaa;">Presta estrema attenzione alle definizioni fornite dai modificatori di livello. Il motore logico distingue rigorosamente le categorie costiere:</p>
             <ul style="margin:0; padding-left:20px; display: flex; flex-direction: column; gap: 8px;">
-                <li><strong>Stato Insulare:</strong> Accetta ESCLUSIVAMENTE nazioni composte unicamente da isole (es. Giappone, Groenlandia, Cuba).</li>
+                <li><strong>Stato Insulare:</strong> Accetta ESCLUSIVAMENTE nazioni composte unicamente da isole (es. Giappone, Nuova Zelanda, Cuba).</li>
                 <li><strong>Stato Continentale Costiero:</strong> Esclude categoricamente le isole. Valgono SOLO i paesi situati su una massa continentale e bagnati dal mare (es. Italia, Brasile, Sudafrica).</li>
                 <li><strong>Con Sbocco sul Mare:</strong> Parametro inclusivo. Accetta indifferentemente ENTRAMBI i casi precedenti (Isole + Costieri).</li>
-                <li><strong>Stato Interno (Landlocked):</strong> Nazioni completamente circondate da terraferma, senza alcun accesso diretto agli oceani (es. Svizzera, Ciad, Mongolia).</li>
+                <li><strong>Stato Interno (senza sbocco sul mare):</strong> Nazioni completamente circondate da terraferma, senza alcun accesso diretto agli oceani (es. Svizzera, Ciad, Mongolia).</li>
             </ul>
 
             <h3 style="color:#ffd700; margin: 25px 0 10px 0; font-size: 16px; border-bottom: 1px solid #444; padding-bottom: 5px; text-transform: uppercase;">🌍 Livelli di Sfida e Traguardi di Vittoria</h3>
             <ul style="margin:0; padding-left:20px; display: flex; flex-direction: column; gap: 8px;">
-                <li><strong>0. Cucciolo Spaesato:</strong> Modalità allenamento a scelta multipla visiva. Perfetta per prendere confidenza con bandiere e capitali.</li>
+                <li><strong style="color:#4caf50;">0. Cucciolo Spaesato:</strong> Modalità allenamento a scelta multipla visiva. Perfetta per prendere confidenza con bandiere e capitali.</li>
                 <li><strong>1. Bestia Apolide:</strong> Include solo Nazioni Indipendenti di dominio comune. <em>(Vittoria standard: 2.500 pt)</em></li>
                 <li><strong>2. Animale Accasato:</strong> Estende il bacino a tutti i 193 membri ONU (inclusi i micro-stati) e introduce i Modificatori Negativi ("che NON confina con..."). <em>(Vittoria standard: 3.500 pt)</em></li>
-                <li><strong>3. Creatura Cosmopolita:</strong> Sblocca il database assoluto, includendo territori d'oltremare e colonie.</li>
-                <li><strong>4. Divinità Geografa:</strong> Modalità estrema. Fino a 5 risposte richieste a raffica per singolo turno, Timer implacabile. (Malus Pigrizia disattivato).</li>
-                <li><strong>5. Partita Personalizzata:</strong> Sandbox totale. Scegli bacino, continenti ammessi, numero di vite, formato del timer e tetto massimo delle combo.</li>
-                <li><strong style="color:#9c27b0;">6. Morte Improvvisa:</strong> Una singola vita. 10 secondi netti a domanda. Scegli il bacino (Sprint 50, ONU 193 o Totale 253) e sopravvivi fino all'ultima bandiera o capitale rimasta nel database.</li>
+                <li><strong>3. Creatura Cosmopolita:</strong> Nessuna pietà, né nelle domande né nelle richieste. Sblocca il database assoluto, includendo territori d'oltremare e colonie (fino a 253).</li>
+                <li><strong>4. Divinità Geografa:</strong> Modalità estrema con Timer implacabile. Fino a 5 risposte richieste a raffica per singolo turno.</li>
+                <li><strong style="color:#2196f3;">5. Partita Personalizzata:</strong> Sandbox totale. Scegli bacino, continenti ammessi, numero di vite, formato del timer e tetto massimo delle combo. Creata per testare le tue difese in specifici ambiti geografici.</li>
+                <li><strong style="color:#9c27b0;">6. Morte Improvvisa:</strong> Una singola vita. 10 secondi netti a domanda. Nessuna cura, nessun bonus. Scegli il bacino (Sprint 50, ONU 193 o Totale 253) e sopravvivi fino all'ultima nazione o capitale rimasta nel database.</li>
+            </ul>
+
+             <h3 style="color:#4caf50; margin: 25px 0 10px 0; font-size: 16px; border-bottom: 1px solid #444; padding-bottom: 5px; text-transform: uppercase;">🎙️ Modalità Assistente Vocale (Sperimentale)</h3>
+            <p style="margin-top: 0; font-size: 13px; color: #aaa;">Premi l'icona del microfono in alto a sinistra per attivare l'inserimento vocale e farti leggere le domande. Una modalità essenziale per giocare <strong>"Senza Mani"</strong>.</p>
+            <ul style="margin:0; padding-left:20px; display: flex; flex-direction: column; gap: 8px;">
+                <li><strong>Limiti Tecnologici:</strong> Il riconoscimento vocale si affida ai server di Google. Questi server spesso "italianizzano" o traducono i nomi geografici esotici in parole di uso comune (es. "Roseau" capita venga trascritto come "Rousseau" o "Mata-Utu" come "Mad a u2").</li>
+                <li><strong>Nomi Composti e Inizio Turno:</strong> Cerca di pronunciare i nomi composti o stranieri in modo fluido e compatto, senza lunghe pause in mezzo, per evitare che la frase venga spezzata. Attendi sempre che il sistema abbia terminato di parlare prima di rispondere, altrimenti non sentirà la prima sillaba della tua parola.</li>
+                <li><strong>Il Nostro Impegno:</strong> Il database del gioco possiede uno scudo anti-fraintendimenti ("Alias Maccheronici") in continua espansione. Raccogliamo dai Log gli errori di trascrizione più frequenti e li inseriamo come risposte segretamente valide. Pertanto, se il sistema sbaglia a capire "Kirghizistan", non disperare: probabilmente l'aggiornamento successivo lo sistemerà. Tu impara la geografia, agli alias ci pensiamo noi.</li>
+                <li><strong>Comandi Vocali Speciali in partita:</strong> Oltre ai nomi delle nazioni e delle capitali, puoi esclamare: <em>"Ripeti", "Ripeti domanda", "Mi arrendo", "Termina partita"</em>. Nel menu puoi invece chiamare l'apertura rapida di un livello dicendo: <em>"Livello zero", "Livello Uno", "Livello Morte Improvvisa"</em> ecc. 😉</li>
             </ul>
 
             <div style="margin-top: 25px; background: rgba(255, 215, 0, 0.1); border-left: 4px solid #ffd700; padding: 12px;">
                 <strong style="color: #ffd700; font-size: 16px; text-transform: uppercase;">🏆 Vittoria Leggendaria</strong><br>
-                Raggiungere quota <strong>10.000 punti</strong> nei Livelli 3 e 4 sblocca lo status di Vittoria Leggendaria. A quel punto, il giocatore è chiamato a compiere una scelta: ritirarsi da eroe consacrando il punteggio, oppure continuare ad oltranza per frantumare ogni record assoluto.
+                Raggiungere quota <strong>10.000 punti</strong> nei Livelli 3 e 4 sblocca lo status di Vittoria Leggendaria. A quel punto, il giocatore è chiamato a compiere una scelta: ritirarsi da eroe consacrando il punteggio, oppure continuare ad oltranza per frantumare ogni record assoluto e sfidare il Limite.
             </div>
         </div>
     `;
@@ -347,9 +358,15 @@ window.renderRecordTab = function(tabName) {
         </div>`;
     } 
     else if (tabName === 'levels') {
+        // Mostra il Livello 7 solo se è stato giocato almeno una volta
+        let visibleLevels = [0, 1, 2, 3, 4, 5, 6];
+        if (statsByLevel[7] && statsByLevel[7].plays > 0) {
+            visibleLevels.push(7);
+        }
+
         html += `
         <div style="display:flex; gap:5px; margin-bottom:10px; flex-wrap:wrap; justify-content:center;">
-            ${[0,1,2,3,4,5,6,7].map(l => `<button onclick="switchLevelTab(${l})" class="ui-tab-btn" id="lvl-btn-${l}" style="padding:6px; font-size:11px;">${l===5?'CUST':l===6?'SUDDEN':'L'+l}</button>`).join('')}
+            ${visibleLevels.map(l => `<button onclick="switchLevelTab(${l})" class="ui-tab-btn" id="lvl-btn-${l}" style="padding:6px; font-size:11px;">${l===5?'CUST':l===6?'SUDDEN':(l===7?'L7':'L'+l)}</button>`).join('')}
         </div>
         <div id="level-detail-container" style="background:#2a2a2a; border:1px solid #444; border-radius:6px; padding:15px; text-align:center;">
             <!-- Contenuto dinamico -->
@@ -360,10 +377,17 @@ window.renderRecordTab = function(tabName) {
     }
     else if (tabName === 'logs') {
         html += "<div style='max-height: 55vh; overflow-y: auto; padding-right: 5px;'>";
-        for(let lvl = 0; lvl <= 6; lvl++) {
-            let lvlName = lvl === 0 ? "Livello 0" : (lvl === 5 ? "Personalizzata" : (lvl === 6 ? "Morte Improvvisa" : "Livello " + lvl));
+        
+        let visibleLogs = [0, 1, 2, 3, 4, 5, 6];
+        if (recentGamesHistory[7] && recentGamesHistory[7].length > 0) {
+            visibleLogs.push(7);
+        }
+
+        visibleLogs.forEach(lvl => {
+            let lvlName = lvl === 0 ? "Livello 0" : (lvl === 5 ? "Personalizzata" : (lvl === 6 ? "Morte Improvvisa" : (lvl === 7 ? "Livello 7 (Segreto)" : "Livello " + lvl)));
             html += `<h3 style='color:#ffd700; border-bottom:1px solid #444; padding-bottom:3px; margin-top:10px; font-size:14px;'>${lvlName}</h3>`;
-            if (recentGamesHistory[lvl].length === 0) {
+            
+            if (!recentGamesHistory[lvl] || recentGamesHistory[lvl].length === 0) {
                 html += "<p style='color:#888; font-size:12px; font-style:italic;'>Nessuna partita registrata.</p>";
             } else {
                 recentGamesHistory[lvl].forEach((game, idx) => {
@@ -384,7 +408,7 @@ window.renderRecordTab = function(tabName) {
                     </div>`;
                 });
             }
-        }
+        });
         html += "</div>";
     }
 

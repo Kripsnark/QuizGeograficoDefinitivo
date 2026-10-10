@@ -2261,7 +2261,29 @@ function processaRisposta() {
         currentStreak++;
         if (currentStreak > bestStreak) bestStreak = currentStreak;
 
-        let puntiGuadagnati = (currentLevel === 0) ? 50 : calcolaPuntiDomandaL1_3(currentTurnData.format, currentTurnData.maxPossible, currentTurnData.isComboInception); 
+        // --- NUOVO CALCOLO PUNTEGGI IBRIDO ---
+        let puntiGuadagnati = 0;
+        if (currentLevel === 0) {
+            puntiGuadagnati = 50;
+        } else {
+            let isComboMode = (currentLevel === 4) || (currentLevel === 5 && customConfig.maxCombo > 1);
+            
+            if (isComboMode) {
+                // Applica la severa formula proporzionale delle combo anche se è uscita 1 sola richiesta
+                if ([0, 1, 9, 10].includes(currentTurnData.format) && !currentTurnData.isComboInception) {
+                    puntiGuadagnati = (currentTurnData.format === 10) ? 20 : 15;
+                } else {
+                    let maxP = 100; // Valore base per singola risposta
+                    let multiplier = 1 / currentTurnData.maxPossible;
+                    puntiGuadagnati = Math.round((maxP * multiplier) / 10) * 10;
+                    if (puntiGuadagnati < 10) puntiGuadagnati = 10;
+                }
+            } else {
+                // Modalità classica (Livelli 1, 2, 3, 7 e Livello 5 con Combo=1)
+                puntiGuadagnati = calcolaPuntiDomandaL1_3(currentTurnData.format, currentTurnData.maxPossible, currentTurnData.isComboInception);
+            }
+        }
+        // ------------------------------------
         
         let badgeText = "";
         let badgeBorder = "#555";
