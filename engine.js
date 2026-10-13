@@ -910,13 +910,13 @@ td.buildQuestionText = (num) => {
                     case 2:
                         if (num === 1) {
                             if (td.f2RequiresSymbol) {
-                                finalQ = `Nomina 1 ${sT} la cui bandiera include il <strong>${td.targetNode.colori_base[0].toUpperCase()}</strong> tra i colori di base e raffigura l'elemento grafico <strong>${td.f2RequiresSymbol.toUpperCase()}</strong>.`;
+                                finalQ = `Nomina 1 ${sT} la cui bandiera ha come <strong>COLORE DI BASE</strong> il <strong>${td.targetNode.colori_base[0].toUpperCase()}</strong> e raffigura l'elemento grafico <strong>${td.f2RequiresSymbol.toUpperCase()}</strong>.`;
                             } else {
                                 finalQ = `Nomina 1 ${sT} la cui bandiera ha come UNICI colori di base <strong>${td.targetNode.colori_base.join(', ').toUpperCase()}</strong>.`;
                             }
                         } else {
                             if (td.f2RequiresSymbol) {
-                                finalQ = `Nomina ${sT_p} le cui bandiere includono il <strong>${td.targetNode.colori_base[0].toUpperCase()}</strong> tra i colori di base e raffigurano l'elemento grafico <strong>${td.f2RequiresSymbol.toUpperCase()}</strong>.`;
+                                finalQ = `Nomina ${sT_p} le cui bandiere hanno come <strong>COLORE DI BASE</strong> il <strong>${td.targetNode.colori_base[0].toUpperCase()}</strong> e raffigurano l'elemento grafico <strong>${td.f2RequiresSymbol.toUpperCase()}</strong>.`;
                             } else {
                                 finalQ = `Nomina ${sT_p} le cui bandiere hanno come UNICI colori di base <strong>${td.targetNode.colori_base.join(', ').toUpperCase()}</strong>.`;
                             }
@@ -3345,11 +3345,16 @@ if (SpeechRecognition) {
 
         let parolaDetta = event.results[0][0].transcript.replace(/\.$/, '').trim().toLowerCase();
         
+        // --- FIX RIPETIZIONI VOCALI A PAPPAGALLO (es. "belize belize" -> "belize") ---
+        let matchRipetizione = parolaDetta.match(/^(.+?)\s+\1$/i);
+        if (matchRipetizione) {
+            parolaDetta = matchRipetizione[1].trim();
+        }
+        // ----------------------------------------------------------------------------
+        
         // --- FIX SENSIBILITÀ PAROLE CORTE E RIMOZIONE ARTICOLI ---
-        // Rimuove filler e articoli per valutare solo la radice del nome
         const paroleInutili = [
-            "la risposta è ", "la risposta ", "risposta ", "capitale ", "nazione ", "paese ", "stato ", "è ", "dico ",
-            "il ", "lo ", "la ", "l'", "i ", "gli ", "le "
+            "la risposta è ", "la risposta ", "risposta ", "capitale ", "nazione ", "paese ", "stato ", "è ", "dico ", "il ", "lo ", "la ", "l'", "i ", "gli ", "le "
         ];
         
         for (let filler of paroleInutili) {
