@@ -780,13 +780,13 @@ window.checkAutoSave = function() {
                     td.disableSmartNeg = true; 
                     let choice = pool[0];
                     if (choice === 'area') { td.reqArea = td.selectedArea; td.numVariables++; }
-                    else if (choice === 'symbol') { td.f12RequiresSymbol = td.targetNode.simboli[0]; td.numVariables++; }
+                    else if (choice === 'symbol') { td.f12RequiresSymbol = td.targetNode.simboli[Math.floor(Math.random() * td.targetNode.simboli.length)]; td.numVariables++; }
                     else if (choice === 'initial') { td.reqInit = td.targetNode.nome.charAt(0).toUpperCase(); td.numVariables++; }
                 } else {
                     let varsToPick = Math.random() > 0.6 ? 2 : 1;
                     let choices = pool.slice(0, varsToPick);
                     if (choices.includes('area')) { td.reqArea = td.selectedArea; td.numVariables++; }
-                    if (choices.includes('symbol')) { td.f12RequiresSymbol = td.targetNode.simboli[0]; td.numVariables++; }
+                    if (choices.includes('symbol')) { td.f12RequiresSymbol = td.targetNode.simboli[Math.floor(Math.random() * td.targetNode.simboli.length)]; td.numVariables++; }
                     if (choices.includes('initial')) { td.reqInit = td.targetNode.nome.charAt(0).toUpperCase(); td.numVariables++; }
                 }
             }
@@ -814,7 +814,7 @@ window.checkAutoSave = function() {
 
             if (format === 3) {
                 let isSimbolo = td.targetNode.simboli.length > 0;
-                td.elemScelto = isSimbolo ? td.targetNode.simboli[0] : td.targetNode.colori_emblema[0];
+                td.elemScelto = isSimbolo ? td.targetNode.simboli[Math.floor(Math.random() * td.targetNode.simboli.length)] : td.targetNode.colori_emblema[Math.floor(Math.random() * td.targetNode.colori_emblema.length)];
                 td.isColoreEmblema = !isSimbolo;
                 
                 let f3Variant = 0; 
