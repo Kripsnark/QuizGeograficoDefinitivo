@@ -2356,7 +2356,12 @@ function processaRisposta() {
         arrayNomiPrimariTrovati.push(nomeInserito);
 
         if (currentTurnData.maxPossible > 1) {
-            let rimanenti = currentTurnData.validAnswersCache.map(v => v.replace(/\*/g, '')).filter(v => !arrayNomiPrimariTrovati.map(a => a.replace(/\*/g, '')).includes(v));
+            let rimanenti = [];
+            for (let i = 0; i < currentTurnData.validAnswersCache.length; i++) {
+                if (currentTurnData.validSiglas[i] !== res.matchedCountry.sigla) {
+                    rimanenti.push(currentTurnData.validAnswersCache[i].replace(/\*/g, ''));
+                }
+            }
             if (rimanenti.length > 0) {
                 comboTracker.style.display = "block";
                 comboTracker.innerHTML = `<span style="color:#aaa; font-size:14px; margin-top:5px; text-align:center; display:block;">Altre risposte valide: ${rimanenti.join(", ")}</span>`;
@@ -2600,7 +2605,13 @@ function eseguiValidazioneMultipla(isTimeout = false) {
         }
 
         if (currentTurnData.maxPossible > comboInserted.length) {
-            let rimanenti = currentTurnData.validAnswersCache.map(v => v.replace(/\*/g, '')).filter(v => !arrayNomiPrimariTrovati.map(a => a.replace(/\*/g, '')).includes(v));
+            let rimanenti = [];
+            for (let i = 0; i < currentTurnData.validAnswersCache.length; i++) {
+                // Ora confronta le sigle esatte al posto dei testi ballerini!
+                if (!matchedSiglas.includes(currentTurnData.validSiglas[i])) {
+                    rimanenti.push(currentTurnData.validAnswersCache[i].replace(/\*/g, ''));
+                }
+            }
             if (rimanenti.length > 0) {
                 comboTracker.style.display = "block";
                 comboTracker.innerHTML = `<span style="color:#aaa;">Altre risposte valide: ${rimanenti.join(", ")}</span>`;
