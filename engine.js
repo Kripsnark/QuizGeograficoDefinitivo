@@ -828,14 +828,13 @@ window.checkAutoSave = function() {
                 
                 if (f3Variant === 1) { td.reqArea = td.selectedArea; td.numVariables++; }
                 if (f3Variant === 2) { 
-                    // FIX ANTI-RIPETIZIONE: Se deve chiedere un colore base, controlla che non sia identico a quello dell'emblema
                     let coloreScelto = td.targetNode.colori_base[0];
                     if (td.isColoreEmblema && coloreScelto === td.elemScelto) {
                         let altColors = td.targetNode.colori_base.filter(c => c !== td.elemScelto);
                         if (altColors.length > 0) {
                             coloreScelto = altColors[0];
                         } else {
-                            f3Variant = 0; // Annulla la richiesta colore per non sembrare un robot
+                            f3Variant = 0; 
                         }
                     }
                     if (f3Variant === 2) {
@@ -844,7 +843,25 @@ window.checkAutoSave = function() {
                     }
                 }
                 if (f3Variant === 3) { td.reqInit = td.targetNode.nome.charAt(0).toUpperCase(); td.numVariables++; }
+
+                // --- INIEZIONE FANTASMI (Conteggio Colori Base) ---
+                if (lvlCheckNeg && Math.random() < 0.30) {
+                    let cBase = td.targetNode.colori_base.length;
+                    
+                    // Condizione per ESATTAMENTE: Dal Lv3 in poi (escluso il Lv7 che usa il bacino del Lv2), oppure Personalizzata Difficile
+                    let lvlCheckExact = (currentLevel === 5 && customConfig.difficolta === 'difficile') ? true : (currentLevel >= 3 && currentLevel !== 5 && currentLevel !== 7);
+                    
+                    if (cBase === 2 && lvlCheckExact) {
+                        td.exactBaseColors = 2;
+                        td.numVariables++;
+                    } else if (cBase >= 4) {
+                        // ALMENO si attiva già dal Livello 2 (garantito da lvlCheckNeg)
+                        td.minBaseColors = 4;
+                        td.numVariables++;
+                    }
+                }
             }
+
             if (format === 4) {
                 let cShuffled = [...td.targetNode.confini].sort(() => 0.5 - Math.random());
                 td.reqConf1 = cShuffled[0];
@@ -912,39 +929,44 @@ td.buildQuestionText = (num) => {
                             if (td.f2RequiresSymbol) {
                                 finalQ = `Nomina 1 ${sT} la cui bandiera ha come <strong>COLORE DI BASE</strong> il <strong>${td.targetNode.colori_base[0].toUpperCase()}</strong> e raffigura l'elemento grafico <strong>${td.f2RequiresSymbol.toUpperCase()}</strong>.`;
                             } else {
-                                finalQ = `Nomina 1 ${sT} la cui bandiera ha come UNICI colori di base <strong>${td.targetNode.colori_base.join(', ').toUpperCase()}</strong>.`;
+                                finalQ = `Nomina 1 ${sT} la cui bandiera ha come UNICI colori di BASE <strong>${td.targetNode.colori_base.join(', ').toUpperCase()}</strong>.`;
                             }
                         } else {
                             if (td.f2RequiresSymbol) {
                                 finalQ = `Nomina ${sT_p} le cui bandiere hanno come <strong>COLORE DI BASE</strong> il <strong>${td.targetNode.colori_base[0].toUpperCase()}</strong> e raffigurano l'elemento grafico <strong>${td.f2RequiresSymbol.toUpperCase()}</strong>.`;
                             } else {
-                                finalQ = `Nomina ${sT_p} le cui bandiere hanno come UNICI colori di base <strong>${td.targetNode.colori_base.join(', ').toUpperCase()}</strong>.`;
+                                finalQ = `Nomina ${sT_p} le cui bandiere hanno come UNICI colori di BASE <strong>${td.targetNode.colori_base.join(', ').toUpperCase()}</strong>.`;
                             }
                         }
                         break;
                     
                     case 3:
-                        if (num === 1) {
-                            let bT = `Nomina 1 ${sT}`;
-                            if (td.reqArea) bT += ` ${areaP}`;
-                            if (td.reqInit) bT += ` che inizia con la lettera <strong>${td.reqInit.toUpperCase()}</strong>`;
-                            bT += (td.reqInit) ? `, la cui bandiera ` : ` la cui bandiera `;
-                            if (td.reqColor) bT += `include il <strong>${td.reqColor.toUpperCase()}</strong> e `;
-                            if (td.isColoreEmblema) bT += `raffigura un elemento grafico di colore <strong>${td.elemScelto.toUpperCase()}</strong>`;
-                            else bT += `raffigura l'elemento grafico <strong>${td.elemScelto.toUpperCase()}</strong>`;
-                            if (td.negColor) bT += ` ma <span class='negative-constraint'>NON</span> contiene il colore <strong>${td.negColor.toUpperCase()}</strong>`;
-                            finalQ = bT + ".";
-                        } else {
-                            let bT = `Nomina ${sT_p}`;
-                            if (td.reqArea) bT += ` ${areaP}`;
-                            if (td.reqInit) bT += ` che iniziano con la lettera <strong>${td.reqInit.toUpperCase()}</strong>`;
-                            bT += (td.reqInit) ? `, le cui bandiere ` : ` le cui bandiere `;
-                            if (td.reqColor) bT += `includono il <strong>${td.reqColor.toUpperCase()}</strong> e `;
-                            if (td.isColoreEmblema) bT += `raffigurano un elemento grafico di colore <strong>${td.elemScelto.toUpperCase()}</strong>`;
-                            else bT += `raffigurano l'elemento grafico <strong>${td.elemScelto.toUpperCase()}</strong>`;
-                            if (td.negColor) bT += ` ma <span class='negative-constraint'>NON</span> contengono il colore <strong>${td.negColor.toUpperCase()}</strong>`;
-                            finalQ = bT + ".";
-                        }
+                        let f3P = num > 1;
+                        let bT = f3P ? `Nomina ${sT_p}` : `Nomina 1 ${sT}`;
+                        if (td.reqArea) bT += ` ${areaP}`;
+                        if (td.reqInit) bT += f3P ? ` che iniziano con la lettera <strong>${td.reqInit.toUpperCase()}</strong>` : ` che inizia con la lettera <strong>${td.reqInit.toUpperCase()}</strong>`;
+
+                        let bandiereStr = f3P ? "le cui bandiere" : "la cui bandiera";
+                        bT += td.reqInit ? `, ${bandiereStr} ` : ` ${bandiereStr} `;
+
+                        let ha = f3P ? "hanno" : "ha";
+                        let vRaff = f3P ? "raffigurano" : "raffigura";
+                        let vInc = f3P ? "includono" : "include";
+
+                        let azioni = [];
+                        if (td.exactBaseColors) azioni.push(`${ha} ESATTAMENTE <strong>${td.exactBaseColors}</strong> colori di BASE`);
+                        if (td.minBaseColors) azioni.push(`${ha} ALMENO <strong>${td.minBaseColors}</strong> colori di BASE`);
+                        if (td.reqColor) azioni.push(`${vInc} il <strong>${td.reqColor.toUpperCase()}</strong>`);
+
+                        if (td.isColoreEmblema) azioni.push(`${vRaff} un elemento grafico di colore <strong>${td.elemScelto.toUpperCase()}</strong>`);
+                        else azioni.push(`${vRaff} l'elemento grafico <strong>${td.elemScelto.toUpperCase()}</strong>`);
+
+                        let actionsText = azioni.slice(0, -1).join(", ") + " e " + azioni[azioni.length - 1];
+                        bT += actionsText;
+
+                        if (td.negColor) bT += f3P ? ` ma <span class='negative-constraint'>NON</span> contengono il colore <strong>${td.negColor.toUpperCase()}</strong>` : ` ma <span class='negative-constraint'>NON</span> contiene il colore <strong>${td.negColor.toUpperCase()}</strong>`;
+
+                        finalQ = bT + ".";
                         break;
                     
                     case 4:
@@ -1440,8 +1462,14 @@ td.buildQuestionText = (num) => {
                         if (m && td.reqInit) {
                             if(!checkInitAny(country, td.reqInit)) m = false;
                         }
+
+                        // --- FILTRO COLORI DI BASE ---
+                        if (m && td.exactBaseColors && country.colori_base.length !== td.exactBaseColors) m = false;
+                        if (m && td.minBaseColors && country.colori_base.length < td.minBaseColors) m = false;
+
                         if (m) match = true;
                     }
+
                     else if (td.format === 4) {
                         if (country.confini.includes(td.reqConf1) && country.confini.includes(td.reqConf2) && country.indipendente) match = true;
                     }
@@ -1673,6 +1701,11 @@ td.buildQuestionText = (num) => {
                         if (m && td.reqInit) {
                             if(!checkInit(country, matchedNameStr, td.reqInit)) m = false;
                         }
+
+                        // --- FILTRO COLORI DI BASE ---
+                        if (m && td.exactBaseColors && country.colori_base.length !== td.exactBaseColors) m = false;
+                        if (m && td.minBaseColors && country.colori_base.length < td.minBaseColors) m = false;
+
                         if (m && nameMatch) { match = true; relevantDist = nameDist; }
                     }
                     else if (td.format === 4) {
