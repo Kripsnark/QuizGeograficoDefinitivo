@@ -37,7 +37,40 @@ let statsByLevel = {
     2: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 },
     3: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 },
     4: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0, fotofinish: 0, grazie: 0 },
-    5: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0, fotofinish: 0, grazie: 0 }
+    5: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0, fotofinish: 0, grazie: 0 },
+    6: { 
+        plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0, 
+        progress: {
+            sprint_bandiere: 0, sprint_stati: 0, sprint_capitali: 0,
+            onu_bandiere: 0, onu_stati: 0, onu_capitali: 0,
+            totale_bandiere: 0, totale_stati: 0, totale_capitali: 0
+        } 
+    },
+    7: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 }
+};
+
+window.clearAllData = function() {
+    if (confirm("⚠️ ATTENZIONE! Vuoi davvero eliminare TUTTI i record, le statistiche e la cronologia delle nazioni? L'azione è irreversibile!")) {
+        localStorage.removeItem('geoQuizStats');
+        allTimeBestScore = 0; allTimeBestStreak = 0;
+        allTimeFotofinish = 0; allTimeGrazie = 0;
+        allTimeNazioniCount = {}; allTimeNazioniIgnorate = {}; 
+        allTimeBestAvgTime = 0;
+        globalPlays = 0;
+        recentGamesHistory = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [] };
+        statsByLevel = {
+            0: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 },
+            1: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 },
+            2: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 },
+            3: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 },
+            4: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0, fotofinish: 0, grazie: 0 },
+            5: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0, fotofinish: 0, grazie: 0 },
+            6: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0, progress: { sprint_bandiere: 0, sprint_stati: 0, sprint_capitali: 0, onu_bandiere: 0, onu_stati: 0, onu_capitali: 0, totale_bandiere: 0, totale_stati: 0, totale_capitali: 0 } },
+            7: { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 }
+        };
+        alert("✅ Dati eliminati con successo.");
+        if (typeof closeModal === "function") closeModal(); 
+    }
 };
 
 function loadStats() {

@@ -820,7 +820,11 @@ window.checkAutoSave = function() {
                 let f3Variant = 0; 
                 if (lvlCheckNeg) {
                     let r = Math.random();
-                    if (r < 0.33) f3Variant = 1; else if (r < 0.66) f3Variant = 2; else f3Variant = 3;
+                    // Roulette sbilanciata per favorire l'emersione dei fantasmi
+                    if (r < 0.17) f3Variant = 1;      // 17% Area
+                    else if (r < 0.34) f3Variant = 2; // 17% Colore extra
+                    else if (r < 0.51) f3Variant = 3; // 17% Iniziale
+                    else f3Variant = 4;               // 49% Colori di Base
                 }
                 
                 if (f3Variant === 1 && td.targetNode.aree.length === 0) f3Variant = 0;
@@ -844,20 +848,22 @@ window.checkAutoSave = function() {
                 }
                 if (f3Variant === 3) { td.reqInit = td.targetNode.nome.charAt(0).toUpperCase(); td.numVariables++; }
 
-                // --- INIEZIONE FANTASMI (Conteggio Colori Base) ---
-                if (lvlCheckNeg && Math.random() < 0.30) {
+                // --- INIEZIONE FANTASMI (Variante 4 della Roulette) ---
+                if (f3Variant === 4) {
                     let cBase = td.targetNode.colori_base.length;
                     
-                    // Condizione per ESATTAMENTE: Dal Lv3 in poi (escluso il Lv7 che usa il bacino del Lv2), oppure Personalizzata Difficile
+                    // Dal Lv3 in poi (escluso Lv7) per l'ESATTAMENTE, mentre l'ALMENO parte dal Lv2
                     let lvlCheckExact = (currentLevel === 5 && customConfig.difficolta === 'difficile') ? true : (currentLevel >= 3 && currentLevel !== 5 && currentLevel !== 7);
                     
                     if (cBase === 2 && lvlCheckExact) {
                         td.exactBaseColors = 2;
                         td.numVariables++;
                     } else if (cBase >= 4) {
-                        // ALMENO si attiva già dal Livello 2 (garantito da lvlCheckNeg)
                         td.minBaseColors = 4;
                         td.numVariables++;
+                    } else {
+                        // Per i tricolori o per i bicolori a Livello 2, la variante evapora silente
+                        f3Variant = 0; 
                     }
                 }
             }
@@ -2408,8 +2414,16 @@ function processaRisposta() {
 
         if (hasWon) {
             if (currentLevel === 6) {
-                badgeText = `<span style="color:#ffd700; font-size:16px;">🏆 INUMANO! DATABASE COMPLETATO!</span><br>` + badgeText;
-                badgeBorder = "#ffd700";
+                if (configL6.bacino === 'sprint') {
+                    badgeText = `<span style="color:#2196f3; font-size:16px;">⚡ SPRINT SUPERATO! (50/50)</span><br>` + badgeText;
+                    badgeBorder = "#2196f3";
+                } else if (configL6.bacino === 'onu') {
+                    badgeText = `<span style="color:#4caf50; font-size:16px;">🌍 DOMINIO GLOBALE! (193/193)</span><br>` + badgeText;
+                    badgeBorder = "#4caf50";
+                } else {
+                    badgeText = `<span style="color:#ffd700; font-size:16px;">🏆 INUMANO! DATABASE COMPLETATO!</span><br>` + badgeText;
+                    badgeBorder = "#ffd700";
+                }
             } else {
                 badgeText = `<span style="color:#4caf50; font-size:16px;">🏆 VITTORIA! Livello Superato!</span><br>` + badgeText;
                 badgeBorder = "#4caf50";
@@ -2828,6 +2842,20 @@ function eseguiValidazioneMultipla(isTimeout = false) {
         globalPlays++;
         statsByLevel[currentLevel].plays++;
         
+        // --- NUOVO: SALVATAGGIO PROGRESSI LIVELLO 6 ---
+        if (currentLevel === 6) {
+            let pKey = configL6.bacino + "_" + configL6.argomento;
+            
+            if (!statsByLevel[6].progress) {
+                statsByLevel[6].progress = { sprint_bandiere: 0, sprint_stati: 0, sprint_capitali: 0, onu_bandiere: 0, onu_stati: 0, onu_capitali: 0, totale_bandiere: 0, totale_stati: 0, totale_capitali: 0 };
+            }
+            
+            // Salva il record solo se le nazioni indovinate in questa partita sono di più del vecchio record
+            if (esatte > (statsByLevel[6].progress[pKey] || 0)) {
+                statsByLevel[6].progress[pKey] = esatte;
+            }
+        }
+           
         let isNewRecord = false;
         if (punteggio > statsByLevel[currentLevel].bestScore && punteggio > 0) {
             statsByLevel[currentLevel].bestScore = punteggio;
@@ -2924,9 +2952,19 @@ function eseguiValidazioneMultipla(isTimeout = false) {
             
             if (isVictory) {
                 if (currentLevel === 6) {
-                    titleEl.innerText = "LEGGENDA VIVENTE!";
-                    titleEl.style.color = "#ffd700"; 
-                    msgEl.innerHTML = "Hai conquistato la Morte Improvvisa!<br>La tua conoscenza geografica è assoluta.";
+                    if (configL6.bacino === 'sprint') {
+                        titleEl.innerText = "SCATTO VINCENTE!";
+                        titleEl.style.color = "#2196f3"; 
+                        msgEl.innerHTML = "Ottimo riscaldamento, ma il mondo è ancora grande.<br>Prova il bacino ONU!";
+                    } else if (configL6.bacino === 'onu') {
+                        titleEl.innerText = "DOMINIO GLOBALE!";
+                        titleEl.style.color = "#4caf50"; 
+                        msgEl.innerHTML = "Hai riconosciuto ogni singolo Stato sovrano del pianeta.<br>Sei un vero geografo.";
+                    } else {
+                        titleEl.innerText = "LEGGENDA VIVENTE!";
+                        titleEl.style.color = "#ffd700"; 
+                        msgEl.innerHTML = "L'impresa è compiuta.<br>Hai dimostrato una padronanza geografica assoluta.";
+                    }
                 } else {
                     titleEl.innerText = "VITTORIA!";
                     titleEl.style.color = "#4caf50"; 
@@ -3048,7 +3086,11 @@ function eseguiValidazioneMultipla(isTimeout = false) {
             if (voiceModeActive) {
                 let txt = "";
                 if (isVictory) {
-                    if (currentLevel === 6) txt = "Straordinario. Hai completato il database. ";
+                    if (currentLevel === 6) {
+                        if (configL6.bacino === 'sprint') txt = "Ottimo lavoro. Hai dominato lo sprint senza commettere errori. Ma sei pronto per il mondo intero? ";
+                        else if (configL6.bacino === 'onu') txt = "Eccezionale. Hai conquistato tutti gli Stati sovrani del mondo. La geografia non ha più segreti per te. ";
+                        else txt = "Straordinario. Hai completato l'intero database. Nessun territorio al mondo ti è sconosciuto. Sei una leggenda vivente. ";
+                    }
                     else txt = "Vittoria! ";
                 } else {
                     txt = "Game over. ";
@@ -3291,13 +3333,19 @@ function parla(testo, callbackTermine, force = false) {
         globalDb.forEach(n => {
             if (n.pronuncia_paese && n.pronuncia_paese.trim() !== "") {
                 sostituzioni.push({ originale: n.nome.replace(/\*/g, ''), pronuncia: n.pronuncia_paese });
+                n.alias_paese_ufficiali.forEach(alias => {
+                    sostituzioni.push({ originale: alias.replace(/\*/g, ''), pronuncia: n.pronuncia_paese });
+                });
             }
             if (n.pronuncia_capitale && n.pronuncia_capitale.trim() !== "") {
                 sostituzioni.push({ originale: n.capitale.replace(/\*/g, ''), pronuncia: n.pronuncia_capitale });
+                n.alias_capitale_ufficiali.forEach(alias => {
+                    sostituzioni.push({ originale: alias.replace(/\*/g, ''), pronuncia: n.pronuncia_capitale });
+                });
             }
         });
 
-        // Ordine decrescente per lunghezza per impedire sovrascritture errate (es. Guinea prima di Guinea Equatoriale)
+        // Ordine decrescente per lunghezza per impedire sovrascritture errate
         sostituzioni.sort((a, b) => b.originale.length - a.originale.length);
 
         sostituzioni.forEach(sost => {
@@ -3310,7 +3358,7 @@ function parla(testo, callbackTermine, force = false) {
 
     let utterance = new SpeechSynthesisUtterance(testoPulito);
     utterance.lang = 'it-IT';
-    utterance.rate = voiceSpeed;
+    utterance.rate = typeof voiceSpeed !== 'undefined' ? voiceSpeed : 1.0;
     
     window.speechUtterances.push(utterance); 
     
@@ -3326,7 +3374,6 @@ function parla(testo, callbackTermine, force = false) {
         utterance.onend = eseguiCallback;
         utterance.onerror = eseguiCallback;
         
-        // Timer di sicurezza calibrato (85ms per lettera + 1500ms di margine)
         let tempoDiLetturaStimato = (testoPulito.length * 85) + 1500; 
         setTimeout(eseguiCallback, tempoDiLetturaStimato);
     }
@@ -3512,9 +3559,9 @@ if (!window.voiceHooksAdded) {
             if (window.pendingDefeat) {
                 setTimeout(() => nextTurnMulti(), 800);
             } else {
-                let correctAns = currentTurnData.validAnswersCache[0].split(" (")[0];
+                let correctAns = currentTurnData.validAnswersCache[0].replace(/\s*\(/, ', ').replace(/\)/, '');
                 setTimeout(() => {
-                    let testoVite = vite === 1 ? "Ti resta una vita." : `Ti restano ${vite} vite.`;
+                    let testoVite = vite === 1 ? " Ti resta una vita." : ` Ti restano ${vite} vite.`;
                     parla(`Ti sei arreso. La risposta era ${correctAns}.${testoVite}`, function() {
                         setTimeout(() => nextTurnMulti(), 1000);
                     });
@@ -3532,10 +3579,10 @@ if (!window.voiceHooksAdded) {
             if (window.pendingDefeat) {
                 setTimeout(() => nextTurnMulti(), 800);
             } else {
-                let correctAns = currentTurnData.validAnswersCache[0].split(" (")[0];
+                let correctAns = currentTurnData.validAnswersCache[0].replace(/\s*\(/, ', ').replace(/\)/, '');
                 setTimeout(() => {
-                    let testoVite = vite === 1 ? "Ti resta una vita." : `Ti restano ${vite} vite.`;
-                    parla(`Sbagliato, era ${correctAns}${testoVite}`, function() {
+                    let testoVite = vite === 1 ? " Ti resta una vita." : ` Ti restano ${vite} vite.`;
+                    parla(`Sbagliato, era ${correctAns}.${testoVite}`, function() {
                         setTimeout(() => nextTurnMulti(), 1000); 
                     });
                 }, 200);
@@ -3553,8 +3600,8 @@ if (!window.voiceHooksAdded) {
                 setTimeout(() => nextTurnMulti(), 800);
             } else {
                 setTimeout(() => {
-                    let testoVite = vite === 1 ? "Ti resta una vita." : `Ti restano ${vite} vite.`;
-                    parla(`Sbagliato. ${testoVite}`, function() {
+                    let testoVite = vite === 1 ? " Ti resta una vita." : ` Ti restano ${vite} vite.`;
+                    parla(`Sbagliato.${testoVite}`, function() {
                         setTimeout(() => nextTurnMulti(), 1000);
                     });
                 }, 200);
@@ -3584,20 +3631,14 @@ if (!window.voiceHooksAdded) {
                 return;
             }
             
-            if (window.pendingDefeat) {
-                return; 
-            }
-
-            if (vite < vitePrima) {
-                return; 
-            }
+            if (window.pendingDefeat) return; 
+            if (vite < vitePrima) return; 
 
             // Se la risposta finale o l'intera combo è esatta
             if (esatte > esattePrima) {
                  let puntiGuadagnati = punteggio - puntiPrima;
                  let testoEsatto = (currentLevel === 6) ? "Esatto!" : `Esatto! Più ${puntiGuadagnati} punti.`;
                  
-                 // --- LETTURA BONUS DAL BADGE A SCHERMO ---
                  let badgeEl = document.getElementById("event-badge");
                  let badgeTesto = (badgeEl && badgeEl.style.display !== "none") ? badgeEl.innerText.toLowerCase() : "";
                  let extraTesto = "";
@@ -3612,7 +3653,6 @@ if (!window.voiceHooksAdded) {
                  if (badgeTesto.includes("vita extra")) extraTesto += " Hai ottenuto una vita extra.";
                  
                  testoEsatto += extraTesto;
-                 // -----------------------------------------
                  
                  setTimeout(() => {
                      parla(testoEsatto, function() {
@@ -3622,7 +3662,6 @@ if (!window.voiceHooksAdded) {
                  return;
             } 
             
-            // Se sei a metà di una combo
             if (comboInserted.length > comboPrima) {
                  setTimeout(() => {
                      parla("Presa.", function() { 
@@ -3632,7 +3671,6 @@ if (!window.voiceHooksAdded) {
                  return;
             }
 
-            // Se non ha riconosciuto la parola, riapre il microfono in silenzio
             if (assistantRec && !isListening) { window.innescaMicrofonoConDing(); }
         }
     };
