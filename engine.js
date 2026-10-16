@@ -3024,7 +3024,7 @@ function eseguiValidazioneMultipla(isTimeout = false) {
                 arr.forEach((sn, idx) => {
                     h += `<div class="top5-list-item">
                             <div class="top5-list-left">
-                                <img src="GIF/${sn.sigla.toLowerCase()}.jpg" class="top5-list-img" onclick="window.openFlagModal(this.src)" onerror="this.style.display='none'">
+                                <img src="GIF/${sn.sigla.toLowerCase()}.jpg" class="top5-list-img" onclick="openFlagModal(this.src)" onerror="this.style.display='none'" style="cursor:pointer;">
                                 <span class="top5-list-name">${sn.nome.toUpperCase()}</span>
                             </div>
                             <span class="top5-list-count" style="color:${color};">${sn.count}</span>

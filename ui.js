@@ -394,14 +394,14 @@ window.renderRecordTab = function(tabName) {
             return { nome: n ? n.nome : sigla, count: allTimeNazioniIgnorate[sigla], sigla: sigla };
         }).sort((a, b) => b.count - a.count).slice(0, 10);
 
-        const buildList10 = (arr, color) => {
+const buildList10 = (arr, color) => {
             if (arr.length === 0) return "<p style='color:#888; font-size:12px;'>Nessun dato</p>";
             let h = "<div style='display:flex; flex-direction:column;'>";
             arr.forEach((sn, idx) => {
                 h += `<div style='display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding:4px 0;'>
                         <div style='display:flex; align-items:center; gap:5px;'>
                             <span style='color:#777; font-size:11px; width:15px;'>${idx+1}.</span>
-                            <img src='GIF/${sn.sigla.toLowerCase()}.jpg' style='width:18px; border-radius:2px;' onerror='this.style.display="none"'>
+                            <img src='GIF/${sn.sigla.toLowerCase()}.jpg' style='width:18px; border-radius:2px; cursor:pointer;' onclick='openFlagModal(this.src)' onerror='this.style.display="none"'>
                             <span style='color:#ccc; font-size:11px; font-weight:bold;'>${sn.nome.toUpperCase()}</span>
                         </div>
                         <span style='color:${color}; font-weight:bold; font-size:12px;'>${sn.count}</span>
@@ -409,7 +409,6 @@ window.renderRecordTab = function(tabName) {
             });
             return h + "</div>";
         };
-
         html += `
         <div style="background:#1e1e1e; border:1px solid #ffd700; border-radius:6px; padding:10px; margin-bottom:15px; text-align:center;">
             <div style="display:flex; justify-content:space-around; font-size:11px; color:#aaa;">
