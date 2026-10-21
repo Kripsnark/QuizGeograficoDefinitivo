@@ -39,17 +39,19 @@ function playSound(nomeSuono) {
     // Riporta l'audio a zero. Utile se il giocatore risponde a raffica
     EffettiSonori[nomeSuono].currentTime = 0; 
     
+    // Regolazione dinamica dei volumi
+    if (nomeSuono === "battito") {
+        EffettiSonori[nomeSuono].volume = 0.15; // Abbassa il battito
+    } else {
+        EffettiSonori[nomeSuono].volume = 1.0; // Tutti gli altri suoni al 100%
+    }
+    
     // Il catch serve per evitare errori del browser se blocca l'autoplay
     EffettiSonori[nomeSuono].play().catch(err => console.log("Audio bloccato dal browser"));
 }
 
-function toggleSuoni() {
-    suoniAttivi = !suoniAttivi;
-    // Nessuna ricerca DOM. La UI viene aggiornata direttamente dal bottone in ui.js!
-}
-
 // === VARIABILI DI STATO E COLLEGAMENTI DOM (RECUPERATI) ===
-const allColors = ['rosso','bianco','blu','nero','giallo','verde','arancione','azzurro'];
+const allColors = ['rosso','bianco','blu','nero','giallo','verde','arancione','azzurro','viola'];
 const allLetters = 'ABCDEFGHILMNOPQRSTUVZ'.split('');
 
 let vite = 3;
@@ -590,304 +592,58 @@ window.checkAutoSave = function() {
         }
 
 	function generateQuestion() {
-            let availableFormats = [];
+            let td;
             
-            if (currentLevel === 0) {
-                availableFormats = [0, 1, 7, 9, 13];
-            } else if (currentLevel === 7) {
-                // IL LIVELLO SEGRETO "SENZA MANI" (Tutti i formati testuali del Livello 2)
-                availableFormats = [0, 1, 2, 3, 4, 5, 6, 7, 8, 11, 12];
-            } else if (currentLevel === 6) {
-                availableFormats = [configL6.formato]; 
-            } else if (currentLevel === 5) {
-                if (customConfig.stati) availableFormats.push(2, 3, 4, 5, 7, 8);
-                if (customConfig.capitali) availableFormats.push(0, 1, 6, 10);
-                if (customConfig.bandiere) availableFormats.push(9, 11);
-                if (customConfig.bandiere && (customConfig.stati || customConfig.capitali)) availableFormats.push(12);
-                if (availableFormats.length === 0) availableFormats = [0, 1];
-            } else {
-                availableFormats = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12]; 
-                if (currentLevel > 1) availableFormats.push(10); 
-            }
-
-            // 🛑 SE IL MICROFONO È ACCESO, RIMUOVE SOLO LE DOMANDE CON IMMAGINI A SCHERMO
-            if (voiceModeActive) {
-                availableFormats = availableFormats.filter(f => ![9, 10, 13].includes(f));
-                if (availableFormats.length === 0) availableFormats = [0, 1]; // ⚠️ La rete di sicurezza vitale!
-            }
-
-            let format = availableFormats[Math.floor(Math.random() * availableFormats.length)];
-            
-            // --- SISTEMA DI MEMORIA INTELLIGENTE GLOBALE (Anti-Doppione) ---
-            // Filtra: cerca nazioni NON ancora uscite con questo specifico formato
-            let availableDb = levelDb.filter(function(n) {
-                return !recentTargets.includes(n.sigla + "-" + format);
-            });
-            
-            // LA VALVOLA DEL GIOCATORE SADICO (Domanda 751+)
-            if (availableDb.length === 0) {
-                // Se hai esaurito le nazioni per questo formato, svuota la memoria SOLO per questo formato
-                recentTargets = recentTargets.filter(function(item) {
-                    return !item.endsWith("-" + format);
+            if (currentLevel === 6) {
+                // IL FIX PER IL LIVELLO 6: Bypassiamo il dado primario della Factory per rispettare rigorosamente configL6
+                let dbDisponibile = levelDb.filter(n => {
+                    if (recentTargets.includes(n.sigla)) return false;
+                    // Se l'argomento scelto richiede la capitale (Formato 0 o 1), scartiamo le nazioni che non ce l'hanno
+                    if ((configL6.formato === 0 || configL6.formato === 1) && (!n.capitale || n.capitale.trim() === "")) return false;
+                    return true;
                 });
-                availableDb = levelDb; 
-            }
-            
-            let nazioneEstratta = availableDb[Math.floor(Math.random() * availableDb.length)];
-            
-            // Memorizza la coppia Nazione-Formato (Es. "IT-0")
-            recentTargets.push(nazioneEstratta.sigla + "-" + format);
-            
-            // Rimosso il limite di 15 turni! La memoria ora è illimitata.
-            
-            let td = { format: format, targetNode: nazioneEstratta, numVariables: 1, isComboInception: false };
-            
-            if (td.targetNode.aree && td.targetNode.aree.length > 0) {
-                if (td.targetNode.aree.length > 1) {
-                    if (Math.random() <= 0.35) {
-                        td.selectedArea = td.targetNode.aree[0];
-                    } else {
-                        let subAreas = td.targetNode.aree.slice(1);
-                        td.selectedArea = subAreas[Math.floor(Math.random() * subAreas.length)];
-                    }
-                } else {
-                    td.selectedArea = td.targetNode.aree[0];
+                
+                if (dbDisponibile.length === 0) {
+                    recentTargets = [];
+                    dbDisponibile = levelDb.filter(n => {
+                        if ((configL6.formato === 0 || configL6.formato === 1) && (!n.capitale || n.capitale.trim() === "")) return false;
+                        return true;
+                    });
                 }
+                
+                let nazioneEstratta = dbDisponibile[Math.floor(Math.random() * dbDisponibile.length)];
+                recentTargets.push(nazioneEstratta.sigla);
+                
+                td = { 
+                    categoria: 'MorteImprovvisa', 
+                    format: configL6.formato, 
+                    targetNode: nazioneEstratta, 
+                    numVariables: 1, 
+                    isComboInception: false 
+                };
+            } else {
+                td = creaNuovaDomanda(currentLevel, levelDb, customConfig, voiceModeActive, recentTargets);
             }
 
-            if (format === 1 && !td.targetNode.capitale) return generateQuestion();
-            if (format === 2 && td.targetNode.colori_base.length === 0) return generateQuestion();
-            if (format === 3 && td.targetNode.simboli.length === 0 && td.targetNode.colori_emblema.length === 0) return generateQuestion();
-            if (format === 4 && (td.targetNode.confini.length < 2 || !td.targetNode.indipendente)) return generateQuestion();
-
+            // --- FIX: PONTE TRA FACTORY ED ENGINE ---
+            let format = td.format; 
             let lvlCheckNeg = (currentLevel === 5 && customConfig.difficolta !== 'facile') ? true : (currentLevel >= 2 && currentLevel !== 5);
-
-            if (format === 5) {
-                if (!td.targetNode.indipendente || td.targetNode.confini.length === 0 || td.targetNode.confini.length > 3) return generateQuestion();
-                if (lvlCheckNeg && td.targetNode.aree.length > 0) { td.reqArea = td.selectedArea; td.numVariables++; }
-            }
-            if (format === 6) {
-                if (!td.targetNode.capitale || td.targetNode.aree.length === 0) return generateQuestion();
-                td.varEnigmistica = Math.floor(Math.random() * 3);
-                // Rimuove gli accenti prima di estrarre la lettera
-                let capPulita = td.targetNode.capitale.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                td.reqCapInit = capPulita.charAt(0).toUpperCase();
-                td.reqCapFin = capPulita.charAt(capPulita.length - 1).toUpperCase();
-                td.numVariables++;
-            }
-
-            if (format === 7) {
-                if (!td.targetNode.indipendente || td.targetNode.confini.length === 0) return generateQuestion();
-            }
             
-            if (format === 8) {
-                td.reqGeo = td.targetNode.tipoGeo; 
-                if (['isola', 'costiera'].includes(td.reqGeo) && Math.random() > 0.5) td.reqGeo = 'marittima';
-                if (lvlCheckNeg && td.targetNode.aree.length > 0) { td.reqArea = td.selectedArea; td.numVariables++; }
-                if ((currentLevel >= 3 && currentLevel !== 7) || currentLevel === 5) { td.reqInit = td.targetNode.nome.charAt(0).toUpperCase(); td.numVariables++; }
-                
-                if (!td.reqArea && !td.reqInit && !td.negColor) {
-                    if (td.targetNode.aree && td.targetNode.aree.length > 0) {
-                        td.reqArea = td.selectedArea;
-                    }
-                }
-            }
-            
-            if (format === 11) {
-                if (td.targetNode.formati_bandiera.length === 0) return generateQuestion();
-                let pool = [];
-                if (td.targetNode.aree.length > 0) pool.push('area');
-                if (td.targetNode.colori_base.length > 0) pool.push('colore');
-                pool.push('geo');
-                if (lvlCheckNeg && td.targetNode.capitale) pool.push('capitale');
-                if ((currentLevel >= 3 && currentLevel !== 7) || currentLevel === 5) pool.push('iniziale');
-                
-                pool.sort(() => 0.5 - Math.random());
-                let numConditions = (currentLevel === 1 || (currentLevel === 5 && customConfig.difficolta === 'facile')) ? 1 : (Math.random() > 0.5 ? 1 : 2);
-                let selectedConditions = pool.slice(0, numConditions);
-                
-                if (selectedConditions.includes('capitale') && selectedConditions.includes('iniziale')) {
-                    let replacement = pool.find(p => !selectedConditions.includes(p));
-                    let removeIdx = Math.random() < 0.5 ? selectedConditions.indexOf('capitale') : selectedConditions.indexOf('iniziale');
-                    if (replacement) selectedConditions[removeIdx] = replacement;
-                    else selectedConditions.splice(removeIdx, 1);
-                }
-                
-                td.reqFormato = td.targetNode.formati_bandiera[Math.floor(Math.random() * td.targetNode.formati_bandiera.length)];
-
-                if (selectedConditions.includes('area')) { td.reqArea = td.selectedArea; td.numVariables++; }
-                if (selectedConditions.includes('colore')) { 
-                    // FIX ANTI-RIPETIZIONE: Non dire "contiene X" se la caratteristica visiva ha già quel colore (maschile o femminile)
-                    let coloreScelto = td.targetNode.colori_base[0];
-                    let formatoText = td.reqFormato.toLowerCase();
-                    
-                    // Funzione che taglia la "o" finale (es. "rosso" -> "ross", "bianco" -> "bianc") per beccare anche "rossa" o "bianca". 
-                    // I colori come "verde" o "blu" restano identici.
-                    let getRadice = (col) => col.endsWith("o") ? col.slice(0, -1) : col;
-                    
-                    if (formatoText.includes(getRadice(coloreScelto))) {
-                        let altColors = td.targetNode.colori_base.filter(c => !formatoText.includes(getRadice(c)));
-                        if (altColors.length > 0) {
-                            coloreScelto = altColors[0];
-                            td.reqColor = coloreScelto; 
-                            td.numVariables++;
-                        } else {
-                            // Se l'unico colore base del paese è già nominato, annulliamo questa condizione (silenzio elegante)
-                            let idx = selectedConditions.indexOf('colore');
-                            if (idx > -1) selectedConditions.splice(idx, 1);
-                        }
-                    } else {
-                        td.reqColor = coloreScelto; 
-                        td.numVariables++;
-                    }
-                }
-                if (selectedConditions.includes('geo')) { 
-                    td.reqGeo = td.targetNode.tipoGeo; 
-                    if (['isola', 'costiera'].includes(td.reqGeo) && Math.random() > 0.5) td.reqGeo = 'marittima';
-                    td.numVariables++; 
-                }
-                if (selectedConditions.includes('capitale')) { td.reqCapInit = td.targetNode.capitale.charAt(0).toUpperCase(); td.numVariables++; }
-                if (selectedConditions.includes('iniziale')) { td.reqInit = td.targetNode.nome.charAt(0).toUpperCase(); td.numVariables++; }
-            }
-
-            if (format === 12) {
-                let allTargetColors = [...new Set([...td.targetNode.colori_base, ...td.targetNode.colori_emblema])];
-                if (allTargetColors.length < 2) return generateQuestion();
-                
-                let cBase = allTargetColors.sort(() => 0.5 - Math.random());
-                let numCol = (cBase.length >= 3 && Math.random() > 0.5) ? 3 : 2;
-                td.f12Colors = cBase.slice(0, numCol);
-                
-                if (numCol === 3) td.numVariables++;
-                
-                td.f12AskCapital = false;
-                let allowCap = ((currentLevel >= 3 && currentLevel !== 7) || currentLevel === 5);
-                if (currentLevel === 5 && !customConfig.capitali) allowCap = false;
-                if (allowCap && td.targetNode.capitale && Math.random() < 0.5) {
-                    td.f12AskCapital = true;
-                }
-                if (currentLevel === 5 && !customConfig.stati) {
-                    td.f12AskCapital = true;
-                }
-                
-                let pool = [];
-                if (td.targetNode.aree.length > 0) pool.push('area');
-                if (td.targetNode.simboli.length > 0) pool.push('symbol');
-                pool.push('initial');
-                pool.sort(() => 0.5 - Math.random());
-                
-                if (td.f12AskCapital) {
-                    td.disableSmartNeg = true; 
-                    let choice = pool[0];
-                    if (choice === 'area') { td.reqArea = td.selectedArea; td.numVariables++; }
-                    else if (choice === 'symbol') { td.f12RequiresSymbol = td.targetNode.simboli[Math.floor(Math.random() * td.targetNode.simboli.length)]; td.numVariables++; }
-                    else if (choice === 'initial') { td.reqInit = td.targetNode.nome.charAt(0).toUpperCase(); td.numVariables++; }
-                } else {
-                    let varsToPick = Math.random() > 0.6 ? 2 : 1;
-                    let choices = pool.slice(0, varsToPick);
-                    if (choices.includes('area')) { td.reqArea = td.selectedArea; td.numVariables++; }
-                    if (choices.includes('symbol')) { td.f12RequiresSymbol = td.targetNode.simboli[Math.floor(Math.random() * td.targetNode.simboli.length)]; td.numVariables++; }
-                    if (choices.includes('initial')) { td.reqInit = td.targetNode.nome.charAt(0).toUpperCase(); td.numVariables++; }
-                }
-            }
-
-            if ((currentLevel === 4 || currentLevel === 5) && [0, 1, 9, 10].includes(format)) {
-                let validBordersCount = 0;
-                for (let c of getAnswerPool(currentLevel)) {
-                    let cNames = [c.nome.toLowerCase(), ...c.alias_paese];
-                    if (c.indipendente && cNames.some(n => td.targetNode.confini.includes(n))) {
-                        if (format === 0 || format === 10) {
-                            if (c.capitale) validBordersCount++;
-                        } else validBordersCount++;
-                    }
-                }
-                if (validBordersCount >= 2 && Math.random() < 0.8) td.isComboInception = true;
-            }
-
-            if (format === 2) {
-                let hasSymbols = td.targetNode.simboli.length > 0;
-                if (lvlCheckNeg && Math.random() > 0.5 && hasSymbols) {
-                    td.f2RequiresSymbol = td.targetNode.simboli[Math.floor(Math.random() * td.targetNode.simboli.length)];
-                    td.numVariables++;
-                }
-            }
-
-            if (format === 3) {
-                let isSimbolo = td.targetNode.simboli.length > 0;
-                td.elemScelto = isSimbolo ? td.targetNode.simboli[Math.floor(Math.random() * td.targetNode.simboli.length)] : td.targetNode.colori_emblema[Math.floor(Math.random() * td.targetNode.colori_emblema.length)];
-                td.isColoreEmblema = !isSimbolo;
-                
-                let f3Variant = 0; 
-                if (lvlCheckNeg) {
-                    let r = Math.random();
-                    // Roulette sbilanciata per favorire l'emersione dei fantasmi
-                    if (r < 0.17) f3Variant = 1;      // 17% Area
-                    else if (r < 0.34) f3Variant = 2; // 17% Colore extra
-                    else if (r < 0.51) f3Variant = 3; // 17% Iniziale
-                    else f3Variant = 4;               // 49% Colori di Base
-                }
-                
-                if (f3Variant === 1 && td.targetNode.aree.length === 0) f3Variant = 0;
-                if (f3Variant === 2 && td.targetNode.colori_base.length === 0) f3Variant = 0;
-                
-                if (f3Variant === 1) { td.reqArea = td.selectedArea; td.numVariables++; }
-                if (f3Variant === 2) { 
-                    let coloreScelto = td.targetNode.colori_base[0];
-                    if (td.isColoreEmblema && coloreScelto === td.elemScelto) {
-                        let altColors = td.targetNode.colori_base.filter(c => c !== td.elemScelto);
-                        if (altColors.length > 0) {
-                            coloreScelto = altColors[0];
-                        } else {
-                            f3Variant = 0; 
-                        }
-                    }
-                    if (f3Variant === 2) {
-                        td.reqColor = coloreScelto; 
-                        td.numVariables++; 
-                    }
-                }
-                if (f3Variant === 3) { td.reqInit = td.targetNode.nome.charAt(0).toUpperCase(); td.numVariables++; }
-
-                // --- INIEZIONE FANTASMI (Variante 4 della Roulette) ---
-                if (f3Variant === 4) {
-                    let cBase = td.targetNode.colori_base.length;
-                    
-                    // Dal Lv3 in poi (escluso Lv7) per l'ESATTAMENTE, mentre l'ALMENO parte dal Lv2
-                    let lvlCheckExact = (currentLevel === 5 && customConfig.difficolta === 'difficile') ? true : (currentLevel >= 3 && currentLevel !== 5 && currentLevel !== 7);
-                    
-                    if (cBase === 2 && lvlCheckExact) {
-                        td.exactBaseColors = 2;
-                        td.numVariables++;
-                    } else if (cBase >= 4) {
-                        td.minBaseColors = 4;
-                        td.numVariables++;
-                    } else {
-                        // Per i tricolori o per i bicolori a Livello 2, la variante evapora silente
-                        f3Variant = 0; 
-                    }
-                }
-            }
-
-            if (format === 4) {
-                let cShuffled = [...td.targetNode.confini].sort(() => 0.5 - Math.random());
-                td.reqConf1 = cShuffled[0];
-                td.reqConf2 = cShuffled[1];
-                td.numVariables = 2;
-            }
-
-td.buildQuestionText = (num) => {
+            td.buildQuestionText = (num) => {
                 let areaP = td.selectedArea ? getPreposizioneArea(td.selectedArea) : "";
                 
                 let nI = "<span class='target-highlight'>NAZIONE INDIPENDENTE</span>";
                 let nI_p = `<span class='target-highlight'>${num} NAZIONI INDIPENDENTI</span>`;
                 let sT = "<span class='target-highlight'>STATO O TERRITORIO</span>";
                 let sT_p = `<span class='target-highlight'>${num} STATI O TERRITORI</span>`;
-                let sTI = "<span class='target-highlight'>STATO O TERRITORIO</span> <strong>INSULARE</strong>";
+		let sTI = "<span class='target-highlight'>STATO O TERRITORIO</span> <strong>INSULARE</strong>";
                 let sTI_p = `<span class='target-highlight'>${num} STATI O TERRITORI</span> <strong>INSULARI</strong>`;
-                
-                // ECCO LE DUE RIGHE MODIFICATE CON L'AZZURRO:
                 let cS = "<span class='target-highlight' style='color:#2196f3;'>CAPITALE</span>";
                 let cS_p = `<span class='target-highlight' style='color:#2196f3;'>${num} CAPITALI</span>`;
+
+                // Funzioni grammaticali intelligenti
+                const artCol = (c) => ['a','e','i','o','u'].includes(c.charAt(0).toLowerCase()) ? "l'<span style='color:#ffd700; font-weight:bold;'>" + c.toUpperCase() + "</span>" : "il colore <span style='color:#ffd700; font-weight:bold;'>" + c.toUpperCase() + "</span>";
+const unisci = (arr) => arr.length > 1 ? arr.slice(0, -1).map(x=>`<span style='color:#ffd700; font-weight:bold;'>${x.toUpperCase()}</span>`).join(', ') + " e <span style='color:#ffd700; font-weight:bold;'>" + arr[arr.length - 1].toUpperCase() + "</span>" : `<span style='color:#ffd700; font-weight:bold;'>${arr[0].toUpperCase()}</span>`;
 
                 let cloneHint = "";
                 if (format === 9 || format === 10) {
@@ -896,7 +652,6 @@ td.buildQuestionText = (num) => {
                     if (cloniSempre.includes(td.targetNode.sigla) || (currentLevel === 2 && cloniLvl2.includes(td.targetNode.sigla))) {
                         let areaPrincipale = td.targetNode.aree[0] || "";
                         if (areaPrincipale) {
-                            // Usa la funzione corretta, toglie i tag in grassetto e la mette in minuscolo
                             let areaCorretta = getPreposizioneArea(areaPrincipale).replace(/<\/?strong>/g, '').toLowerCase();
                             cloneHint = ` (${areaCorretta})`;
                         }
@@ -907,45 +662,22 @@ td.buildQuestionText = (num) => {
 
                 switch(format) {
                     case 0:
-                        if (num === 1) {
-                            finalQ = td.isComboInception 
-                                ? `Nomina 1 ${cS} di uno <strong>STATO INDIPENDENTE</strong> che confina via terra con la nazione <strong>${td.targetNode.nome.toUpperCase()}</strong>.` 
-                                : `Qual è la ${cS} della nazione <strong>${td.targetNode.nome.toUpperCase()}</strong>?`;
-                        } else {
-                            finalQ = td.isComboInception 
-                                ? `Nomina ${cS_p} di altrettanti <strong>STATI INDIPENDENTI</strong> che confinano via terra con la nazione <strong>${td.targetNode.nome.toUpperCase()}</strong>.` 
-                                : "";
-                        }
+                        if (num === 1) finalQ = td.isComboInception ? `Nomina 1 ${cS} di uno <strong>STATO INDIPENDENTE</strong> che confina via terra con la nazione <strong>${td.targetNode.nome.toUpperCase()}</strong>.` : `Qual è la ${cS} della nazione <strong>${td.targetNode.nome.toUpperCase()}</strong>?`;
+                        else finalQ = td.isComboInception ? `Nomina ${cS_p} di altrettanti <strong>STATI INDIPENDENTI</strong> che confinano via terra con la nazione <strong>${td.targetNode.nome.toUpperCase()}</strong>.` : "";
                         break;
-                    
                     case 1:
-                        if (num === 1) {
-                            finalQ = td.isComboInception 
-                                ? `Nomina 1 ${nI} che confina via terra con lo Stato la cui capitale è <strong>${td.targetNode.capitale.toUpperCase()}</strong>.` 
-                                : `Di quale ${sT} è capitale la città di <strong>${td.targetNode.capitale.toUpperCase()}</strong>?`;
-                        } else {
-                            finalQ = td.isComboInception 
-                                ? `Nomina ${nI_p} che confinano via terra con lo Stato la cui capitale è <strong>${td.targetNode.capitale.toUpperCase()}</strong>.` 
-                                : "";
-                        }
+                        if (num === 1) finalQ = td.isComboInception ? `Nomina 1 ${nI} che confina via terra con lo Stato la cui capitale è <strong>${td.targetNode.capitale.toUpperCase()}</strong>.` : `Di quale ${sT} è capitale la città di <strong>${td.targetNode.capitale.toUpperCase()}</strong>?`;
+                        else finalQ = td.isComboInception ? `Nomina ${nI_p} che confinano via terra con lo Stato la cui capitale è <strong>${td.targetNode.capitale.toUpperCase()}</strong>.` : "";
                         break;
-                    
                     case 2:
                         if (num === 1) {
-                            if (td.f2RequiresSymbol) {
-                                finalQ = `Nomina 1 ${sT} la cui bandiera ha come <strong>COLORE DI BASE</strong> il <strong>${td.targetNode.colori_base[0].toUpperCase()}</strong> e raffigura l'elemento grafico <strong>${td.f2RequiresSymbol.toUpperCase()}</strong>.`;
-                            } else {
-                                finalQ = `Nomina 1 ${sT} la cui bandiera ha come UNICI colori di BASE <strong>${td.targetNode.colori_base.join(', ').toUpperCase()}</strong>.`;
-                            }
+                            if (td.f2RequiresSymbol) finalQ = `Nomina 1 ${sT} la cui bandiera ha TRA I COLORI DI BASE ${artCol(td.f2Color || td.targetNode.colori_base[0])} e raffigura l'elemento grafico <strong>${td.f2RequiresSymbol.toUpperCase()}</strong>.`;
+                            else finalQ = `Nomina 1 ${sT} la cui bandiera ha come UNICI colori di BASE ${unisci(td.targetNode.colori_base)}.`;
                         } else {
-                            if (td.f2RequiresSymbol) {
-                                finalQ = `Nomina ${sT_p} le cui bandiere hanno come <strong>COLORE DI BASE</strong> il <strong>${td.targetNode.colori_base[0].toUpperCase()}</strong> e raffigurano l'elemento grafico <strong>${td.f2RequiresSymbol.toUpperCase()}</strong>.`;
-                            } else {
-                                finalQ = `Nomina ${sT_p} le cui bandiere hanno come UNICI colori di BASE <strong>${td.targetNode.colori_base.join(', ').toUpperCase()}</strong>.`;
-                            }
+                            if (td.f2RequiresSymbol) finalQ = `Nomina ${sT_p} le cui bandiere hanno TRA I COLORI DI BASE ${artCol(td.f2Color || td.targetNode.colori_base[0])} e raffigurano l'elemento grafico <strong>${td.f2RequiresSymbol.toUpperCase()}</strong>.`;
+                            else finalQ = `Nomina ${sT_p} le cui bandiere hanno come UNICI colori di BASE ${unisci(td.targetNode.colori_base)}.`;
                         }
                         break;
-                    
                     case 3:
                         let f3P = num > 1;
                         let bT = f3P ? `Nomina ${sT_p}` : `Nomina 1 ${sT}`;
@@ -962,43 +694,43 @@ td.buildQuestionText = (num) => {
                         let azioni = [];
                         if (td.exactBaseColors) azioni.push(`${ha} ESATTAMENTE <strong>${td.exactBaseColors}</strong> colori di BASE`);
                         if (td.minBaseColors) azioni.push(`${ha} ALMENO <strong>${td.minBaseColors}</strong> colori di BASE`);
-                        if (td.reqColor) azioni.push(`${vInc} il <strong>${td.reqColor.toUpperCase()}</strong>`);
+                        if (td.reqColor) azioni.push(`${vInc} ${artCol(td.reqColor)}`);
 
-                        if (td.isColoreEmblema) azioni.push(`${vRaff} un elemento grafico di colore <strong>${td.elemScelto.toUpperCase()}</strong>`);
-                        else azioni.push(`${vRaff} l'elemento grafico <strong>${td.elemScelto.toUpperCase()}</strong>`);
+                        let raffText = td.isColoreEmblema ? `${vRaff} un elemento grafico di colore <strong>${td.elemScelto.toUpperCase()}</strong>` : `${vRaff} l'elemento grafico <strong>${td.elemScelto.toUpperCase()}</strong>`;
 
-                        let actionsText = azioni.slice(0, -1).join(", ") + " e " + azioni[azioni.length - 1];
-                        bT += actionsText;
+                        if (azioni.length > 0) {
+                            bT += azioni.join(", ") + " e " + raffText;
+                        } else {
+                            bT += raffText;
+                        }
 
-                        if (td.negColor) bT += f3P ? ` ma <span class='negative-constraint'>NON</span> contengono il colore <strong>${td.negColor.toUpperCase()}</strong>` : ` ma <span class='negative-constraint'>NON</span> contiene il colore <strong>${td.negColor.toUpperCase()}</strong>`;
+                        if (td.negColor) bT += f3P ? ` ma <span class='negative-constraint'>NON</span> contengono ${artCol(td.negColor)}` : ` ma <span class='negative-constraint'>NON</span> contiene ${artCol(td.negColor)}`;
 
                         finalQ = bT + ".";
                         break;
-                    
                     case 4:
                         let f4t = (num === 1) ? `Nomina 1 ${nI} che confina via terra SIA con <strong>${td.reqConf1.toUpperCase()}</strong> SIA con <strong>${td.reqConf2.toUpperCase()}</strong>` : `Nomina ${nI_p} che confinano via terra SIA con <strong>${td.reqConf1.toUpperCase()}</strong> SIA con <strong>${td.reqConf2.toUpperCase()}</strong>`;
                         if (td.negBorders && td.negBorders.length > 0) {
                             let negB = td.negBorders.map(b => `<strong>${b.toUpperCase()}</strong>`);
                             if (negB.length === 1) f4t += ` ma <span class='negative-constraint'>NON</span> con ${negB[0]}`;
-                            else f4t += ` ma <span class='negative-constraint'>NON</span> con ${negB.join(" e <span class='negative-constraint'>NON</span> con ")}`;
+                            else f4t += ` ma <span class='negative-constraint'>NON</span> con ${negB.slice(0, -1).join(", <span class='negative-constraint'>NON</span> con ")} e <span class='negative-constraint'>NON</span> con ${negB[negB.length - 1]}`;
                         }
                         finalQ = f4t + ".";
                         break;
-                    
                     case 5:
+                        let confTesto1 = td.targetNode.confini.length === 1 ? "ESATTAMENTE <strong>1</strong> stato" : `ESATTAMENTE <strong>${td.targetNode.confini.length}</strong> stati`;
                         if (num === 1) {
                             let t5 = `Nomina 1 ${nI}`;
                             if (td.reqArea) t5 += ` ${areaP}`;
-                            t5 += ` che confina via terra con ESATTAMENTE <strong>${td.targetNode.confini.length}</strong> stati.`;
+                            t5 += ` che confina via terra con ${confTesto1}.`;
                             finalQ = t5;
                         } else {
                             let t5 = `Nomina ${nI_p}`;
                             if (td.reqArea) t5 += ` ${areaP}`;
-                            t5 += ` che confinano via terra con ESATTAMENTE <strong>${td.targetNode.confini.length}</strong> stati.`;
+                            t5 += ` che confinano via terra con ${confTesto1}.`;
                             finalQ = t5;
                         }
                         break;
-                    
                     case 6:
                         if (num === 1) {
                             if (td.varEnigmistica === 0) finalQ = `Nomina 1 ${cS} ${areaP} che inizia con la lettera <strong>${td.reqCapInit.toUpperCase()}</strong>.`;
@@ -1010,15 +742,10 @@ td.buildQuestionText = (num) => {
                             if (td.varEnigmistica === 2) finalQ = `Nomina ${cS_p} ${areaP} che iniziano per <strong>${td.reqCapInit.toUpperCase()}</strong> e finiscono per <strong>${td.reqCapFin.toUpperCase()}</strong>.`;
                         }
                         break;
-                    
                    case 7:
-                        if (num === 1) {
-                            finalQ = `Nomina 1 ${nI} che confina via terra con <strong>${td.targetNode.confini[0].toUpperCase()}</strong>.`;
-                        } else {
-                            finalQ = `Nomina ${nI_p} che confinano via terra con <strong>${td.targetNode.confini[0].toUpperCase()}</strong>.`;
-                        }
+                        if (num === 1) finalQ = `Nomina 1 ${nI} che confina via terra con <strong>${td.targetNode.confini[0].toUpperCase()}</strong>.`;
+                        else finalQ = `Nomina ${nI_p} che confinano via terra con <strong>${td.targetNode.confini[0].toUpperCase()}</strong>.`;
                         break;
-                    
                     case 8:
                         let t8 = "";
                         if (num === 1) {
@@ -1031,7 +758,7 @@ td.buildQuestionText = (num) => {
                             if (td.reqInit) t8 += ` che inizia con la lettera <strong>${td.reqInit.toUpperCase()}</strong>`;
                             if (td.negColor) {
                                 t8 += (td.reqInit) ? ` e la cui bandiera ` : ` la cui bandiera `;
-                                t8 += `<span class='negative-constraint'>NON</span> contiene il colore <strong>${td.negColor.toUpperCase()}</strong>`;
+                                t8 += `<span class='negative-constraint'>NON</span> contiene ${artCol(td.negColor)}`;
                             }
                         } else {
                             if (td.reqGeo === 'isola') t8 = `Nomina ${sTI_p}`;
@@ -1043,36 +770,19 @@ td.buildQuestionText = (num) => {
                             if (td.reqInit) t8 += ` che iniziano con la lettera <strong>${td.reqInit.toUpperCase()}</strong>`;
                             if (td.negColor) {
                                 t8 += (td.reqInit) ? ` e le cui bandiere ` : ` le cui bandiere `;
-                                t8 += `<span class='negative-constraint'>NON</span> contengono il colore <strong>${td.negColor.toUpperCase()}</strong>`;
+                                t8 += `<span class='negative-constraint'>NON</span> contengono ${artCol(td.negColor)}`;
                             }
                         }
                         finalQ = t8 + ".";
                         break;
-                    
                     case 9:
-                        if (num === 1) {
-                            finalQ = td.isComboInception 
-                                ? `Nomina 1 ${nI} che confina via terra con il Paese${cloneHint} di <strong>QUESTA BANDIERA</strong>.` 
-                                : `Di quale ${sT}${cloneHint} è questa bandiera?`;
-                        } else {
-                            finalQ = td.isComboInception 
-                                ? `Nomina ${nI_p} che confinano via terra con il Paese${cloneHint} di <strong>QUESTA BANDIERA</strong>.` 
-                                : "";
-                        }
+                        if (num === 1) finalQ = td.isComboInception ? `Nomina 1 ${nI} che confina via terra con il Paese${cloneHint} di <strong>QUESTA BANDIERA</strong>.` : `Di quale ${sT}${cloneHint} è questa bandiera?`;
+                        else finalQ = td.isComboInception ? `Nomina ${nI_p} che confinano via terra con il Paese${cloneHint} di <strong>QUESTA BANDIERA</strong>.` : "";
                         break;
-                    
                     case 10:
-                        if (num === 1) {
-                            finalQ = td.isComboInception 
-                                ? `Nomina 1 ${cS} di uno <strong>STATO INDIPENDENTE</strong> che confina via terra con il Paese${cloneHint} di <strong>QUESTA BANDIERA</strong>.` 
-                                : `Qual è la ${cS} di questo <strong>STATO O TERRITORIO</strong>${cloneHint}?`;
-                        } else {
-                            finalQ = td.isComboInception 
-                                ? `Nomina ${cS_p} di altrettanti <strong>STATI INDIPENDENTI</strong> che confinano via terra con il Paese${cloneHint} di <strong>QUESTA BANDIERA</strong>.` 
-                                : "";
-                        }
+                        if (num === 1) finalQ = td.isComboInception ? `Nomina 1 ${cS} di uno <strong>STATO INDIPENDENTE</strong> che confina via terra con il Paese${cloneHint} di <strong>QUESTA BANDIERA</strong>.` : `Qual è la ${cS} di questo <strong>STATO O TERRITORIO</strong>${cloneHint}?`;
+                        else finalQ = td.isComboInception ? `Nomina ${cS_p} di altrettanti <strong>STATI INDIPENDENTI</strong> che confinano via terra con il Paese${cloneHint} di <strong>QUESTA BANDIERA</strong>.` : "";
                         break;
-                    
                     case 11:
                         let t11 = "";
                         if (num === 1) {
@@ -1084,15 +794,13 @@ td.buildQuestionText = (num) => {
                             
                             if (td.reqArea) t11 += ` ${areaP}`;
                             if (td.reqInit) t11 += ` che inizia per <strong>${td.reqInit.toUpperCase()}</strong>`;
-                            if (td.reqCapInit) {
-                                t11 += (td.reqInit) ? ` e la cui capitale inizia per <strong>${td.reqCapInit.toUpperCase()}</strong>` : ` la cui capitale inizia per <strong>${td.reqCapInit.toUpperCase()}</strong>`;
-                            }
+                            if (td.reqCapInit) t11 += (td.reqInit) ? ` e la cui capitale inizia per <strong>${td.reqCapInit.toUpperCase()}</strong>` : ` la cui capitale inizia per <strong>${td.reqCapInit.toUpperCase()}</strong>`;
                             
                             t11 += (td.reqInit || td.reqCapInit) ? `, la cui bandiera presenta la caratteristica: ` : ` la cui bandiera è caratterizzata da: `;
                             t11 += `<strong>${td.reqFormato.toUpperCase()}</strong>`;
                             
-                            if (td.reqColor) t11 += ` e contiene il colore <strong>${td.reqColor.toUpperCase()}</strong>`;
-                            if (td.negColor) t11 += ` ma <span class='negative-constraint'>NON</span> contiene il <strong>${td.negColor.toUpperCase()}</strong>`;
+                            if (td.reqColor) t11 += ` e contiene ${artCol(td.reqColor)}`;
+                            if (td.negColor) t11 += ` ma <span class='negative-constraint'>NON</span> contiene ${artCol(td.negColor)}`;
                             if (td.negInit) t11 += ` e il cui nome <span class='negative-constraint'>NON</span> inizia per la lettera <strong>${td.negInit.toUpperCase()}</strong>`;
                         } else {
                             if (td.reqGeo === 'isola') t11 = `Nomina ${sTI_p}`;
@@ -1103,20 +811,17 @@ td.buildQuestionText = (num) => {
                             
                             if (td.reqArea) t11 += ` ${areaP}`;
                             if (td.reqInit) t11 += ` che iniziano per <strong>${td.reqInit.toUpperCase()}</strong>`;
-                            if (td.reqCapInit) {
-                                t11 += (td.reqInit) ? ` e le cui capitali iniziano per <strong>${td.reqCapInit.toUpperCase()}</strong>` : ` le cui capitali iniziano per <strong>${td.reqCapInit.toUpperCase()}</strong>`;
-                            }
+                            if (td.reqCapInit) t11 += (td.reqInit) ? ` e le cui capitali iniziano per <strong>${td.reqCapInit.toUpperCase()}</strong>` : ` le cui capitali iniziano per <strong>${td.reqCapInit.toUpperCase()}</strong>`;
                             
                             t11 += (td.reqInit || td.reqCapInit) ? `, le cui bandiere presentano la caratteristica: ` : ` le cui bandiere sono caratterizzate da: `;
                             t11 += `<strong>${td.reqFormato.toUpperCase()}</strong>`;
                             
-                            if (td.reqColor) t11 += ` e contengono il colore <strong>${td.reqColor.toUpperCase()}</strong>`;
-                            if (td.negColor) t11 += ` ma <span class='negative-constraint'>NON</span> contengono il <strong>${td.negColor.toUpperCase()}</strong>`;
+                            if (td.reqColor) t11 += ` e contengono ${artCol(td.reqColor)}`;
+                            if (td.negColor) t11 += ` ma <span class='negative-constraint'>NON</span> contengono ${artCol(td.negColor)}`;
                             if (td.negInit) t11 += ` e i cui nomi <span class='negative-constraint'>NON</span> iniziano per la lettera <strong>${td.negInit.toUpperCase()}</strong>`;
                         }
                         finalQ = t11 + ".";
                         break;
-
                     case 12:
                         let t12 = "";
                         if (num === 1) {
@@ -1124,29 +829,24 @@ td.buildQuestionText = (num) => {
                             if (td.reqArea) t12 += ` ${areaP}`;
                             if (td.reqInit) t12 += (td.f12AskCapital) ? ` il cui nome inizia per <strong>${td.reqInit.toUpperCase()}</strong>` : ` che inizia per <strong>${td.reqInit.toUpperCase()}</strong>`;
                             
-                            t12 += `, la cui bandiera INCLUDE i colori `;
-                            if (td.f12Colors.length === 3) t12 += `<strong>${td.f12Colors[0].toUpperCase()}, ${td.f12Colors[1].toUpperCase()}</strong> e <strong>${td.f12Colors[2].toUpperCase()}</strong>`;
-                            else t12 += `<strong>${td.f12Colors[0].toUpperCase()}</strong> e <strong>${td.f12Colors[1].toUpperCase()}</strong>`;
+                            t12 += `, la cui bandiera INCLUDE i colori ${unisci(td.f12Colors)}`;
                             
                             if (td.f12RequiresSymbol) t12 += ` e raffigura l'elemento grafico <strong>${td.f12RequiresSymbol.toUpperCase()}</strong>`;
-                            if (td.negColor) t12 += ` ma <span class='negative-constraint'>NON</span> contiene il colore <strong>${td.negColor.toUpperCase()}</strong>`;
+                            if (td.negColor) t12 += ` ma <span class='negative-constraint'>NON</span> contiene ${artCol(td.negColor)}`;
                             if (td.negInit) t12 += (td.f12AskCapital) ? ` e il cui nome <span class='negative-constraint'>NON</span> inizia per <strong>${td.negInit.toUpperCase()}</strong>` : ` e il cui nome <span class='negative-constraint'>NON</span> inizia per <strong>${td.negInit.toUpperCase()}</strong>`;
                         } else {
                             t12 = td.f12AskCapital ? `Nomina ${cS_p} di altrettanti <strong>STATI</strong>` : `Nomina ${sT_p}`;
                             if (td.reqArea) t12 += ` ${areaP}`;
                             if (td.reqInit) t12 += (td.f12AskCapital) ? ` i cui nomi iniziano per <strong>${td.reqInit.toUpperCase()}</strong>` : ` che iniziano per <strong>${td.reqInit.toUpperCase()}</strong>`;
                             
-                            t12 += `, le cui bandiere INCLUDONO i colori `;
-                            if (td.f12Colors.length === 3) t12 += `<strong>${td.f12Colors[0].toUpperCase()}, ${td.f12Colors[1].toUpperCase()}</strong> e <strong>${td.f12Colors[2].toUpperCase()}</strong>`;
-                            else t12 += `<strong>${td.f12Colors[0].toUpperCase()}</strong> e <strong>${td.f12Colors[1].toUpperCase()}</strong>`;
+                            t12 += `, le cui bandiere INCLUDONO i colori ${unisci(td.f12Colors)}`;
                             
                             if (td.f12RequiresSymbol) t12 += ` e raffigurano l'elemento grafico <strong>${td.f12RequiresSymbol.toUpperCase()}</strong>`;
-                            if (td.negColor) t12 += ` ma <span class='negative-constraint'>NON</span> contengono il colore <strong>${td.negColor.toUpperCase()}</strong>`;
+                            if (td.negColor) t12 += ` ma <span class='negative-constraint'>NON</span> contengono ${artCol(td.negColor)}`;
                             if (td.negInit) t12 += (td.f12AskCapital) ? ` e i cui nomi <span class='negative-constraint'>NON</span> iniziano per <strong>${td.negInit.toUpperCase()}</strong>` : ` e i cui nomi <span class='negative-constraint'>NON</span> iniziano per <strong>${td.negInit.toUpperCase()}</strong>`;
                         }
                         finalQ = t12 + ".";
                         break;
-
 		    case 13:
                         finalQ = "Seleziona la bandiera di <strong>" + td.targetNode.nome.toUpperCase() + "</strong>.";
                         break;
@@ -1171,7 +871,7 @@ td.buildQuestionText = (num) => {
                     }
                     
                     if (extraNegs.length > 0) {
-                        base += ", " + extraNegs.join(" e ");
+                        base += ", " + extraNegs.slice(0, -1).join(", ") + (extraNegs.length > 1 ? " e " : "") + extraNegs[extraNegs.length - 1];
                     }
                     return base + punc;
                 }
@@ -1207,122 +907,14 @@ td.buildQuestionText = (num) => {
                 }
             }
 
-	    let tempValid = getValidAnswersArray(td, currentLevel);
-            
-            let isMitragliatrice = (currentLevel === 4) || (currentLevel === 5 && customConfig.maxCombo > 2);
-            let isCecchino = (currentLevel === 3) || (currentLevel === 5 && customConfig.maxCombo <= 2);
-            
-            let maxNegs = 0;
-            let negProb = 0;
-            if (currentLevel === 2 || currentLevel === 7) { maxNegs = 1; negProb = 0.40; } 
-            else if (isCecchino || isMitragliatrice) { maxNegs = 2; negProb = 0.85; }
-            
-            td.negBorders = []; 
-            
-            let allowSmartNeg = lvlCheckNeg;
-            
-            // FIX PALETTO INVISIBILE: Disabilita i vincoli negativi per domande dirette, confini e multi-variabili visive
-            if ([0, 1, 9, 10, 11, 12].includes(td.format)) allowSmartNeg = false;
-            
-            if (tempValid.length > 1 && allowSmartNeg && !td.disableSmartNeg && Math.random() < negProb) {
-                let possibleNegColors = new Set();
-                let possibleNegInits = new Set();
-                let possibleNegBorders = new Set();
-                let possibleNegAreas = new Set();
-                let possibleNegGeos = new Set();
+let tempValid = getValidAnswersArray(td, currentLevel);
+        
+        // --- DELEGA I VINCOLI NEGATIVI ALLA FACTORY ---
+        tempValid = applicaVincoliNegativi(td, currentLevel, customConfig, tempValid);
 
-                let targetColors = [...td.targetNode.colori_base, ...td.targetNode.colori_emblema];
-                let targetInit = td.targetNode.nome.charAt(0).toUpperCase();
-                let targetBorders = td.targetNode.confini;
-                let targetNameLower = td.targetNode.nome.toLowerCase();
-
-                let otherCountries = getAnswerPool(currentLevel).filter(c => {
-                    let isMatch = false;
-                    let capStr = c.capitale ? capitalize(c.capitale) + " (" + capitalize(c.nome) + ")" : "";
-                    let nomStr = capitalize(c.nome);
-                    if (tempValid.includes(nomStr) || tempValid.includes(capStr)) {
-                        if (c.sigla !== td.targetNode.sigla) isMatch = true;
-                    }
-                    return isMatch;
-                });
-
-                otherCountries.forEach(c => {
-                    if (td.format === 3 || td.format === 8 || td.format === 11 || td.format === 12) {
-                        let colsToCheck = [...c.colori_base, ...c.colori_emblema];
-                        colsToCheck.forEach(col => { if (!targetColors.includes(col)) possibleNegColors.add(col); });
-                    }
-                    if (td.format === 11 || td.format === 12) {
-                        let cInit = c.nome.charAt(0).toUpperCase();
-                        if (cInit !== targetInit) possibleNegInits.add(cInit);
-                    }
-                    if (td.format === 4) {
-                        c.confini.forEach(b => {
-                            if (b !== 'mare' && !targetBorders.includes(b) && b !== targetNameLower) possibleNegBorders.add(b);
-                        });
-                    }
-                    
-                    let diffAreas = c.aree.filter(a => !td.targetNode.aree.includes(a));
-                    if (diffAreas.length > 0) possibleNegAreas.add(diffAreas[Math.floor(Math.random() * diffAreas.length)]);
-                    
-                    if (!td.reqGeo && c.tipoGeo !== td.targetNode.tipoGeo) {
-                        possibleNegGeos.add(c.tipoGeo);
-                    }
-                });
-
-                let negOptions = [];
-                possibleNegColors.forEach(c => negOptions.push({type: 'color', val: c}));
-                possibleNegInits.forEach(i => negOptions.push({type: 'init', val: i}));
-                possibleNegBorders.forEach(b => negOptions.push({type: 'border', val: b}));
-                possibleNegAreas.forEach(a => negOptions.push({type: 'area', val: a}));
-                possibleNegGeos.forEach(g => negOptions.push({type: 'geo', val: g}));
-
-                if (negOptions.length > 0) {
-                    negOptions.sort(() => 0.5 - Math.random());
-                    
-                    let appliedNegs = 0;
-                    let usedTypes = new Set();
-                    
-                    for (let opt of negOptions) {
-                        if (tempValid.length === 1) break; 
-                        if (appliedNegs >= maxNegs) break;
-                        if (usedTypes.has(opt.type) && opt.type !== 'border') continue;
-                        if (opt.type === 'border' && td.negBorders.length >= (currentLevel >= 3 ? 2 : 1)) continue;
-
-                        let backupVal = null;
-                        if (opt.type === 'color') { backupVal = td.negColor; td.negColor = opt.val; }
-                        else if (opt.type === 'init') { backupVal = td.negInit; td.negInit = opt.val; }
-                        else if (opt.type === 'area') { backupVal = td.negArea; td.negArea = opt.val; }
-                        else if (opt.type === 'geo') { backupVal = td.negGeo; td.negGeo = opt.val; }
-                        else if (opt.type === 'border') td.negBorders.push(opt.val);
-
-                        td.numVariables++;
-                        let testValid = getValidAnswersArray(td, currentLevel);
-                        
-                        let rollback = false;
-                        if (testValid.length === 0) rollback = true; 
-                        else if (testValid.length === tempValid.length) rollback = true; 
-                        else if (isMitragliatrice && testValid.length < 6) rollback = true; 
-                        
-                        if (rollback) {
-                            if (opt.type === 'color') td.negColor = backupVal;
-                            else if (opt.type === 'init') td.negInit = backupVal;
-                            else if (opt.type === 'area') td.negArea = backupVal;
-                            else if (opt.type === 'geo') td.negGeo = backupVal;
-                            else if (opt.type === 'border') td.negBorders.pop();
-                            td.numVariables--;
-                        } else {
-                            appliedNegs++;
-                            usedTypes.add(opt.type);
-                            tempValid = testValid;
-                        }
-                    }
-                }
-            }
-
-            if (currentLevel >= 3 && currentLevel !== 7 && ![0, 1, 9, 10].includes(td.format) && td.numVariables < 2) {
-                return generateQuestion(); 
-            }
-
+        if (currentLevel >= 3 && currentLevel !== 7 && ![0, 1, 9, 10].includes(td.format) && td.numVariables < 2) {
+            return generateQuestion(); 
+        }
             if (tempValid.length === 0) return generateQuestion(); 
             
             getValidAnswersArray(td, currentLevel);
@@ -1449,9 +1041,10 @@ td.buildQuestionText = (num) => {
                     else if (td.format === 2) {
                         let cBaseRichiesti = td.targetNode.colori_base;
                         if (td.f2RequiresSymbol) {
-                            if (country.colori_base.includes(cBaseRichiesti[0]) && country.simboli.includes(td.f2RequiresSymbol)) match = true;
+                            let colReq = td.f2Color || cBaseRichiesti[0];
+                            if (country.colori_base.includes(colReq) && country.simboli.includes(td.f2RequiresSymbol)) match = true;
                         } else {
-                            if (country.colori_base.sort().join(',') === cBaseRichiesti.sort().join(',')) match = true;
+                            if ([...country.colori_base].sort().join(',') === [...cBaseRichiesti].sort().join(',')) match = true;
                         }
                     }
                     else if (td.format === 3) {
@@ -1686,9 +1279,10 @@ td.buildQuestionText = (num) => {
                     else if (td.format === 2) {
                         let cBaseRichiesti = td.targetNode.colori_base;
                         if (td.f2RequiresSymbol) {
-                            if (country.colori_base.includes(cBaseRichiesti[0]) && country.simboli.includes(td.f2RequiresSymbol) && nameMatch) { match = true; relevantDist = nameDist; }
+                            let colReq = td.f2Color || cBaseRichiesti[0];
+                            if (country.colori_base.includes(colReq) && country.simboli.includes(td.f2RequiresSymbol) && nameMatch) { match = true; relevantDist = nameDist; }
                         } else {
-                            if (country.colori_base.sort().join(',') === cBaseRichiesti.sort().join(',')) {
+                            if ([...country.colori_base].sort().join(',') === [...cBaseRichiesti].sort().join(',')) {
                                 if (nameMatch) { match = true; relevantDist = nameDist; }
                             }
                         }
@@ -1905,8 +1499,12 @@ td.buildQuestionText = (num) => {
                         let currentSecondInt = Math.ceil(activeTimeLeft);
                         if (window.lastVibeSecond !== currentSecondInt) {
                             window.lastVibeSecond = currentSecondInt;
-                            triggerVibration([40, 60, 40]);
-                            playSound("battito");
+                            
+                            // FIX: Nessun suono o vibrazione al Livello 6 per non coprire la voce
+                            if (currentLevel !== 6) {
+                                triggerVibration([40, 60, 40]);
+                                playSound("battito");
+                            }
                         }
                     } else if (pct < 50) {
                         timerBar.style.backgroundColor = "#ff9800"; 
@@ -1999,8 +1597,8 @@ td.buildQuestionText = (num) => {
             playTurn();
 
 	setTimeout(() => {
-            // Impedisce alla tastiera di aprirsi da sola se sei tra L0 e L5 col microfono acceso
-            if (!(voiceModeActive && currentLevel <= 5)) {
+            // Apre la tastiera per i L0-L5 manuali e per il L6. Mai nel L7 o col microfono acceso.
+            if (currentLevel === 6 || (!voiceModeActive && currentLevel <= 5)) {
                 inputEl.focus();
                 inputEl.click();
             }
@@ -2080,21 +1678,41 @@ td.buildQuestionText = (num) => {
             if (voiceModeActive) {
                 let testoDaLeggere = currentTurnData.questionText;
                 
-                // Visto che i formati visivi sono già bloccati a monte, aggiunge le opzioni a occhi chiusi
                 if (currentLevel === 0) {
                     testoDaLeggere += "... Le opzioni sono: " + opzioniL0[0].text + ", " + opzioniL0[1].text + ", oppure " + opzioniL0[2].text;
                 }
 
-                parla(testoDaLeggere, function() {
-                    if (assistantRec && !isListening) {
-                        innescaMicrofonoConDing();
-                    }
+                // --- NUOVA LOGICA: LETTURA RALLENTATA PER I BERSAGLI NEI FORMATI 0 e 1 ---
+                if (currentTurnData.format === 0 || currentTurnData.format === 1) {
+                    let startTag = testoDaLeggere.lastIndexOf("<strong>");
+                    let endTag = testoDaLeggere.lastIndexOf("</strong>");
                     
-                    // L'ASSISTENTE HA FINITO DI PARLARE: SE SIAMO AL L6, SCATENA IL TIMER!
-                    if (currentLevel === 6 && timerState === "reading") {
-                        activateMainTimer();
+                    if (startTag !== -1 && endTag !== -1) {
+                        let introduzione = testoDaLeggere.substring(0, startTag);
+                        let bersaglio = testoDaLeggere.substring(startTag + 8, endTag);
+                        
+                        let currentDefaultSpeed = typeof voiceSpeed !== 'undefined' ? voiceSpeed : 1.0;
+                        let slowSpeed = currentDefaultSpeed * 0.8;
+                        
+                        parla(introduzione, function() {
+                            parla(bersaglio, function() {
+                                if (assistantRec && !isListening) innescaMicrofonoConDing();
+                                if (currentLevel === 6 && timerState === "reading") activateMainTimer();
+                            }, true, slowSpeed); 
+                        }, true); 
+                    } else {
+                        // Fallback
+                        parla(testoDaLeggere, function() {
+                            if (assistantRec && !isListening) innescaMicrofonoConDing();
+                            if (currentLevel === 6 && timerState === "reading") activateMainTimer();
+                        }, true);
                     }
-                });
+                } else {
+                    parla(testoDaLeggere, function() {
+                        if (assistantRec && !isListening) innescaMicrofonoConDing();
+                        if (currentLevel === 6 && timerState === "reading") activateMainTimer();
+                    }, true);
+                }
             }
             
             logQuestionCounter++;
@@ -2249,8 +1867,7 @@ function processaRisposta() {
         inputEl.classList.add("warning-flash", "shake");
         setTimeout(() => {
             inputEl.classList.remove("warning-flash", "shake");
-            // Non forza la tastiera se hai il microfono acceso (L0-L5)
-            if (!(voiceModeActive && currentLevel <= 5)) {
+            if (currentLevel === 6 || (!voiceModeActive && currentLevel <= 5)) {
                 inputEl.focus(); 
             }
         }, 400);
@@ -2613,9 +2230,17 @@ function eseguiValidazioneMultipla(isTimeout = false) {
             let row2 = document.createElement("div"); row2.className = "combo-flag-row";
 
             matchedCountriesInfos.forEach((info, index) => {
-                let img = document.createElement("img"); img.src = "GIF/" + info.matchedCountry.sigla.toLowerCase() + ".jpg"; img.className = "combo-flag-img";
-                img.onclick = function() { window.openFlagModal(this.src); }; img.onerror = function() { this.style.display = 'none'; };
-                if (matchedCountriesInfos.length === 5) { if (index < 3) row1.appendChild(img); else row2.appendChild(img); } else row1.appendChild(img);
+                let img = document.createElement("img"); 
+                img.src = "GIF/" + info.matchedCountry.sigla.toLowerCase() + ".jpg"; 
+                img.className = "combo-flag-img";
+                img.style.cursor = "pointer"; // Rende palese che si può cliccare
+                img.onclick = function() { openFlagModal(this.src); }; // Niente window., richiama la funzione globale di ui.js
+                img.onerror = function() { this.style.display = 'none'; };
+                if (matchedCountriesInfos.length === 5) { 
+                    if (index < 3) row1.appendChild(img); else row2.appendChild(img); 
+                } else {
+                    row1.appendChild(img);
+                }
             });
             gridContainer.appendChild(row1);
             if (matchedCountriesInfos.length === 5) gridContainer.appendChild(row2);
@@ -3272,7 +2897,7 @@ function creaBottoneAssistente() {
             
             if (suoniAttivi) playSound("ding");
 
-            parla("Modalità vocale attivata. Quale livello vuoi giocare? Dire: livello + numero", function() {
+            parla("Modalità vocale attivata. Quale livello vuoi giocare? Pronuncia la parola livello, seguita dal numero.", function() {
                 if (assistantRec && !isListening) {
                     window.innescaMicrofonoConDing();
                 }
@@ -3309,7 +2934,7 @@ function creaBottoneAssistente() {
 window.speechUtterances = []; // TRUCCO: Evita che il browser mobile cancelli la voce dalla RAM
 
 // === LA FUNZIONE PARLA DINAMICA E IBRIDA ===
-function parla(testo, callbackTermine, force = false) {
+function parla(testo, callbackTermine, force = false, customSpeed = null) {
     if (!voiceModeActive && !force) return;
     synth.cancel(); 
     
@@ -3319,14 +2944,26 @@ function parla(testo, callbackTermine, force = false) {
     // 1. CORREZIONI FISSE PER TERMINI DI SISTEMA E CONTINENTI
     const correzioniGlobali = {
         "Asia": "Àsia",       
-        "Oceania": "Oceània"  
+        "Oceania": "Oceània"
     };
     for (const [parola, pronuncia] of Object.entries(correzioniGlobali)) {
         let regex = new RegExp("\\b" + parola + "\\b", "gi");
         testoPulito = testoPulito.replace(regex, pronuncia);
     }
+    
+    // 2. FILTRO ALFABETO TELEFONICO (Infallibile per le singole lettere)
+    testoPulito = testoPulito.replace(/\b(lettera |per )([A-Z])\b/g, (match, prefisso, lettera) => {
+        const alfabetoTelefonico = {
+            'A': 'Ancona', 'B': 'Bologna', 'C': 'Como', 'D': 'Domodossola', 'E': 'Empoli', 
+            'F': 'Firenze', 'G': 'Genova', 'H': 'Hotel', 'I': 'Imola', 'J': 'Jolly', 
+            'K': 'Koala', 'L': 'Livorno', 'M': 'Milano', 'N': 'Napoli', 'O': 'Otranto',
+            'P': 'Padova', 'Q': 'Quadro', 'R': 'Rimini', 'S': 'Savona', 'T': 'Torino', 
+            'U': 'Udine', 'V': 'Verona', 'W': 'Whisky', 'X': 'Xilofono', 'Y': 'Yogurt', 'Z': 'Zara'
+        };
+        return `${prefisso}${lettera}, come ${alfabetoTelefonico[lettera]}`;
+    });
 
-    // 2. INIEZIONE CORREZIONE FONETICA DAL DATABASE (OTTIMIZZATA)
+    // 3. INIEZIONE CORREZIONE FONETICA DAL DATABASE
     if (typeof globalDb !== 'undefined') {
         let sostituzioni = [];
         
@@ -3350,7 +2987,6 @@ function parla(testo, callbackTermine, force = false) {
 
         sostituzioni.forEach(sost => {
             let testoEscaped = sost.originale.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-            // Regex di precisione chirurgica che riconosce anche gli accenti italiani ed esteri
             let regex = new RegExp("(?<=^|[^a-zA-ZÀ-ÿ])" + testoEscaped + "(?=[^a-zA-ZÀ-ÿ]|$)", "gi");
             testoPulito = testoPulito.replace(regex, sost.pronuncia);
         });
@@ -3358,7 +2994,12 @@ function parla(testo, callbackTermine, force = false) {
 
     let utterance = new SpeechSynthesisUtterance(testoPulito);
     utterance.lang = 'it-IT';
-    utterance.rate = typeof voiceSpeed !== 'undefined' ? voiceSpeed : 1.0;
+    
+    if (customSpeed !== null) {
+        utterance.rate = customSpeed;
+    } else {
+        utterance.rate = typeof voiceSpeed !== 'undefined' ? voiceSpeed : 1.0;
+    }
     
     window.speechUtterances.push(utterance); 
     
@@ -3388,23 +3029,26 @@ let isListening = false;
 // Funzione globale accessibile ovunque per il DING
 window.innescaMicrofonoConDing = function() {
     if (assistantRec && !isListening) {
+        // SCUDO: Se il TTS sta ancora parlando, non innescare il microfono!
+        if (window.speechSynthesis.speaking) return; 
+        
         playSound("ding");
         setTimeout(() => { 
             try { assistantRec.start(); } catch(e) {} 
-        }, 250);
+        }, 350); // Alzato da 250 a 350ms per dare tempo al DING di sfumare
     }
 };
 
 if (SpeechRecognition) {
     assistantRec = new SpeechRecognition();
     assistantRec.lang = 'it-IT';
-    assistantRec.continuous = false;
+    assistantRec.continuous = true;
     assistantRec.interimResults = false;
 
     try {
         if (SpeechGrammarList) {
             // Aggiunti i nuovi comandi alla grammatica del browser
-            let paroleValide = ["livello zero", "livello 0", "livello uno", "livello 1", "livello due", "livello 2", "livello tre", "livello 3", "livello quattro", "livello 4", "livello cinque", "livello 5", "livello sei", "livello 6", "morte improvvisa", "ripeti", "mi arrendo", "arrendo", "termina partita", "termina"];
+            let paroleValide = ["livello zero", "livello 0", "livello uno", "livello 1", "livello due", "livello 2", "livello tre", "livello 3", "livello quattro", "livello 4", "livello cinque", "livello 5", "livello sei", "livello 6", "morte improvvisa", "senza mani", "livello senza mani", "ripeti", "mi arrendo", "arrendo", "termina partita", "termina"];
             globalDb.forEach(n => {
                 paroleValide.push(n.nome.toLowerCase());
                 if(n.capitale) paroleValide.push(n.capitale.toLowerCase());
@@ -3431,11 +3075,18 @@ if (SpeechRecognition) {
     };
 
     assistantRec.onresult = function(event) {
-        // SCUDO ANTI-SPILLOVER: Ignora i frammenti audio se il turno è appena iniziato
+        // 1. SCUDO ANTI-SPILLOVER: Ignora i frammenti audio se il turno è appena iniziato
         if (Date.now() - turnStartTime < 800) return;
-
-        let parolaDetta = event.results[0][0].transcript.replace(/\.$/, '').trim().toLowerCase();
         
+        // 2. SCUDO ANTI-ECO: Se il robot sta ancora parlando in background, IGNORA QUALSIASI INPUT
+        if (window.speechSynthesis.speaking) {
+            console.log("Input ignorato: Il robot sta ancora parlando.");
+            return;
+        }
+
+        let currentIdx = event.resultIndex;
+        let parolaDetta = event.results[currentIdx][0].transcript.replace(/\.$/, '').trim().toLowerCase();
+
         // --- FIX RIPETIZIONI VOCALI A PAPPAGALLO (es. "belize belize" -> "belize") ---
         let matchRipetizione = parolaDetta.match(/^(.+?)\s+\1$/i);
         if (matchRipetizione) {
@@ -3457,7 +3108,7 @@ if (SpeechRecognition) {
         
         // INTERCETTAZIONE MENU PRINCIPALE E LIVELLO SEGRETO
         if (document.getElementById("start-screen").style.display !== "none") {
-            if (parolaDetta.includes("senza mani")) {
+            if (parolaDetta.includes("senza mani") || parolaDetta.includes("livello senza mani")) {
                 parla("Livello segreto attivato. Nessuna distrazione visiva.", function() {
                     startGame(7);
                 });
@@ -3528,9 +3179,10 @@ if (SpeechRecognition) {
         let waitNext = document.getElementById("next-btn") && document.getElementById("next-btn").style.display === "block";
         
         if (voiceModeActive && !window.speechSynthesis.speaking && (gameIsActive || waitContinua) && !waitNext && !window.pendingDefeat && !window.pendingVictory) {
+            // Riavvio ISTANTANEO E SILENZIOSO (10 millisecondi, niente "ding")
             setTimeout(() => {
-                innescaMicrofonoConDing();
-            }, 100);
+                try { assistantRec.start(); } catch(e) {}
+            }, 10);
         } else {
             // Spegnimento effettivo se usciamo dalla partita
             if(inputEl && inputEl.placeholder === "🎤 In ascolto...") inputEl.placeholder = "Scrivi la risposta...";
@@ -3559,10 +3211,14 @@ if (!window.voiceHooksAdded) {
             if (window.pendingDefeat) {
                 setTimeout(() => nextTurnMulti(), 800);
             } else {
-                let correctAns = currentTurnData.validAnswersCache[0].replace(/\s*\(/, ', ').replace(/\)/, '');
+                let rndAns = currentTurnData.validAnswersCache[Math.floor(Math.random() * currentTurnData.validAnswersCache.length)];
+                let correctAns = rndAns.split(" (")[0]; // Legge solo la nazione o la capitale
+                let numValide = currentTurnData.validAnswersCache.length;
+                let incipit = (numValide > 1) ? `Ti sei arreso. Una risposta valida era ${correctAns}.` : `Ti sei arreso. La risposta era ${correctAns}.`;
+                
                 setTimeout(() => {
                     let testoVite = vite === 1 ? " Ti resta una vita." : ` Ti restano ${vite} vite.`;
-                    parla(`Ti sei arreso. La risposta era ${correctAns}.${testoVite}`, function() {
+                    parla(`${incipit}${testoVite}`, function() {
                         setTimeout(() => nextTurnMulti(), 1000);
                     });
                 }, 200);
@@ -3579,10 +3235,20 @@ if (!window.voiceHooksAdded) {
             if (window.pendingDefeat) {
                 setTimeout(() => nextTurnMulti(), 800);
             } else {
-                let correctAns = currentTurnData.validAnswersCache[0].replace(/\s*\(/, ', ').replace(/\)/, '');
+                let rndAns = currentTurnData.validAnswersCache[Math.floor(Math.random() * currentTurnData.validAnswersCache.length)];
+                let correctAns = rndAns.split(" (")[0]; 
+                
+                // FIX LIVELLO 0: Se sei al Livello 0, legge la prima risposta valida generata
+                if (currentLevel === 0 && currentTurnData.validAnswersCache.length > 0) {
+                     correctAns = currentTurnData.validAnswersCache[0].split(" (")[0];
+                }
+                
+                let numValide = currentTurnData.validAnswersCache.length;
+                let incipit = (numValide > 1) ? `Sbagliato, potevi dire: ${correctAns}.` : `Sbagliato, era ${correctAns}.`;
+                
                 setTimeout(() => {
                     let testoVite = vite === 1 ? " Ti resta una vita." : ` Ti restano ${vite} vite.`;
-                    parla(`Sbagliato, era ${correctAns}.${testoVite}`, function() {
+                    parla(`${incipit}${testoVite}`, function() {
                         setTimeout(() => nextTurnMulti(), 1000); 
                     });
                 }, 200);
@@ -3599,9 +3265,33 @@ if (!window.voiceHooksAdded) {
             if (window.pendingDefeat) {
                 setTimeout(() => nextTurnMulti(), 800);
             } else {
+                // 1. Capiamo quali nazioni avevi già indovinato prima di sbagliare
+                let sigleIndovinate = [];
+                comboInserted.forEach(ans => {
+                    let res = checkSingleAnswer(ans, currentTurnData, currentLevel);
+                    if (res.isCorrect) sigleIndovinate.push(res.matchedCountry.sigla);
+                });
+
+                // 2. Filtriamo le risposte valide escludendo quelle che hai già detto
+                let risposteNonDette = currentTurnData.validAnswersCache.filter((ans, index) => {
+                    let sigla = currentTurnData.validSiglas[index];
+                    return !sigleIndovinate.includes(sigla);
+                });
+
+                // Paracadute di sicurezza (non dovrebbe mai servire, ma previene crash)
+                if (risposteNonDette.length === 0) risposteNonDette = currentTurnData.validAnswersCache;
+
+                // 3. Peschiamo una risposta a caso tra quelle RIMASTE
+                let rndAns = risposteNonDette[Math.floor(Math.random() * risposteNonDette.length)];
+                let correctAns = rndAns.split(" (")[0]; 
+                
+                let numValideRimanenti = risposteNonDette.length;
+                let baseText = reason.includes("Tempo scaduto") ? "Tempo scaduto" : "Sbagliato";
+                let incipit = (numValideRimanenti > 1) ? `${baseText}, potevi dire: ${correctAns}.` : `${baseText}, era ${correctAns}.`;
+
                 setTimeout(() => {
                     let testoVite = vite === 1 ? " Ti resta una vita." : ` Ti restano ${vite} vite.`;
-                    parla(`Sbagliato.${testoVite}`, function() {
+                    parla(`${incipit}${testoVite}`, function() {
                         setTimeout(() => nextTurnMulti(), 1000);
                     });
                 }, 200);
@@ -3609,13 +3299,51 @@ if (!window.voiceHooksAdded) {
         }
     };
 
-    // 3. Intercetta le risposte corrette
+    // 3. Intercetta i successi delle COMBO (incluso Grazia da timeout e Fotofinish)
+    const origEseguiValidazioneMultipla = eseguiValidazioneMultipla;
+    eseguiValidazioneMultipla = function(isTimeout = false) {
+        let esattePrima = esatte;
+        let puntiPrima = punteggio;
+        
+        origEseguiValidazioneMultipla(isTimeout);
+        
+        if (voiceModeActive && !window.pendingVictory && !window.pendingDefeat) {
+            if (esatte > esattePrima) {
+                let puntiGuadagnati = punteggio - puntiPrima;
+                // FIX LIVELLO 6: Se sei a Morte Improvvisa non ci sono punti
+                let testoEsatto = (currentLevel === 6) ? "Esatto!" : `Esatto! Più ${puntiGuadagnati} punti.`;
+                
+                let badgeEl = document.getElementById("event-badge");
+                let badgeTesto = (badgeEl && badgeEl.style.display !== "none") ? badgeEl.innerText.toLowerCase() : "";
+                let extraTesto = "";
+                
+                if (badgeTesto.includes("grazia")) {
+                    testoEsatto = `Tempo scaduto, ma ti sei salvato per grazia ricevuta! Più ${puntiGuadagnati} punti.`;
+                } else {
+                    if (badgeTesto.includes("fotofinish")) extraTesto += " Salvataggio al fotofinish.";
+                    if (badgeTesto.includes("audacia")) extraTesto += " Doppio punteggio per audacia.";
+                    if (badgeTesto.includes("pigrizia") || badgeTesto.includes("déjà vu")) extraTesto += " Punteggio dimezzato per pigrizia.";
+                }
+                
+                if (badgeTesto.includes("vita extra")) extraTesto += " Hai ottenuto una vita extra.";
+                
+                testoEsatto += extraTesto;
+                
+                setTimeout(() => {
+                    parla(testoEsatto, function() {
+                        setTimeout(() => nextTurnMulti(), 300);
+                    });
+                }, 150);
+            }
+        }
+    };
+
+    // 4. Intercetta le risposte corrette
     const origProcessaRisposta = processaRisposta;
     processaRisposta = function() {
         let esattePrima = esatte;
         let vitePrima = vite; 
         let comboPrima = comboInserted.length;
-        let puntiPrima = punteggio; 
         
         origProcessaRisposta(); 
         
@@ -3634,43 +3362,48 @@ if (!window.voiceHooksAdded) {
             if (window.pendingDefeat) return; 
             if (vite < vitePrima) return; 
 
-            // Se la risposta finale o l'intera combo è esatta
-            if (esatte > esattePrima) {
-                 let puntiGuadagnati = punteggio - puntiPrima;
-                 let testoEsatto = (currentLevel === 6) ? "Esatto!" : `Esatto! Più ${puntiGuadagnati} punti.`;
-                 
-                 let badgeEl = document.getElementById("event-badge");
-                 let badgeTesto = (badgeEl && badgeEl.style.display !== "none") ? badgeEl.innerText.toLowerCase() : "";
-                 let extraTesto = "";
-                 
-                 if (badgeTesto.includes("grazia")) {
-                     testoEsatto = `Combo salvata per grazia ricevuta! Più ${puntiGuadagnati} punti.`;
-                 } else {
-                     if (badgeTesto.includes("audacia")) extraTesto += " Doppio punteggio per audacia.";
-                     if (badgeTesto.includes("pigrizia") || badgeTesto.includes("déjà vu")) extraTesto += " Punteggio dimezzato per pigrizia.";
-                 }
-                 
-                 if (badgeTesto.includes("vita extra")) extraTesto += " Hai ottenuto una vita extra.";
-                 
-                 testoEsatto += extraTesto;
-                 
-                 setTimeout(() => {
-                     parla(testoEsatto, function() {
-                         setTimeout(() => nextTurnMulti(), 300);
-                     });
-                 }, 150);
-                 return;
-            } 
-            
-            if (comboInserted.length > comboPrima) {
-                 setTimeout(() => {
-                     parla("Presa.", function() { 
-                         if (assistantRec && !isListening) { window.innescaMicrofonoConDing(); }
-                     });
-                 }, 150);
-                 return;
+            let isMulti = (currentLevel === 4 || (currentLevel === 5 && currentTurnData.numReq > 1));
+
+            // CASO 1: Domanda singola superata (NON COMBO)
+            if (!isMulti && esatte > esattePrima) {
+                // Il testo dei punti per la singola va messo solo se non siamo a Morte Improvvisa
+                let puntiGuadagnati = parseInt(document.getElementById("event-badge")?.innerText.match(/\+(\d+)/)?.[1]) || 50; 
+                let testoEsatto = (currentLevel === 6) ? "Esatto!" : `Esatto!`;
+                
+                let badgeEl = document.getElementById("event-badge");
+                let badgeTesto = (badgeEl && badgeEl.style.display !== "none") ? badgeEl.innerText.toLowerCase() : "";
+                let extraTesto = "";
+
+                if (badgeTesto.includes("audacia")) extraTesto += " Audacia.";
+                if (badgeTesto.includes("pigrizia") || badgeTesto.includes("déjà vu")) extraTesto += " Pigrizia.";
+                if (badgeTesto.includes("vita extra")) extraTesto += " Vita extra.";
+
+                testoEsatto += extraTesto;
+
+                setTimeout(() => {
+                    parla(testoEsatto, function() {
+                        setTimeout(() => nextTurnMulti(), 300);
+                    });
+                }, 150);
+                return;
             }
 
+            // CASO 2: Stiamo accumulando risposte per una combo (non ancora finita)
+            if (isMulti && comboInserted.length > comboPrima) {
+                // LA COMBO È FINITA? Se sì, usciamo e lasciamo parlare 'eseguiValidazioneMultipla'
+                if (comboInserted.length === currentTurnData.numReq) return; 
+
+                // ALTRIMENTI: Diciamo "Presa" e riapriamo l'audio per la prossima risposta
+                setTimeout(() => {
+                    parla("Presa.", function() {
+                        if (assistantRec && !isListening) { window.innescaMicrofonoConDing(); }
+                    });
+                }, 150);
+                return;
+            }
+
+            // CASO 3: Fallback (errore logico, input duplicato, o non riconosciuto)
+            // L'audio si è chiuso, lo riapriamo
             if (assistantRec && !isListening) { window.innescaMicrofonoConDing(); }
         }
     };
