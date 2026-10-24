@@ -108,13 +108,13 @@ CX	Isola di Natale	Natale		Flying Fish Cove	Flying Fish Club	Flying Fish Còv		O
 NF	Isola Norfolk	Norfolk		Kingston				Oceania	verde, bianco	verde	albero	x	strisce verticali	3
 AX	Isole Åland	Aland, Alan	Isole Òlànd	Mariehamn	Mary Anne, Mary ann			Europa, Europa Settentrionale	blu, giallo, rosso		croce scandinava	x		3
 KY	Isole Cayman	Cayman	rayman	George Town				Nord America, caraibi	blu		emblema nazionale, tartaruga, animale, union jack	x		3
-CC	Isole Cocos	Cocos, Keeling		West Island	West highland			Oceania	verde, giallo	giallo	mezzaluna,croce del sud, palma, cerchio	x	cerchio giallo, mezzaluna gialla, stella gialla	3
+CC	Isole Cocos	Cocos, Keeling, the cocos		West Island	West highland			Oceania	verde, giallo	giallo	mezzaluna,croce del sud, palma, cerchio	x	cerchio giallo, mezzaluna gialla, stella gialla	3
 CK	Isole Cook	Cook		Avarua		Ava Rua		Oceania	blu	bianco	stella, union jack	x	stella bianca	3
 FK	Isole Falkland	Falkland		Stanley		Stènli		Sud America	blu		emblema nazionale, animale, union jack	x		3
 FO	Isole Faroe	Faroer		Tórshavn	Dr Shadn, thor charme	Tòrsciaven		Europa, Europa Settentrionale	bianco, rosso, blu		croce scandinava	x		3
 MP	Isole Marianne Settentrionali	*Marianne Settentrionali, Marianne, Isole Marianne		Saipan	*Capitol Hill, Capitol			Asia	blu, bianco		emblema nazionale, stella	x	stella bianca, lenzuolo blu	3
 MH	Isole Marshall	Marshall		Majuro	Maiuro, Ma giuro	Magiuro		Oceania	blu, bianco, arancione		stella		stella bianca, taglio diagonale	2
-PN	Isole Pitcairn	Pitcairn, isole big cairn, isole pick up, isole fitkair, fitkair, speedcairn, isole bitcoin, bitcoin, isole pitcar		Adamstown	Adam's Town			Oceania	blu		emblema nazionale, union jack	x		3
+PN	Isole Pitcairn	Pitcairn, isole big cairn, isole pick up, isole fitkair, fitkair, speedcairn, isole bitcoin, bitcoin, isole pitcar, isole pittar, pittar		Adamstown	Adam's Town			Oceania	blu		emblema nazionale, union jack	x		3
 SB	Isole Salomone	Salomone		Honiara	Onyara, Uniara, Onira			Oceania	azzurro, giallo, verde	bianco	stella		stella bianca, taglio diagonale	2
 VI	Isole Vergini americane	Vergini americane		Charlotte Amelie	carlot amelie, sciarlot			Nord America, caraibi	bianco, blu, giallo		emblema nazionale, aquila, animale, uccello, scritta	x	lenzuolo bianco	3
 VG	Isole Vergini britanniche	Vergini britanniche		Road Town				Nord America, caraibi	blu		emblema nazionale, persona, union jack	x		3
@@ -174,7 +174,7 @@ PA	Panama			Panama	Panama city, città di Panama		costa rica, colombia, mare	nor
 PG	Papua Nuova Guinea	Nuova Guinea		Port Moresby	porto moresby, port mores bi		indonesia, mare	Oceania	rosso, nero	giallo, bianco	uccello, animale, stella, croce del sud		stella bianca, taglio diagonale	2
 PY	Paraguay			Asunciòn	Assunzione		bolivia, brasile, argentina	Sud America	rosso, bianco, blu		emblema nazionale, scritta		strisce orizzontali	2
 PE	Perù			Lima			ecuador, colombia, brasile, bolivia, cile, mare	Sud America, Ande, Amazzonia	rosso, bianco				strisce verticali	1
-PF	Polinesia francese	Polinesia		Papeete	papete, papete beach			Oceania	rosso, bianco		emblema nazionale	x	strisce orizzontali	3
+PF	Polinesia francese	Polinesia		Papeete	papete, papete beach, tappeti			Oceania	rosso, bianco		emblema nazionale	x	strisce orizzontali	3
 PL	Polonia	Bologna		Varsavia			lituania, russia, bielorussia, ucraina, slovacchia, cechia, germania, mare	europa	bianco, rosso				strisce orizzontali	1
 PR	Porto Rico			San Juan				Nord America, caraibi	blu, rosso, bianco	bianco	stella	x	triangolo a sinistra blu, stella bianca	3
 PT	Portogallo			Lisbona			spagna, mare	europa, Penisola Iberica	verde, rosso	giallo	emblema nazionale			1
@@ -332,7 +332,7 @@ righe.forEach((riga, index) => {
         });
         nazione.confini = landBorders; 
         
-        let eccezioniIsole = ["GL", "HT", "DO", "MF", "SX"];
+        let eccezioniIsole = ["GL", "HT", "DO", "MF", "SX", "SG", "QA"];
         if (landBorders.length === 0 || eccezioniIsole.includes(nazione.sigla)) nazione.tipoGeo = "isola"; 
         else if (hasSea) nazione.tipoGeo = "costiera";
         else nazione.tipoGeo = "interna"; 
