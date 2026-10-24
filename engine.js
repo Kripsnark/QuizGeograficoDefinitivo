@@ -1891,22 +1891,14 @@ td.buildQuestionText = (num) => {
                 htmlStr += `<div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:5px;">`;
                 
                 comboInserted.forEach(ans => {
-                    let pulitoStr = ans.toLowerCase().trim();
-                    let existMatch = findCountryByInput(pulitoStr, currentLevel);
+                    let matchedCountry = findCountryByInput(ans.toLowerCase().trim(), currentLevel, currentTurnData);
                     
-                    if (existMatch) {
-                        let isCap = currentTurnData.format === 0 || currentTurnData.format === 6 || currentTurnData.format === 10 || (currentTurnData.format === 12 && currentTurnData.f12AskCapital);
-                        if (currentTurnData.isComboInception && (currentTurnData.format === 1 || currentTurnData.format === 9)) isCap = false; 
-                        else if (currentTurnData.isComboInception && (currentTurnData.format === 0 || currentTurnData.format === 10)) isCap = true;
-
-                        let correctText = isCap && existMatch.capitale ? existMatch.capitale : existMatch.nome;
-                        correctText = correctText.replace(/\*/g, '').toUpperCase();
-
+                    if (matchedCountry) {
                         htmlStr += `<div style="display:flex; flex-direction:column; align-items:center; background:#1a1a1a; padding:6px; border-radius:6px; border:1px solid #444; width:65px; height:70px; justify-content:flex-end;">
                             <div style="flex-grow:1; display:flex; align-items:center; justify-content:center; width:100%;">
-                                <img src="GIF/${existMatch.sigla.toLowerCase()}.jpg" onclick="window.openFlagModal(this.src)" style="max-width:45px; max-height:35px; border-radius:3px; box-shadow:0 2px 4px rgba(0,0,0,0.5); cursor:pointer;" onerror="this.style.display='none'">
+                                <img src="GIF/${matchedCountry.sigla.toLowerCase()}.jpg" onclick="window.openFlagModal(this.src)" style="max-width:45px; max-height:35px; border-radius:3px; box-shadow:0 2px 4px rgba(0,0,0,0.5); cursor:pointer;" onerror="this.style.display='none'">
                             </div>
-                            <span style="font-size:10px; color:#ffd700; font-weight:bold; letter-spacing:0.5px; text-align:center; width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:4px;">${correctText}</span>
+                            <span style="font-size:10px; color:#ffd700; font-weight:bold; letter-spacing:0.5px; text-align:center; width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:4px;">${ans.toUpperCase()}</span>
                         </div>`;
                     } else {
                         htmlStr += `<div style="display:flex; flex-direction:column; align-items:center; background:#1a1a1a; padding:6px; border-radius:6px; border:1px solid #444; width:65px; height:70px; justify-content:flex-end;">
@@ -1922,7 +1914,6 @@ td.buildQuestionText = (num) => {
         }
 
         function nextTurnMulti() {
-            window.isTransitioning = false; // SBLOCCA LUCCHETTO
             if (window.pendingVictory) {
                 window.pendingVictory = false;
                 inputEl.classList.remove("correct-flash", "warning-flash");
@@ -2023,13 +2014,7 @@ td.buildQuestionText = (num) => {
             if (oldGrid) oldGrid.remove();
 
             inputEl.value = "";
-            try {
-                currentTurnData = generateQuestion();
-            } catch(e) {
-                console.warn("Loop di generazione evitato, riavvio in sicurezza...");
-                setTimeout(playTurn, 50);
-                return;
-            }
+            currentTurnData = generateQuestion();
             questionEl.innerHTML = currentTurnData.questionText;
 
             // --- NUOVA LOGICA: Generiamo le opzioni subito per il Livello 0 ---
@@ -3520,14 +3505,10 @@ if (!window.voiceHooksAdded) {
             if (window.pendingDefeat) {
                 setTimeout(() => nextTurnMulti(), 800);
             } else {
-                let rndAns = currentTurnData.validAnswersCache[Math.floor(Math.random() * currentTurnData.validAnswersCache.length)];
-                let correctAns = rndAns.split(" (")[0]; 
-                let numValide = currentTurnData.validAnswersCache.length;
-                let incipit = (numValide > 1) ? `Ti sei arreso. Una risposta valida era ${correctAns}.` : `Ti sei arreso. La risposta era ${correctAns}.`;
-                
+                let correctAns = currentTurnData.validAnswersCache[0].replace(/\s*\(/, ', ').replace(/\)/, '');
                 setTimeout(() => {
                     let testoVite = vite === 1 ? " Ti resta una vita." : ` Ti restano ${vite} vite.`;
-                    parla(`${incipit}${testoVite}`, function() {
+                    parla(`Ti sei arreso. La risposta era ${correctAns}.${testoVite}`, function() {
                         setTimeout(() => nextTurnMulti(), 1000);
                     });
                 }, 200);
@@ -3544,19 +3525,10 @@ if (!window.voiceHooksAdded) {
             if (window.pendingDefeat) {
                 setTimeout(() => nextTurnMulti(), 800);
             } else {
-                let rndAns = currentTurnData.validAnswersCache[Math.floor(Math.random() * currentTurnData.validAnswersCache.length)];
-                let correctAns = rndAns.split(" (")[0]; 
-                
-                if (currentLevel === 0 && currentTurnData.validAnswersCache.length > 0) {
-                     correctAns = currentTurnData.validAnswersCache[0].split(" (")[0];
-                }
-                
-                let numValide = currentTurnData.validAnswersCache.length;
-                let incipit = (numValide > 1) ? `Sbagliato, potevi dire: ${correctAns}.` : `Sbagliato, era ${correctAns}.`;
-                
+                let correctAns = currentTurnData.validAnswersCache[0].replace(/\s*\(/, ', ').replace(/\)/, '');
                 setTimeout(() => {
                     let testoVite = vite === 1 ? " Ti resta una vita." : ` Ti restano ${vite} vite.`;
-                    parla(`${incipit}${testoVite}`, function() {
+                    parla(`Sbagliato, era ${correctAns}.${testoVite}`, function() {
                         setTimeout(() => nextTurnMulti(), 1000); 
                     });
                 }, 200);
@@ -3573,29 +3545,9 @@ if (!window.voiceHooksAdded) {
             if (window.pendingDefeat) {
                 setTimeout(() => nextTurnMulti(), 800);
             } else {
-                let sigleIndovinate = [];
-                comboInserted.forEach(ans => {
-                    let res = checkSingleAnswer(ans, currentTurnData, currentLevel);
-                    if (res.isCorrect) sigleIndovinate.push(res.matchedCountry.sigla);
-                });
-
-                let risposteNonDette = currentTurnData.validAnswersCache.filter((ans, index) => {
-                    let sigla = currentTurnData.validSiglas[index];
-                    return !sigleIndovinate.includes(sigla);
-                });
-
-                if (risposteNonDette.length === 0) risposteNonDette = currentTurnData.validAnswersCache;
-
-                let rndAns = risposteNonDette[Math.floor(Math.random() * risposteNonDette.length)];
-                let correctAns = rndAns.split(" (")[0]; 
-                
-                let numValideRimanenti = risposteNonDette.length;
-                let baseText = reason.includes("Tempo scaduto") ? "Tempo scaduto" : "Sbagliato";
-                let incipit = (numValideRimanenti > 1) ? `${baseText}, potevi dire: ${correctAns}.` : `${baseText}, era ${correctAns}.`;
-
                 setTimeout(() => {
                     let testoVite = vite === 1 ? " Ti resta una vita." : ` Ti restano ${vite} vite.`;
-                    parla(`${incipit}${testoVite}`, function() {
+                    parla(`Sbagliato.${testoVite}`, function() {
                         setTimeout(() => nextTurnMulti(), 1000);
                     });
                 }, 200);
@@ -3603,51 +3555,9 @@ if (!window.voiceHooksAdded) {
         }
     };
 
-    // 3. Intercetta i successi delle COMBO (incluso Grazia da timeout e Fotofinish)
-    const origEseguiValidazioneMultipla = eseguiValidazioneMultipla;
-    eseguiValidazioneMultipla = function(isTimeout = false) {
-        let esattePrima = esatte;
-        let puntiPrima = punteggio;
-        
-        origEseguiValidazioneMultipla(isTimeout);
-        
-        if (voiceModeActive && !window.pendingVictory && !window.pendingDefeat) {
-            if (esatte > esattePrima) {
-                window.isTransitioning = true; // SBLOCCA LUCCHETTO ANTI-DOPPIONI
-                
-                let puntiGuadagnati = punteggio - puntiPrima;
-                let testoEsatto = (currentLevel === 6) ? "Esatto!" : `Esatto! Più ${puntiGuadagnati} punti.`;
-                
-                let badgeEl = document.getElementById("event-badge");
-                let badgeTesto = (badgeEl && badgeEl.style.display !== "none") ? badgeEl.innerText.toLowerCase() : "";
-                let extraTesto = "";
-                
-                if (badgeTesto.includes("grazia")) {
-                    testoEsatto = `Tempo scaduto, ma ti sei salvato per grazia ricevuta! Più ${puntiGuadagnati} punti.`;
-                } else {
-                    if (badgeTesto.includes("fotofinish")) extraTesto += " Salvataggio al fotofinish.";
-                    if (badgeTesto.includes("audacia")) extraTesto += " Doppio punteggio per audacia.";
-                    if (badgeTesto.includes("pigrizia") || badgeTesto.includes("déjà vu")) extraTesto += " Punteggio dimezzato per pigrizia.";
-                }
-                
-                if (badgeTesto.includes("vita extra")) extraTesto += " Hai ottenuto una vita extra.";
-                
-                testoEsatto += extraTesto;
-                
-                setTimeout(() => {
-                    parla(testoEsatto, function() {
-                        setTimeout(() => nextTurnMulti(), 300);
-                    });
-                }, 150);
-            }
-        }
-    };
-
-    // 4. Intercetta le risposte corrette (Singole e accumulo)
+    // 3. Intercetta le risposte corrette
     const origProcessaRisposta = processaRisposta;
     processaRisposta = function() {
-        if (window.isTransitioning) return; // LUCCHETTO ATTIVO: Ignora input doppi
-        
         let esattePrima = esatte;
         let vitePrima = vite; 
         let comboPrima = comboInserted.length;
@@ -3670,50 +3580,47 @@ if (!window.voiceHooksAdded) {
             if (window.pendingDefeat) return; 
             if (vite < vitePrima) return; 
 
-            let isMulti = (currentLevel === 4 || (currentLevel === 5 && currentTurnData.numReq > 1));
-
-            // CASO 1: Domanda singola superata (NON COMBO)
-            if (!isMulti && esatte > esattePrima) {
-                window.isTransitioning = true; // SBLOCCA LUCCHETTO ANTI-DOPPIONI
-                
-                let puntiGuadagnati = punteggio - puntiPrima;
-                let testoEsatto = (currentLevel === 6) ? "Esatto!" : `Esatto! Più ${puntiGuadagnati} punti.`;
-                
-                let badgeEl = document.getElementById("event-badge");
-                let badgeTesto = (badgeEl && badgeEl.style.display !== "none") ? badgeEl.innerText.toLowerCase() : "";
-                let extraTesto = "";
-
-                if (badgeTesto.includes("audacia")) extraTesto += " Audacia.";
-                if (badgeTesto.includes("pigrizia") || badgeTesto.includes("déjà vu")) extraTesto += " Pigrizia.";
-                if (badgeTesto.includes("vita extra")) extraTesto += " Vita extra.";
-
-                testoEsatto += extraTesto;
-
-                setTimeout(() => {
-                    parla(testoEsatto, function() {
-                        setTimeout(() => nextTurnMulti(), 300);
-                    });
-                }, 150);
-                return;
+            // Se la risposta finale o l'intera combo è esatta
+            if (esatte > esattePrima) {
+                 let puntiGuadagnati = punteggio - puntiPrima;
+                 let testoEsatto = (currentLevel === 6) ? "Esatto!" : `Esatto! Più ${puntiGuadagnati} punti.`;
+                 
+                 let badgeEl = document.getElementById("event-badge");
+                 let badgeTesto = (badgeEl && badgeEl.style.display !== "none") ? badgeEl.innerText.toLowerCase() : "";
+                 let extraTesto = "";
+                 
+                 if (badgeTesto.includes("grazia")) {
+                     testoEsatto = `Combo salvata per grazia ricevuta! Più ${puntiGuadagnati} punti.`;
+                 } else {
+                     if (badgeTesto.includes("audacia")) extraTesto += " Doppio punteggio per audacia.";
+                     if (badgeTesto.includes("pigrizia") || badgeTesto.includes("déjà vu")) extraTesto += " Punteggio dimezzato per pigrizia.";
+                 }
+                 
+                 if (badgeTesto.includes("vita extra")) extraTesto += " Hai ottenuto una vita extra.";
+                 
+                 testoEsatto += extraTesto;
+                 
+                 setTimeout(() => {
+                     parla(testoEsatto, function() {
+                         setTimeout(() => nextTurnMulti(), 300);
+                     });
+                 }, 150);
+                 return;
+            } 
+            
+            if (comboInserted.length > comboPrima) {
+                 setTimeout(() => {
+                     parla("Presa.", function() { 
+                         if (assistantRec && !isListening) { window.innescaMicrofonoConDing(); }
+                     });
+                 }, 150);
+                 return;
             }
 
-            // CASO 2: Stiamo accumulando risposte per una combo (non ancora finita)
-            if (isMulti && comboInserted.length > comboPrima) {
-                if (comboInserted.length === currentTurnData.numReq) return; 
-                setTimeout(() => {
-                    parla("Presa.", function() {
-                        if (assistantRec && !isListening) { window.innescaMicrofonoConDing(); }
-                    });
-                }, 150);
-                return;
-            }
-
-            // CASO 3: Fallback 
             if (assistantRec && !isListening) { window.innescaMicrofonoConDing(); }
         }
     };
-
-    // 5. FIX MICROFONO: Spegne istantaneamente l'ascolto appena la parola è valida
+// 4. FIX MICROFONO: Spegne istantaneamente l'ascolto appena la parola è valida per evitare loop
     const origCheckSingleAnswer = checkSingleAnswer;
     checkSingleAnswer = function(inputStr, td, level) {
          let res = origCheckSingleAnswer(inputStr, td, level);
@@ -3723,7 +3630,7 @@ if (!window.voiceHooksAdded) {
          return res;
     };
 
-    // 6. PATCH GLOBALE VOCE: Sgancia l'avanzamento dai blocchi del Text-To-Speech su iOS/Android
+    // 5. PATCH GLOBALE VOCE: Sgancia l'avanzamento dai blocchi del Text-To-Speech su iOS/Android
     if (typeof parla !== 'undefined') {
         const origParla = parla;
         parla = function(testo, callback) {
