@@ -1542,28 +1542,31 @@ let tempValid = getValidAnswersArray(td, currentLevel);
                 let htmlStr = `<div>Trovate (${comboInserted.length}/${currentTurnData.numReq}):</div>`;
                 htmlStr += `<div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:5px;">`;
                 
-                comboInserted.forEach(ans => {
-                    let res = checkSingleAnswer(ans.toLowerCase().trim(), currentTurnData, currentLevel);
+                                comboInserted.forEach(ans => {
+                    let pulitoStr = ans.toLowerCase().trim();
                     
-                    if (res.isCorrect) {
-                        let cNode = res.matchedCountry;
-                        
-                        // Capisce se deve stampare il nome dello Stato o della Capitale
+                    // Cerchiamo la nazione in TUTTO il database, senza curarci se è la risposta giusta per questa domanda
+                    let existMatch = findCountryByInput(pulitoStr, currentLevel);
+                    
+                    if (existMatch) {
+                        // La nazione esiste! Stampiamo la sua bandiera in modo NEUTRO, mantenendo la suspense.
+                        // Capisce se deve stampare il nome dello Stato o della Capitale in base al formato
                         let isCap = currentTurnData.format === 0 || currentTurnData.format === 6 || currentTurnData.format === 10 || (currentTurnData.format === 12 && currentTurnData.f12AskCapital);
                         if (currentTurnData.isComboInception && (currentTurnData.format === 1 || currentTurnData.format === 9)) isCap = false; 
                         else if (currentTurnData.isComboInception && (currentTurnData.format === 0 || currentTurnData.format === 10)) isCap = true;
 
-                        let correctText = isCap && cNode.capitale ? cNode.capitale : cNode.nome;
-                        correctText = correctText.replace(/\*/g, '').toUpperCase(); // Pulisce gli asterischi
+                        // Estraiamo il nome "pulito" (es. "Port Vila" invece di "porto villa")
+                        let correctText = isCap && existMatch.capitale ? existMatch.capitale : existMatch.nome;
+                        correctText = correctText.replace(/\*/g, '').toUpperCase();
 
                         htmlStr += `<div style="display:flex; flex-direction:column; align-items:center; background:#1a1a1a; padding:6px; border-radius:6px; border:1px solid #444; width:65px; height:70px; justify-content:flex-end;">
                             <div style="flex-grow:1; display:flex; align-items:center; justify-content:center; width:100%;">
-                                <img src="GIF/${cNode.sigla.toLowerCase()}.jpg" onclick="window.openFlagModal(this.src)" style="max-width:45px; max-height:35px; border-radius:3px; box-shadow:0 2px 4px rgba(0,0,0,0.5); cursor:pointer;" onerror="this.style.display='none'">
+                                <img src="GIF/${existMatch.sigla.toLowerCase()}.jpg" onclick="window.openFlagModal(this.src)" style="max-width:45px; max-height:35px; border-radius:3px; box-shadow:0 2px 4px rgba(0,0,0,0.5); cursor:pointer;" onerror="this.style.display='none'">
                             </div>
                             <span style="font-size:10px; color:#ffd700; font-weight:bold; letter-spacing:0.5px; text-align:center; width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:4px;">${correctText}</span>
                         </div>`;
                     } else {
-                        // Se è sbagliata (in attesa del Game Over), stampa ancora l'input dell'utente
+                        // Parola inventata o non riconosciuta come luogo geografico. Mostra il punto di domanda.
                         htmlStr += `<div style="display:flex; flex-direction:column; align-items:center; background:#1a1a1a; padding:6px; border-radius:6px; border:1px solid #444; width:65px; height:70px; justify-content:flex-end;">
                             <div style="flex-grow:1; display:flex; align-items:center; justify-content:center; width:100%; color:#888; font-size:20px;">❓</div>
                             <span style="font-size:10px; color:#ffd700; font-weight:bold; letter-spacing:0.5px; text-align:center; width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:4px;">${ans.toUpperCase()}</span>
