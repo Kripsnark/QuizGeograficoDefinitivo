@@ -364,7 +364,17 @@ window.setL6Argomento = function(val) {
 };
 
 window.openRecords = function(defaultTab = 'global') {
-    let html = `
+    let debiti = JSON.parse(localStorage.getItem('geoQuizDebiti')) || [];
+    let btnVendettaHtml = "";
+    if (debiti.length >= 5) {
+        btnVendettaHtml = `
+            <button onclick="startRecuperoGame(); closeModal();" style="width: 100%; max-width: 300px; margin: 0 auto 15px auto; display: block; background-color: #ff9800; color: #fff; border: 2px solid #e65100; border-radius: 6px; padding: 10px; font-size: 14px; font-weight: bold; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                🎯 Recupero Debiti (${debiti.length})
+            </button>
+        `;
+    }
+
+    let html = btnVendettaHtml + `
     <div style="display:flex; gap:10px; margin-bottom:15px; width:100%;">
         <button onclick="renderRecordTab('global')" class="ui-tab-btn ${defaultTab==='global'?'active':''}" id="tab-btn-global">🌍 GLOBALE</button>
         <button onclick="renderRecordTab('levels')" class="ui-tab-btn ${defaultTab==='levels'?'active':''}" id="tab-btn-levels">📊 LIVELLI</button>

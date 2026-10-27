@@ -9,7 +9,7 @@ AG	Antigua e Barbuda	Antigua, Barbuda		Saint John's	St John's, Saint Johns, St J
 SA	Arabia Saudita	Saudi Arabia, Arabia		Riyad	Riad	Rii Ad	giordania, iraq, kuwait, qatar, emirati arabi uniti, oman, yemen, Bahrein, mare	Asia, Medio Oriente, Penisola Arabica	verde	bianco	scritta, arma, spada		lenzuolo verde	1
 AR	Argentina			Buenos Aires			uruguay, brasile, paraguay, bolivia, cile, mare	Sud America, Ande	azzurro, bianco	giallo	sole		strisce orizzontali	1
 AM	Armenia	Menia		Erevan			georgia, azerbaigian, iran, turchia	Asia, Caucaso	rosso, blu, arancione				strisce orizzontali	2
-AW	Aruba			Oranjestad	oranistad, oranistadt, orangestar, Orari estad, Orangestadt, oranistag, orari estate, orari istant			Nord America, caraibi	azzurro, giallo, rosso		stella	x	stella rossa	3
+AW	Aruba			Oranjestad	oranistad, oranistadt, orangestar, Orari estad, Orangestadt, oranistag, orari estate, orari istant, brani estate			Nord America, caraibi	azzurro, giallo, rosso		stella	x	stella rossa	3
 AH	Ascensione	Isola di Ascensione		Georgetown				Africa, Africa Occidentale	blu		emblema nazionale, tartaruga, animale, union jack	x		3
 AU	Australia			Canberra				Oceania	blu	bianco	union jack,croce del sud, stella		stella bianca	1
 AT	Austria			Vienna			cechia, slovacchia, ungheria, slovenia, italia, liechtenstein, svizzera, germania	Europa	rosso, bianco				strisce orizzontali	1
@@ -20,16 +20,16 @@ JE	Baliato di Jersey	Jersey, Sbagliato di Jersey		Saint Helier	S Helier	Sènt H�
 BD	Bangladesh			Dacca	Duck		india, myanmar, mare	Asia, Subcontinente indiano	verde, rosso	rosso	cerchio		cerchio rosso, lenzuolo verde	2
 BB	Barbados			Bridgetown	Bridgestone			Nord America, caraibi	blu, giallo	nero	tridente		strisce verticali	2
 BE	Belgio			Bruxelles			paesi bassi, germania, lussemburgo, francia, mare	Europa, Benelux	nero, giallo, rosso				strisce verticali	1
-BZ	Belize	felice		Belmopan	bel mo pan, belgio pan, termopan		guatemala, messico, mare	Nord America, america centrale	rosso, blu, bianco	bianco	emblema nazionale, persona, cerchio, nave		cerchio bianco	2
+BZ	Belize	felice, elise		Belmopan	bel mo pan, belgio pan, termopan		guatemala, messico, mare	Nord America, america centrale	rosso, blu, bianco	bianco	emblema nazionale, persona, cerchio, nave		cerchio bianco	2
 BJ	Benin			Porto Novo	Portonovo		togo, burkina faso, niger, nigeria, mare	africa, africa Occidentale, Golfo di Guinea	verde, giallo, rosso				Banda verticale a lato	2
 BM	Bermuda			Hamilton				Nord America	rosso		emblema nazionale, union jack	x		3
 BT	Bhutan	Buthan		Thimphu	tempo, tv		cina, india	Asia, Subcontinente indiano	giallo, arancione	bianco	drago		taglio diagonale	2
 BY	Bielorussia	*Belarus, velarus		Minsk			russia, ucraina, polonia, lituania, lettonia	Europa	rosso, verde	bianco, rosso			Banda verticale a lato	1
-BO	Bolivia	Olivia		Sucre	*La Paz	Sùcre	perù, brasile, paraguay, argentina, cile	Sud America, Ande, Amazzonia	rosso, giallo, verde		emblema nazionale		strisce orizzontali	1
-BQ	Bonaire	Bon Air, boner, bonheur, on air	Boneèr	Kralendijk	graal dick, cralendic, cra l'endic, tra l'endic, crale, calendar, trein bike, cral e decker, crane bike, cralindick	Kràlendéic		Nord America, caraibi	giallo, bianco, blu	bianco, rosso	stella	x	stella rossa, taglio diagonale	3
+BO	Bolivia	Olivia		Sucre	*La Paz	Sùcre	perù, brasile, paraguay, argentina, cile	Sud America, Ande, Amazzonia	rosso, giallo, verde		emblema nazionale, animale		strisce orizzontali	1
+BQ	Bonaire	Bon Air, boner, bonheur, on air	Boneèr	Kralendijk	graal dick, cralendic, cra l'endic, tra l'endic, crale, calendar, trein bike, cral e decker, crane bike, cralindick, crane night, crane & decker, cral & dake	Kràlendéic		Nord America, caraibi	giallo, bianco, blu	bianco, rosso	stella	x	stella rossa, taglio diagonale	3
 BA	Bosnia ed Erzegovina	Bosnia, Erzegovina		Sarajevo			croazia, serbia, montenegro, mare	Europa, Mediterraneo, Balcani	blu, giallo	bianco	stella		stella bianca, taglio diagonale	1
 BW	Botswana			Gaborone	Corone		namibia, zambia, zimbabwe, sudafrica	Africa, Africa meridionale	azzurro, bianco, nero				strisce orizzontali	2
-BR	Brasile			Brasilia			uruguay, argentina, paraguay, bolivia, perù, colombia, venezuela, guyana, suriname, guyana francese, mare	Sud America, Amazzonia	verde, giallo, blu	blu, bianco	cerchio, scritta		cerchio blu, lenzuolo verde	1
+BR	Brasile			Brasilia			uruguay, argentina, paraguay, bolivia, perù, colombia, venezuela, guyana, suriname, guyana francese, mare	Sud America, Amazzonia	verde, giallo, blu	blu, bianco	cerchio, scritta, stella		cerchio blu, lenzuolo verde, stella bianca	1
 BN	Brunei			Bandar Seri Begawan	Bandar, bandarzeri begawan, bandar serie bargawan, bandar seri, begawan	Bandar Seri Begàuan	Malaysia, mare	Asia, Sud-Est Asiatico	giallo, bianco, nero	rosso	mezzaluna, emblema nazionale, scritta		mezzaluna rossa, taglio diagonale	2
 BG	Bulgaria			Sofia		Sòfia	turchia, grecia, macedonia del nord, serbia, romania, mare	europa, Balcani	bianco, verde, rosso				strisce orizzontali	1
 BF	Burkina Faso			Ouagadougou	Ouaga, Ouagadogu, ouagadogo		mali, niger, benin, togo, ghana, costa d'avorio	africa, africa occidentale	rosso, verde	giallo	stella		strisce orizzontali, stella gialla	2
@@ -53,7 +53,7 @@ CI	Costa d'Avorio	Costa Avorio, D'avorio		Yamoussoukro	Yamussukro, Yamusucro, gl
 CR	Costa Rica			San josè			nicaragua, panama, mare	Nord America, america centrale	blu, bianco, rosso		emblema nazionale		strisce orizzontali	1
 HR	Croazia			Zagabria			slovenia, ungheria, serbia, bosnia ed erzegovina, montenegro, mare	Europa, Mediterraneo, Balcani	rosso, bianco, blu		emblema nazionale		strisce orizzontali	1
 CU	Cuba			L'Avana	Avana			Nord America, caraibi	rosso, bianco, blu	bianco	stella		triangolo a sinistra rosso, stella bianca	1
-CW	Curaçao	Ciao, Curasao		Willemstad	Dillendstadt			Nord America, caraibi	blu, giallo	bianco	stella	x	stella bianca	3
+CW	Curaçao	Ciao, Curasao		Willemstad	Dillendstadt			Nord America, caraibi	blu, giallo	bianco	stella	x	strisce orizzontali, stella bianca	3
 DK	Danimarca			Copenaghen			germania, mare	Europa, Europa Settentrionale	rosso, bianco		croce scandinava			1
 DM	Dominica			Roseau	Roso, rousseau			Nord America, caraibi	verde, giallo, nero, bianco, rosso	rosso, verde, viola	uccello, animale, cerchio, croce simmetrica		cerchio rosso	2
 EC	Ecuador			Quito	Tito		colombia, perù, mare	Sud America, Ande, Amazzonia	giallo, blu, rosso		emblema nazionale, animale, uccello		strisce orizzontali	1
@@ -64,7 +64,7 @@ ER	Eritrea			Asmara			sudan, gibuti, etiopia, mare	africa, africa orientale, Cor
 EE	Estonia	Tonia		Tallinn			lettonia, russia, mare	Europa, Europa Settentrionale, Paesi Baltici	azzurro, nero, bianco				strisce orizzontali	1
 SZ	eSwatini	*Swaziland, e suatini, swatini, eduatini, e swattini		Mbabane	Babbane, un babbane, banane		sudafrica, mozambico	africa, africa meridionale	azzurro, giallo, rosso, nero, bianco		lancia, arma, scudo		strisce orizzontali	2
 ET	Etiopia			Addis Abeba	Sapeva		somalia, kenya, sudan del sud, sudan, eritrea, gibuti	africa, africa orientale, Corno d'Africa	verde, giallo, rosso	blu, giallo	emblema nazionale, stella		strisce orizzontali, stella gialla	1
-FJ	Figi	Gigi, Fiji, Luigi, Pigi		Suva				Oceania	azzurro		emblema nazionale, union jack			2
+FJ	Figi	Gigi, Fiji, Luigi, Pigi, sigi		Suva				Oceania	azzurro		emblema nazionale, union jack, albero, palma			2
 PH	Filippine			Manila				Asia, Sud-Est Asiatico	bianco, rosso, blu	giallo	emblema nazionale, stella, sole		triangolo a sinistra bianco, stella gialla	1
 FI	Finlandia			Helsinki			svezia, norvegia, russia, mare	Europa, Europa Settentrionale	bianco, blu		croce scandinava			1
 FR	Francia			Parigi			spagna, andorra, principato di monaco, italia, svizzera, lussemburgo, belgio, germania, mare	Europa, Mediterraneo	blu, bianco, rosso				strisce verticali	1
@@ -82,17 +82,17 @@ DJ	Gibuti	Tributi		Gibuti	Tributi		eritrea, etiopia, somalia, mare	africa, afric
 JO	Giordania			Amman			israele, siria, iraq, arabia saudita, mare	Asia, medio oriente	rosso, nero, bianco, verde	bianco	stella		triangolo a sinistra rosso, stella bianca	2
 GR	Grecia			Atene			albania, macedonia del nord, bulgaria, turchia, mare	Europa, Mediterraneo, Balcani	bianco, azzurro		croce simmetrica		Riquadro in alto a sinistra	1
 GD	Grenada			Saint George's	st george's, st george, saint george, Giorgis, sangiorgis	Sènt Giorgis		nord america, caraibi	rosso, giallo, verde	rosso, giallo	stella, cerchio		cerchio rosso, stella gialla, cornice perimetrale	2
-GL	Groenlandia			Nuuk	Nuk, nuke		canada, mare	nord america	rosso, bianco		cerchio	x	strisce orizzontali	3
-GP	Guadalupa			Basse-Terre	base terra, passe terra			nord america, caraibi	blu, giallo, nero, verde		emblema nazionale, sole	x		3
-GU	Guam	Wham		Hagåtña	Agatnia, agatna, agata, a gatta, la gatta, accatna, a canna, a gadna	Agàt gna		Oceania	blu, rosso		emblema nazionale	x	cornice perimetrale	3
+GL	Groenlandia			Nuuk	Nuk, nuke, look, muk		canada, mare	nord america	rosso, bianco		cerchio	x	strisce orizzontali	3
+GP	Guadalupa			Basse-Terre	base terra, passe terra, basse e terre			nord america, caraibi	blu, giallo, nero, verde		emblema nazionale, sole	x		3
+GU	Guam	Wham		Hagåtña	Agatnia, agatna, agata, a gatta, la gatta, accatna, a canna, a gadna	Agàt gna		Oceania	blu, rosso		emblema nazionale, albero, palma	x	cornice perimetrale	3
 GT	Guatemala			Città del Guatemala	Guatemala		messico, belize, honduras, el salvador, mare	nord america, america centrale	azzurro, bianco		emblema nazionale, arma, animale, uccello		strisce verticali	2
 GG	Guernsey	Guersi		Saint Peter Port	Porto di San Pietro, tempi per port			Europa, Europa Settentrionale	bianco, rosso, giallo		croce simmetrica	x		3
 GN	Guinea			Conakry	Con Acri, Macri		guinea-bissau, senegal, mali, costa d'avorio, liberia, sierra leone, mare	africa, africa occidentale	rosso, giallo, verde				strisce verticali	2
-GQ	Guinea Equatoriale	Linea equatoriale		ciutad de la paz	*Malabo, la pass, città della pace	Siutaàd de la pas	camerun, gabon, mare	africa, africa centrale, Golfo di Guinea	azzurro, verde, bianco, rosso		emblema nazionale, albero		triangolo a sinistra azzurro	2
+GQ	Guinea Equatoriale	Linea equatoriale		ciutad de la paz	*Malabo, la pass, città della pace, dotato della pace	Siutaàd de la pas	camerun, gabon, mare	africa, africa centrale, Golfo di Guinea	azzurro, verde, bianco, rosso		emblema nazionale, albero		triangolo a sinistra azzurro	2
 GW	Guinea-Bissau	guinea bissau		Bissau			senegal, guinea, mare	africa, africa occidentale	rosso, giallo, verde	nero	stella		stella nera, Banda verticale a lato	2
 GY	Guyana			Georgetown			venezuela, brasile, suriname, mare	Sud America, Amazzonia	rosso, giallo, verde				triangolo a sinistra rosso	2
 GF	Guyana francese			Cayenne	caienna	Caièn	suriname, brasile, mare	Sud America, Amazzonia	giallo, verde	rosso	stella	x	stella rossa, taglio diagonale	3
-HT	Haiti			Port-au-Prince	Port au Prince, Port u prince, Porto Prince, Portalo prince		repubblica dominicana, mare	nord america, caraibi	blu, rosso		emblema nazionale, albero		strisce orizzontali	1
+HT	Haiti			Port-au-Prince	Port au Prince, Port u prince, Porto Prince, Portalo prince		repubblica dominicana, mare	nord america, caraibi	blu, rosso		emblema nazionale, albero, palma		strisce orizzontali	1
 HN	Honduras			Tegucigalpa			guatemala, el salvador, nicaragua, mare	nord america, america centrale	azzurro, bianco	azzurro	stella		strisce orizzontali, stella azzurra	2
 HK	Hong Kong			Victoria			cina, mare	Asia, Asia Orientale	rosso, bianco	bianco	stella	x	stella bianca, lenzuolo rosso	3
 IN	India			Nuova Delhi	New Delhi		pakistan, cina, nepal, bhutan, bangladesh, myanmar, mare	Asia, Subcontinente indiano	arancione, bianco, verde	blu	cerchio		strisce orizzontali	1
@@ -104,19 +104,19 @@ IE	Irlanda			Dublino			regno unito, mare	Europa, Europa Settentrionale	verde, bi
 GB-NIR	Irlanda del Nord	nord irlanda		Belfast			irlanda, mare	Europa, Europa Settentrionale	bianco, rosso		emblema nazionale, corona	x		3
 IS	Islanda			Reykjavík	Rekiavik	Reikiavik		Europa, Europa Settentrionale	blu, bianco, rosso		croce scandinava			1
 IM	Isola di Man	man		Douglas		Daaglas		Europa, Europa Settentrionale	rosso, bianco	bianco	emblema nazionale	x	lenzuolo rosso	3
-CX	Isola di Natale	Natale		Flying Fish Cove	Flying Fish Club	Flying Fish Còv		Oceania	blu, verde, giallo	verde	croce del sud, stella, uccello, animale, sagoma paese, cerchio	x	stella bianca, taglio diagonale	3
+CX	Isola di Natale	Natale		Flying Fish Cove	Flying Fish Club, flying disco	Flying Fish Còv		Oceania	blu, verde, giallo	verde	croce del sud, stella, uccello, animale, sagoma paese, cerchio	x	stella bianca, taglio diagonale	3
 NF	Isola Norfolk	Norfolk		Kingston				Oceania	verde, bianco	verde	albero	x	strisce verticali	3
 AX	Isole Åland	Aland, Alan	Isole Òlànd	Mariehamn	Mary Anne, Mary ann			Europa, Europa Settentrionale	blu, giallo, rosso		croce scandinava	x		3
 KY	Isole Cayman	Cayman	rayman	George Town				Nord America, caraibi	blu		emblema nazionale, tartaruga, animale, union jack	x		3
-CC	Isole Cocos	Cocos, Keeling, the cocos		West Island	West highland			Oceania	verde, giallo	giallo	mezzaluna,croce del sud, palma, cerchio	x	cerchio giallo, mezzaluna gialla, stella gialla	3
+CC	Isole Cocos	Cocos, Keeling, the cocos		West Island	West highland			Oceania	verde, giallo	giallo	mezzaluna, croce del sud, albero, palma, cerchio	x	cerchio giallo, mezzaluna gialla, stella gialla	3
 CK	Isole Cook	Cook		Avarua		Ava Rua		Oceania	blu	bianco	stella, union jack	x	stella bianca	3
 FK	Isole Falkland	Falkland		Stanley		Stènli		Sud America	blu		emblema nazionale, animale, union jack	x		3
 FO	Isole Faroe	Faroer		Tórshavn	Dr Shadn, thor charme	Tòrsciaven		Europa, Europa Settentrionale	bianco, rosso, blu		croce scandinava	x		3
 MP	Isole Marianne Settentrionali	*Marianne Settentrionali, Marianne, Isole Marianne		Saipan	*Capitol Hill, Capitol			Asia	blu, bianco		emblema nazionale, stella	x	stella bianca, lenzuolo blu	3
-MH	Isole Marshall	Marshall		Majuro	Maiuro, Ma giuro	Magiuro		Oceania	blu, bianco, arancione		stella		stella bianca, taglio diagonale	2
-PN	Isole Pitcairn	Pitcairn, isole big cairn, isole pick up, isole fitkair, fitkair, speedcairn, isole bitcoin, bitcoin, isole pitcar, isole pittar, pittar		Adamstown	Adam's Town			Oceania	blu		emblema nazionale, union jack	x		3
+MH	Isole Marshall	Marshall		Majuro	Maiuro, Ma giuro, Lavoro	Magiuro		Oceania	blu, bianco, arancione		stella		stella bianca, taglio diagonale	2
+PN	Isole Pitcairn	Pitcairn, isole big cairn, isole pick up, isole fitkair, fitkair, speedcairn, isole bitcoin, bitcoin, isole pitcar, isole pittar, pittar, isole pitbull, pitbull, isole pitburn, pitburn, isole fitker, fitker		Adamstown	Adam's Town			Oceania	blu		emblema nazionale, union jack	x		3
 SB	Isole Salomone	Salomone		Honiara	Onyara, Uniara, Onira, ogni ara			Oceania	azzurro, giallo, verde	bianco	stella		stella bianca, taglio diagonale	2
-VI	Isole Vergini americane	Vergini americane		Charlotte Amelie	carlot amelie, sciarlot			Nord America, caraibi	bianco, blu, giallo		emblema nazionale, aquila, animale, uccello, scritta	x	lenzuolo bianco	3
+VI	Isole Vergini americane	Vergini americane		Charlotte Amelie	carlot amelie, sciarlot, carlotta meli			Nord America, caraibi	bianco, blu, giallo		emblema nazionale, aquila, animale, uccello, scritta	x	lenzuolo bianco	3
 VG	Isole Vergini britanniche	Vergini britanniche		Road Town				Nord America, caraibi	blu		emblema nazionale, persona, union jack	x		3
 IL	Israele			Gerusalemme			egitto, giordania, libano, siria, mare	Asia, medio oriente	blu, bianco	blu	stella		strisce orizzontali, stella blu	1
 IT	Italia			Roma			san marino, città del vaticano, francia, svizzera, austria, slovenia, mare	Europa, Mediterraneo	verde, bianco, rosso				strisce verticali	1
@@ -144,7 +144,7 @@ MV	Maldive			Malé	Ma lì			Asia, Subcontinente indiano	rosso, verde	bianco	mezz
 ML	Mali	Mari		Bamako			algeria, niger, burkina faso, costa d'avorio, guinea, senegal, mauritania	africa, africa occidentale	verde, giallo, rosso				strisce verticali	2
 MT	Malta			La Valletta	Valletta			Europa, Mediterraneo	bianco, rosso		croce simmetrica		strisce verticali	1
 MA	Marocco	Rocco		Rabat			spagna, algeria, mauritania, mare	Africa, Africa settentrionale, Mediterraneo	rosso, verde	verde	stella		stella verde, lenzuolo rosso	1
-MQ	Martinica			Fort-de-France	Fort de France, ford e franz	Fòrt de France		nord america, caraibi	rosso, verde, nero			x	triangolo a sinistra rosso	3
+MQ	Martinica			Fort-de-France	Fort de France, ford e franz, ford france	Fòrt de France		nord america, caraibi	rosso, verde, nero			x	triangolo a sinistra rosso	3
 MR	Mauritania			Nouakchott	Nuakchot, No rock shot, Workshop, mokchott		algeria, marocco, mali, senegal, mare	africa, africa occidentale	rosso, verde	giallo	mezzaluna, stella		strisce orizzontali, mezzaluna gialla, stella gialla	2
 MU	Mauritius	Maurizio, Maurizius		Port Louis	Porti Lui			africa, africa orientale	rosso, blu, giallo, verde				strisce orizzontali	2
 YT	Mayotte	Maiott, Mariott, Mariotti, Mylot		Mamoudzou	Mamodzu, Mamotzu, ma mozu, mahmood	Mamòdzu		africa, africa orientale	bianco, rosso, blu		emblema nazionale, animale, scritta, mezzaluna	x	mezzaluna bianca, lenzuolo bianco	3
@@ -156,12 +156,12 @@ MS	Montserrat			Plymouth	Plymuth, Plasmat			nord america, caraibi	blu		emblema n
 MZ	Mozambico			Maputo			sudafrica, eswatini, zimbabwe, zambia, malawi, tanzania, mare	africa, africa orientale	rosso, verde, nero, giallo, bianco		emblema nazionale, arma, arma da fuoco		triangolo a sinistra rosso, stella gialla	2
 MM	Myanmar	*Birmania		Naypyidaw	Naypidaw, Naipidau, Mypidau, Naked out, Nipedau	Nèipi dòo	bangladesh, india, cina, laos, thailandia, mare	Asia, Sud-Est Asiatico, Penisola indocinese	giallo, verde, rosso	bianco	stella		strisce orizzontali, stella bianca	2
 NA	Namibia	Nibbia		Windohek	Windoek, Windows	Vìnd huk	angola, zambia, botswana, sudafrica, mare	africa, africa meridionale	blu, rosso, verde, bianco	giallo	sole		taglio diagonale	2
-NR	Nauru	Mauro		Yaren	Iaren, jared			Oceania	blu, giallo	bianco	stella		stella bianca	2
+NR	Nauru	Mauro		Yaren	Iaren, jared			Oceania	blu, giallo	bianco	stella		strisce orizzontali, stella bianca	2
 NP	Nepal			Katmandu	Batman 2, Cat mando		india, cina	Asia, Subcontinente indiano	rosso, blu	bianco	sole		bandiera a triangoli sovrapposti, mezzaluna bianca, cornice perimetrale	2
-NI	Nicaragua			Managua	managya		honduras, costa rica, mare	nord america, america centrale	azzurro, bianco		emblema nazionale, scritta		strisce orizzontali	2
+NI	Nicaragua	Caragua		Managua	managya		honduras, costa rica, mare	nord america, america centrale	azzurro, bianco		emblema nazionale, scritta		strisce orizzontali	2
 NE	Niger			Niamey	Mia Mail, Nia may, ni a me	Niamè	algeria, libia, ciad, nigeria, benin, burkina faso, mali	africa, africa occidentale	arancione, bianco, verde	arancione	cerchio		strisce orizzontali, cerchio arancione	1
 NG	Nigeria			Abuja	Buia	Abùgia	benin, niger, ciad, camerun, mare	africa, africa occidentale, Golfo di Guinea	verde, bianco				strisce verticali	1
-NU	Niue	new wave, noi e, miura, miue, minue, nue	New e	Alofi	a lo fi, all of i, alosi			Oceania	giallo	giallo	stella, union jack	x	stella gialla	3
+NU	Niue	new wave, noi e, miura, miue, minue, nue	New e	Alofi	a lo fi, all of i, alosi, malossi			Oceania	giallo	giallo	stella, union jack	x	stella gialla	3
 NO	Norvegia			Oslo			svezia, finlandia, russia, mare	Europa, Europa Settentrionale	rosso, bianco, blu		croce scandinava			1
 NC	Nuova Caledonia	Caledonia		Nouméa	Numea, Lumea, nomea, nu mea			Oceania	rosso, blu, verde, giallo	giallo, nero	cerchio	x	strisce orizzontali, cerchio giallo	3
 NZ	Nuova Zelanda			Wellington				Oceania	blu	rosso, bianco	stella, croce del sud, union jack		stella rossa	1
@@ -191,12 +191,12 @@ RW	Ruanda			Kigali	Cigali, Cialis, chi gali		uganda, tanzania, burundi, repubbli
 RU	Russia			Mosca			norvegia, finlandia, estonia, lettonia, lituania, polonia, bielorussia, ucraina, georgia, azerbaigian, kazakistan, cina, mongolia, corea del nord, mare	europa	bianco, blu, rosso				strisce orizzontali	1
 SAB	Saba			The Bottom	Bottom, de botto			nord america, caraibi	rosso, bianco, blu	giallo	stella	x	stella gialla	3
 EH	Sahara Occidentale	Sara Occidentale		El Aaiún	el aiun, aaiun, Ela jun, Aiun, elaine	El Aiùn	marocco, mauritania, mare	Africa, Africa settentrionale	rosso, nero, bianco, verde	rosso	mezzaluna, stella	x	triangolo a sinistra rosso, mezzaluna rossa, stella rossa	3
-KN	Saint Kitts e Nevis	Saint Kitts, S Kitts, Nevis, sun kids and nevis, sanchizza e nevis, sanchez & nevis, saint kitze nevis, send kids in iris, sankitsi nevis, thank you say nadies, zenkids e nevis, send kids a nevis, schizzenavis, senkids e nadies, sentize nevis, than kisse nevis, sam kitchenavis, kids e nevis	Sènt chits end nèvis	Basseterre	base terra, passe terra			nord america, caraibi	verde, rosso, nero	bianco	stella		stella bianca, taglio diagonale	2
+KN	Saint Kitts e Nevis	Saint Kitts, S Kitts, Nevis, sun kids and nevis, sanchizza e nevis, sanchez & nevis, saint kitze nevis, send kids in iris, sankitsi nevis, thank you say nadies, zenkids e nevis, send kids a nevis, schizzenavis, senkids e nadies, sentize nevis, than kisse nevis, sam kitchenavis, kids e nevis, sanchizze nevis, saint kitchenavis	Sènt chits end nèvis	Basseterre	base terra, passe terra			nord america, caraibi	verde, rosso, nero	bianco	stella		stella bianca, taglio diagonale	2
 LC	Saint Lucia	S Lucia, Santa Lucia		Castries				nord america, caraibi	azzurro, nero, giallo	bianco, nero, giallo			lenzuolo azzurro	2
 VC	Saint Vincent e Grenadine	S Vincent, Grenadine, Saint Vincent		Kingstown	King's Town			nord america, caraibi	blu, giallo, verde	verde			strisce verticali	2
 BL	Saint-Barthélemy	San Bartolomeo, St Barthelemy, Saint Barthelemy, sig bar televi, simbartelemy, bartalemi, synth bardellemi, sing bardellemy, saint barthelemy, san barthelemy, si imbarrtelemy		Gustavia				nord america, caraibi	bianco		emblema nazionale, scritta	x	lenzuolo bianco	3
 MF	Saint-Martin	Saint Martin, S Martin, San marten, Sim Martin, syd martin	San Martèn	Marigot	Marigoz, marigo, mario	Marigò	sint maarten, mare	nord america, caraibi	bianco, rosso, blu		bandiera francese	x	strisce verticali	3
-PM	Saint-Pierre e Miquelon	Saint Pierre, S Pierre, Miquelon, san pierre michelon, san pierre e miquelon, sentiero michielon		Saint-Pierre	Saint Pierre, S Pierre, sentiero			nord america	rosso, bianco, azzurro, giallo	giallo	nave	x		3
+PM	Saint-Pierre e Miquelon	Saint Pierre, S Pierre, Miquelon, san pierre michelon, san pierre e miquelon, sentiero michielon		Saint-Pierre	Saint Pierre, S Pierre, sentiero, sentire michelon, saint pierre michelon, piera michelon			nord america	rosso, bianco, azzurro, giallo	giallo	nave	x		3
 WS	Samoa			Apia	Abbia, Appia			Oceania	rosso, blu	bianco	stella, croce del sud		stella bianca, Riquadro in alto a sinistra	2
 AS	Samoa Americane			Pago Pago				Oceania	blu, bianco, rosso		aquila, uccello, animale, emblema nazionale, arma	x		3
 SH	Sant'Elena			Jamestown	James Brown			africa, Africa occidentale	blu		uccello, animale, emblema nazionale, union jack	x		3
@@ -207,7 +207,7 @@ RS	Serbia			Belgrado	Grado		kosovo, montenegro, bosnia ed erzegovina, croazia, u
 SC	Seychelles	Seiscel		Victoria				africa, africa orientale	blu, giallo, rosso, bianco, verde				taglio diagonale	2
 SL	Sierra Leone			Freetown			guinea, liberia, mare	africa, africa occidentale	verde, bianco, azzurro				strisce orizzontali	2
 SG	Singapore			Singapore			malaysia, mare	Asia, Sud-Est Asiatico	rosso, bianco		mezzaluna, stella		strisce orizzontali, mezzaluna bianca, stella bianca	1
-STE	Sint Eustatius	S eustatius, sintestatius, sintastatius, sinteu status		Oranjestad	oranistad, oranistadt, orangestar, Orari estad, Orangestadt, oranistag, orari estate, orari istant			Nord America, caraibi	rosso, blu, bianco	verde, bianco	stella	x	stella gialla	3
+STE	Sint Eustatius	S eustatius, sintestatius, sintastatius, sinteu status, interstatius		Oranjestad	oranistad, oranistadt, orangestar, Orari estad, Orangestadt, oranistag, orari estate, orari istant, brani estate			Nord America, caraibi	rosso, blu, bianco	verde, bianco	stella	x	stella gialla	3
 SX	Sint Maarten	S Maarten, Sint Marten, synth martin, sean marten		Philipsburg	Philips burger, flixbus		saint-martin, mare	Nord America, caraibi	bianco, rosso, blu		emblema nazionale	x	triangolo a sinistra bianco	3
 SY	Siria			Damasco			turchia, iraq, giordania, israele, libano, mare	Asia, medio oriente	verde, bianco, nero	rosso	stella		strisce orizzontali, stella rossa	1
 SK	Slovacchia			Bratislava			cechia, polonia, ucraina, ungheria, austria	europa	bianco, blu, rosso		emblema nazionale		strisce orizzontali	1
@@ -227,12 +227,12 @@ TJ	Tagikistan			Dushanbe	Dujabbe, Due gambe, du scian be	Duscianbé	uzbekistan, 
 TW	Taiwan			Taipei	Ebay			Asia, Asia Orientale	blu, rosso	bianco	sole	x	Riquadro in alto a sinistra	3
 TZ	Tanzania			Dodoma			mozambico, malawi, zambia, repubblica democratica del congo, uganda, kenya, ruanda, burundi, mare	africa, africa orientale	verde, giallo, nero, azzurro				taglio diagonale	1
 TF	Terre Australi e Antartiche Francesi	Terre australi, terra antartiche		Port-Douzième	Port Douzieme, cordusiom	Pòr Dusièm			blu, bianco	bianco	emblema nazionale, bandiera francese	x		3
-IO	Territorio britannico dell'Oceano Indiano	territorio britannico doltremare		Diego Garcia				Asia, Subcontinente indiano	blu, bianco		albero, union jack, corona	x		3
+IO	Territorio britannico dell'Oceano Indiano	territorio britannico doltremare		Diego Garcia				Asia, Subcontinente indiano	blu, bianco		albero, palma, union jack, corona	x		3
 TH	Thailandia			Bangkok			myanmar, laos, cambogia, malaysia, mare	Asia, Sud-Est Asiatico, Penisola indocinese	rosso, bianco, blu				strisce orizzontali	1
 TL	Timor Est			Dili			indonesia, mare	Asia, Sud-Est Asiatico	nero, giallo, rosso	bianco	stella		triangolo a sinistra nero, stella bianca	2
 TG	Togo	Dogo, tg		Lomé	Lume, elome		ghana, burkina faso, benin, mare	africa, africa occidentale, Golfo di Guinea	rosso, verde, giallo	bianco	stella		stella bianca, Riquadro in alto a sinistra	2
-TK	Tokelau	ho detto che lau, togelao		Fakaofo	Faco, Vaccarofo, acaofo			Oceania	blu, giallo	bianco	stella, croce del sud	x	stella bianca, lenzuolo blu	3
-TO	Tonga			Nuku'Alofa	Nuku alofa, Mutualopa, Nukolov, nucu alofa, nuco a lo fa, nupualofa			Oceania	rosso, bianco	rosso	croce simmetrica		Riquadro in alto a sinistra	2
+TK	Tokelau	ho detto che lau, togelao		Fakaofo	Faco, Vaccarofo, acaofo, fuckofo			Oceania	blu, giallo	bianco	stella, croce del sud	x	stella bianca, lenzuolo blu	3
+TO	Tonga			Nuku'Alofa	Nuku alofa, Mutualopa, Nukolov, nucu alofa, nuco a lo fa, nupualofa, nucu a lofa			Oceania	rosso, bianco	rosso	croce simmetrica		Riquadro in alto a sinistra	2
 TT	Trinidad e Tobago	Trinidad, Tobago, trinida de tobago		Port of Spain	Work of spain			Nord America, caraibi	rosso, bianco, nero				taglio diagonale	2
 TA	Tristan da Cunha	Tristan	Trìstan da Cùgna	Edinburgh of the Seven Seas	Edimburgh	Èdinbrha of de Sèven Sìis		africa, Africa occidentale	blu		emblema nazionale, animale, union jack	x	strisce orizzontali	3
 TN	Tunisia			Tunisi			algeria, libia, mare	Africa, Africa settentrionale, Mediterraneo	rosso, bianco	rosso, bianco	mezzaluna, stella, cerchio		cerchio bianco, mezzaluna rossa, stella rossa, lenzuolo rosso	1
@@ -248,7 +248,7 @@ UZ	Uzbekistan			Tashkent	Taschent, Dash kent	Tashkènt	kazakistan, kirghizistan,
 VU	Vanuatu			Port Vila	Sport Villa			Oceania	rosso, verde, nero, giallo	giallo	emblema nazionale		triangolo a sinistra nero, Pergola (forma a Y)	2
 VE	Venezuela			Caracas			colombia, brasile, guyana, mare	Sud America, Ande, Amazzonia	giallo, blu, rosso	bianco	stella		strisce orizzontali, stella bianca	1
 VN	Vietnam			Ha Noi	Anoi	Anòi	cambogia, laos, cina, mare	Asia, Sud-Est Asiatico, Penisola indocinese	rosso, giallo	giallo	stella		stella gialla, lenzuolo rosso	1
-WF	Wallis e Futuna	Wallis, Futuna, Wallis e Futura, Wally se futura		Mata-Utu	mata utu, mad a u2			Oceania	rosso, bianco	bianco	bandiera francese	x		3
+WF	Wallis e Futuna	Wallis, Futuna, Wallis e Futura, Wally se futura, quali sei futura, wally su foto		Mata-Utu	mata utu, mad a u2			Oceania	rosso, bianco	bianco	bandiera francese	x		3
 YE	Yemen			Sana'a	Sanaa	Sanà a	arabia saudita, oman, mare	Asia, Medio Oriente, Penisola Arabica	rosso, bianco, nero				strisce orizzontali	2
 ZM	Zambia			Lusaka			angola, repubblica democratica del congo, tanzania, malawi, mozambico, zimbabwe, botswana, namibia	africa, africa orientale	verde, rosso, nero, arancione	arancione	uccello, animale			2
 ZW	Zimbabwe			Harare	Arare, sparare		zambia, mozambico, sudafrica, botswana	africa, africa orientale	verde, giallo, rosso, nero, bianco	rosso, giallo	stella		triangolo a sinistra bianco, stella rossa	1`;
@@ -264,7 +264,6 @@ righe.forEach((riga, index) => {
     let colonne = riga.split(separatore);
     
     if(colonne.length >= 10) {
-        // SLITTAMENTO INDICI (Dipendente passa da 10 a 12, Livello da 12 a 14)
         let isIndipendente = !(colonne[12] && colonne[12].trim().toLowerCase() === "x");
         let livello = (colonne.length > 14 && colonne[14]) ? parseInt(colonne[14].trim()) : 1;
         

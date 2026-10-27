@@ -69,6 +69,43 @@ let erroriCommessi = [];
 let currentTurnData = null; 
 let nazioniUsate = []; 
 
+// --- NUOVE VARIABILI RECUPERO DEBITI E SCUDO CORRUZIONE ---
+let debiti = [];
+try {
+    debiti = JSON.parse(localStorage.getItem('geoQuizDebiti')) || [];
+} catch(e) {
+    console.warn("Dati debiti corrotti, reset in corso...");
+    localStorage.removeItem('geoQuizDebiti');
+    debiti = [];
+}
+
+// --- MOTORE RECUPERO DEBITI ---
+function gestisciDebito(esatto) {
+    if (!currentTurnData) return;
+    if (currentLevel >= 1 && currentLevel <= 4 && !esatto) {
+        let esistente = debiti.find(d => d.tdData.targetNode.sigla === currentTurnData.targetNode.sigla && d.tdData.format === currentTurnData.format);
+        if (esistente) {
+            esistente.progress = 0;
+        } else {
+            let clone = { ...currentTurnData };
+            delete clone.buildQuestionText; 
+            debiti.push({ tdData: clone, progress: 0 });
+            if (debiti.length > 50) debiti.shift(); 
+        }
+        localStorage.setItem('geoQuizDebiti', JSON.stringify(debiti));
+    } else if (currentLevel === 8) {
+        let deb = debiti[currentTurnData.debitoIndex];
+        if (!deb) return;
+        if (esatto) {
+            deb.progress++;
+            if (deb.progress >= 2) debiti.splice(currentTurnData.debitoIndex, 1);
+        } else {
+            deb.progress = 0; 
+        }
+        localStorage.setItem('geoQuizDebiti', JSON.stringify(debiti));
+    }
+}
+
 let currentStreak = 0;
 let bestStreak = 0;
 let fotofinishCount = 0;
@@ -275,10 +312,12 @@ window.checkAutoSave = function() {
                       state.currentLevel === 5 ? "5 (Personalizzata)" :
                       state.currentLevel === 6 ? "6 (Morte Improvvisa)" :
                       state.currentLevel === 7 ? "7 (Senza Mani)" :
+                      state.currentLevel === 8 ? "🎯 Recupero Debiti" :
                       "Livello " + state.currentLevel;
+        let vDisp = state.currentLevel === 8 ? "∞" : state.vite;
         let html = `
             <div style="text-align: center; color: #fff;">
-                <p style="font-size: 15px; margin-bottom: 20px; line-height: 1.5;">Hai una partita in sospeso:<br><strong style="color:#ffd700; font-size:18px;">${lvlName}</strong><br><br>Punti: <strong style="color:#4caf50;">${state.punteggio}</strong> | Vite: <strong style="color:#f44336;">${state.vite} ❤️</strong></p>
+                <p style="font-size: 15px; margin-bottom: 20px; line-height: 1.5;">Hai una partita in sospeso:<br><strong style="color:#ffd700; font-size:18px;">${lvlName}</strong><br><br>Punti: <strong style="color:#4caf50;">${state.punteggio}</strong> | Vite: <strong style="color:#f44336;">${vDisp} ❤️</strong></p>
                 <div style="display: flex; gap: 10px; justify-content: center;">
                     <button onclick="resumeGame()" style="background: #4caf50; color: white; padding: 12px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; flex: 1;">▶️ RIPRENDI</button>
                     <button onclick="discardAutoSave()" style="background: #f44336; color: white; padding: 12px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; flex: 1;">🗑️ ABBANDONA</button>
@@ -287,8 +326,7 @@ window.checkAutoSave = function() {
         `;
         openModal("🔄 BENTORNATO!", html);
     }
-};
-// ==========================================
+};// ==========================================
 
         function startGame(lvl) {
             document.body.style.overscrollBehavior = "none"; 
@@ -408,6 +446,34 @@ window.checkAutoSave = function() {
             playTurn();
         };
 
+window.startRecuperoGame = function() {
+    if (debiti.length < 5) {
+        alert("Non hai abbastanza debiti da recuperare (Minimo 5). Gioca i livelli 1-4 per affrontarne di nuovi!");
+        return;
+    }
+    document.body.style.overscrollBehavior = "none"; 
+    currentLevel = 8;
+    vite = 99; // Vite infinite, l'obiettivo è imparare
+    
+    // Calcola il limite massimo di turni dinamicamente (Errori x 2)
+    window.maxTurniVendetta = Math.min(30, debiti.length * 2);
+    
+    debugGameLog = `=== GEOQUIZ DEBUG LOG ===\nData: ${new Date().toLocaleString()}\nModalità: RECUPERO DEBITI\n\n`;
+                
+    document.getElementById("start-screen").style.display = "none";
+    document.getElementById("custom-setup-screen").style.display = "none";
+    document.getElementById("l6-setup-screen").style.display = "none";
+    document.getElementById("header").style.display = "flex";
+    document.getElementById("question").style.display = "block";
+    document.getElementById("input-area").style.display = "flex";
+    homeBtn.style.display = "block"; 
+    
+    history.pushState(null, null, window.location.href);
+
+    aggiornaUI();
+    playTurn();
+};
+
         function resetGame() {
             clearAutoSave();
             debugGameLog = ""; 
@@ -457,6 +523,16 @@ window.checkAutoSave = function() {
             nazioniDigitateCount = {}; nazioniIgnorateCount = {}; 
             totalActiveTimeMs = 0; totalAnswersSubmitted = 0;
             document.getElementById("top5-nations").style.display = "none";
+
+	    let btnVendetta = document.getElementById("btn-vendetta");
+if (btnVendetta) {
+    if (debiti.length >= 5) {
+        btnVendetta.style.display = "block";
+        btnVendetta.innerText = `🎯 RECUPERO DEBITI (${debiti.length} in sospeso)`;
+    } else {
+        btnVendetta.style.display = "none";
+    }
+}
 
             aggiornaUI();
 
@@ -596,6 +672,15 @@ window.checkAutoSave = function() {
         }
 
 	function generateQuestion() {
+            let td;
+            
+            if (currentLevel === 8) {
+                let dIdx = Math.floor(Math.random() * debiti.length);
+                td = Object.assign({}, debiti[dIdx].tdData);
+                td.debitoIndex = dIdx;
+                return td; // Il clone ha già il testo pronto, usciamo subito!
+            }
+            
             let availableFormats = [];
             
             if (currentLevel === 0) {
@@ -646,7 +731,7 @@ window.checkAutoSave = function() {
             
             // Rimosso il limite di 15 turni! La memoria ora è illimitata.
             
-            let td = { format: format, targetNode: nazioneEstratta, numVariables: 1, isComboInception: false };
+            td = { format: format, targetNode: nazioneEstratta, numVariables: 1, isComboInception: false };
             
             if (td.targetNode.aree && td.targetNode.aree.length > 0) {
                 if (td.targetNode.aree.length > 1) {
@@ -1114,9 +1199,9 @@ td.buildQuestionText = (num) => {
                     let sP = isCap ? "di Stati che" : "che";
                     
                     if (td.negGeo) {
-                        if (td.negGeo === 'isola') extraNegs.push(num === 1 ? `${sS} <span class='negative-constraint'>NON</span> sia insulare` : `${sP} <span class='negative-constraint'>NON</span> siano insulari`);
-                        else if (td.negGeo === 'costiera') extraNegs.push(num === 1 ? `${sS} <span class='negative-constraint'>NON</span> sia continentale costiero` : `${sP} <span class='negative-constraint'>NON</span> siano continentali costieri`);
-                        else if (td.negGeo === 'interna') extraNegs.push(num === 1 ? `${sS} abbia sbocchi sul mare` : `${sP} abbiano sbocchi sul mare`);
+                        if (td.negGeo === 'isola') extraNegs.push(num === 1 ? `${sS} <span class='negative-constraint'>NON</span> sia <strong>INSULARE</strong>` : `${sP} <span class='negative-constraint'>NON</span> siano <strong>INSULARI</strong>`);
+                        else if (td.negGeo === 'costiera') extraNegs.push(num === 1 ? `${sS} <span class='negative-constraint'>NON</span> sia <strong>CONTINENTALE COSTIERO</strong>` : `${sP} <span class='negative-constraint'>NON</span> siano <strong>CONTINENTALI COSTIERI</strong>`);
+                        else if (td.negGeo === 'interna') extraNegs.push(num === 1 ? `${sS} abbia <strong>SBOCCHI SUL MARE</strong>` : `${sP} abbiano <strong>SBOCCHI SUL MARE</strong>`);
                     }
                     if (td.negArea) {
                         extraNegs.push(getPreposizioneAreaNegativa(td.negArea, num));
@@ -1997,6 +2082,8 @@ td.buildQuestionText = (num) => {
         correct: "Risposte valide: " + stringaSoluzioni 
     });
 
+gestisciDebito(false);
+
     inputEl.value = "";
     inputEl.disabled = true;
     submitBtn.style.display = "none";
@@ -2021,6 +2108,12 @@ td.buildQuestionText = (num) => {
         function playTurn() {
             // SCUDO ANTI-DOMANDE FANTASMA: Se la partita è finita, abortisce immediatamente
             if (document.getElementById("game-over-screen").style.display === "flex") return;
+	
+	if (currentLevel === 8 && (logQuestionCounter >= window.maxTurniVendetta || debiti.length === 0)) {
+        window.pendingVictory = true;
+        popolaGameOver(true);
+        return;
+    }
 
             turnStartTime = Date.now();
             bandieraContainer.style.display = "none";
@@ -2123,7 +2216,14 @@ td.buildQuestionText = (num) => {
 
             if (currentLevel === 6) {
                 timerContainer.style.display = "block";
-                startTimerSandboxOrL4(10); // 10 SECONDI FISSI E LETALI
+                startTimerSandboxOrL4(10); 
+            } else if (currentLevel === 8) {
+                timerContainer.style.display = "block";
+                timerBar.style.transition = "width 0.5s ease-in-out";
+                timerBar.style.backgroundColor = "#ff9800"; // Barra Arancione
+                let pct = (logQuestionCounter / window.maxTurniVendetta) * 100;
+                timerBar.style.width = pct + "%";
+                timerStatus.innerText = `DEBITI RESIDUI: ${debiti.length} (Domanda ${logQuestionCounter + 1}/${window.maxTurniVendetta})`;
             } else if (useTimer) {
                 let mathTime = 15 * (currentTurnData.numReq + currentTurnData.numVariables - 1);
                 if (mathTime < 15) mathTime = 15; 
@@ -2332,6 +2432,9 @@ function processaRisposta() {
         }
         
         punteggio += puntiGuadagnati;
+
+gestisciDebito(true);
+
         debugGameLog += `-> ESITO [${actionTime}s] [${puntiGuadagnati}pti]: ✅ CORRETTO (Input: ` + inputStr + " -> Riconosciuto: " + res.matchedCountry.nome + ")\n\n";
 
         let hasWon = (currentLevel === 6 && esatte >= levelDb.length) || (currentLevel === 1 && punteggio >= 2500) || (currentLevel === 2 && punteggio >= 3500);
@@ -2581,6 +2684,9 @@ function eseguiValidazioneMultipla(isTimeout = false) {
         }
         
         punteggio += puntiRound;
+        
+        gestisciDebito(true);
+
         let comboTimeNum = (Date.now() - turnStartTime) / 1000;
         debugGameLog += `-> ESITO COMBO [${comboTimeNum.toFixed(1)}s tot | ${(comboTimeNum / comboInserted.length).toFixed(1)}s/risp] [${puntiRound}pti]: ✅ SUPERATA` + (isGrazia ? " CON GRAZIA" : "") + " (Trovate: " + comboInserted.join(", ") + ")\n\n";
 
@@ -2696,6 +2802,8 @@ function eseguiValidazioneMultipla(isTimeout = false) {
                 correct: "Risposte valide: " + stringaSoluzioni 
             });
 
+gestisciDebito(false);
+
             inputEl.value = "";
             inputEl.classList.add("shake", "wrong-flash");
             inputEl.disabled = true;
@@ -2735,6 +2843,8 @@ function eseguiValidazioneMultipla(isTimeout = false) {
                 wrong: reason + (wrongInput ? " Hai inserito: " + wrongInput : ""), 
                 correct: "Risposte valide: " + stringaSoluzioni 
             });
+
+gestisciDebito(false);
 
             inputEl.value = "";
             inputEl.classList.add("shake", "wrong-flash");
@@ -2797,6 +2907,18 @@ function eseguiValidazioneMultipla(isTimeout = false) {
                 return;
             }
 
+	    if (currentLevel === 8) {
+                heartsEl.style.fontSize = "16px";
+                heartsEl.innerText = "🎯 MODALITÀ VENDETTA";
+                esatteEl.innerText = esatte;
+                puntiEl.parentNode.style.display = "none";
+                document.getElementById("header").style.borderBottom = "3px solid #ff9800";
+                return;
+            } else {
+                puntiEl.parentNode.style.display = "inline";
+                document.getElementById("header").style.borderBottom = "none";
+            }
+
             let cuoriStringa = "";
             let currentMaxVite = customConfig.vite > 5 ? customConfig.vite : maxVite;
             
@@ -2813,7 +2935,7 @@ function eseguiValidazioneMultipla(isTimeout = false) {
         }
 
         function popolaGameOver(isVictory = false) {
-            if (gameOverScreen.style.display === "flex") return; // BLOCCO DOPPIO LOG E SCHERMATA
+            if (gameOverScreen.style.display === "flex") return; 
             
             clearAutoSave();
             playSound(isVictory ? "vittoria" : "sconfitta");
@@ -2830,86 +2952,80 @@ function eseguiValidazioneMultipla(isTimeout = false) {
             gameOverScreen.style.display = "flex";
             
             let avgTime = totalAnswersSubmitted > 0 ? (totalActiveTimeMs / totalAnswersSubmitted / 1000).toFixed(1) : "0.0";
-        let avgTimeFloat = parseFloat(avgTime);
-        document.getElementById("final-avg-time").innerText = avgTime + "s";
-        
-        // FIX CRITICO: Inizializza le statistiche del livello se non esistono (es. Livello 7)
-        if (!statsByLevel[currentLevel]) {
-            statsByLevel[currentLevel] = { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0, fotofinish: 0, grazie: 0 };
-        }
-        
-        globalPlays++;
-        statsByLevel[currentLevel].plays++;
-        
-        // --- NUOVO: SALVATAGGIO PROGRESSI LIVELLO 6 ---
-        if (currentLevel === 6) {
-            let pKey = configL6.bacino + "_" + configL6.argomento;
+            let avgTimeFloat = parseFloat(avgTime);
+            document.getElementById("final-avg-time").innerText = avgTime + "s";
             
-            if (!statsByLevel[6].progress) {
-                statsByLevel[6].progress = { sprint_bandiere: 0, sprint_stati: 0, sprint_capitali: 0, onu_bandiere: 0, onu_stati: 0, onu_capitali: 0, totale_bandiere: 0, totale_stati: 0, totale_capitali: 0 };
-            }
-            
-            // Salva il record solo se le nazioni indovinate in questa partita sono di più del vecchio record
-            if (esatte > (statsByLevel[6].progress[pKey] || 0)) {
-                statsByLevel[6].progress[pKey] = esatte;
-            }
-        }
-           
-        let isNewRecord = false;
-        if (punteggio > statsByLevel[currentLevel].bestScore && punteggio > 0) {
-            statsByLevel[currentLevel].bestScore = punteggio;
-            isNewRecord = true;
-        }
-        if (bestStreak > statsByLevel[currentLevel].bestStreak) statsByLevel[currentLevel].bestStreak = bestStreak;
-            
-            // FIX RECORD TEMPO: Evita i record falsati. Si aggiorna solo se fai almeno 5 risposte esatte.
-            if (avgTimeFloat > 0 && esatte >= 5) {
-                if (statsByLevel[currentLevel].bestAvgTime === 0 || avgTimeFloat < statsByLevel[currentLevel].bestAvgTime) {
-                    statsByLevel[currentLevel].bestAvgTime = avgTimeFloat;
+            let isNewRecord = false;
+
+            // SCUDO LIVELLO 8: Nessun record, nessuna statistica globale registrata
+            if (currentLevel !== 8) {
+                if (!statsByLevel[currentLevel]) {
+                    statsByLevel[currentLevel] = { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0, fotofinish: 0, grazie: 0 };
                 }
-            }
-            
-            // --- SALVATAGGIO ULTIME 5 PARTITE ---
-            let gameRecord = {
-                date: new Date().toLocaleString(),
-                punteggio: punteggio,
-                esatte: esatte,
-                log: debugGameLog
-            };
-            if (!recentGamesHistory[currentLevel]) recentGamesHistory[currentLevel] = []; // Salvavita per i vecchi salvataggi
-            recentGamesHistory[currentLevel].unshift(gameRecord); // Inserisce in cima
-            if (recentGamesHistory[currentLevel].length > 5) {
-                recentGamesHistory[currentLevel].pop(); // Mantiene solo le ultime 5
-            }
-            
-            if (currentLevel === 4 || (currentLevel === 5 && customConfig.timer)) { 
-                statsByLevel[currentLevel].fotofinish += fotofinishCount;
-                statsByLevel[currentLevel].grazie += grazieRicevuteCount;
+                
+                globalPlays++;
+                statsByLevel[currentLevel].plays++;
+                
+                if (currentLevel === 6) {
+                    let pKey = configL6.bacino + "_" + configL6.argomento;
+                    if (!statsByLevel[6].progress) {
+                        statsByLevel[6].progress = { sprint_bandiere: 0, sprint_stati: 0, sprint_capitali: 0, onu_bandiere: 0, onu_stati: 0, onu_capitali: 0, totale_bandiere: 0, totale_stati: 0, totale_capitali: 0 };
+                    }
+                    if (esatte > (statsByLevel[6].progress[pKey] || 0)) {
+                        statsByLevel[6].progress[pKey] = esatte;
+                    }
+                }
+                   
+                if (punteggio > statsByLevel[currentLevel].bestScore && punteggio > 0) {
+                    statsByLevel[currentLevel].bestScore = punteggio;
+                    isNewRecord = true;
+                }
+                if (bestStreak > statsByLevel[currentLevel].bestStreak) statsByLevel[currentLevel].bestStreak = bestStreak;
+                
+                if (avgTimeFloat > 0 && esatte >= 5) {
+                    if (statsByLevel[currentLevel].bestAvgTime === 0 || avgTimeFloat < statsByLevel[currentLevel].bestAvgTime) {
+                        statsByLevel[currentLevel].bestAvgTime = avgTimeFloat;
+                    }
+                }
+                
+                let gameRecord = {
+                    date: new Date().toLocaleString(),
+                    punteggio: punteggio,
+                    esatte: esatte,
+                    log: debugGameLog
+                };
+                if (!recentGamesHistory[currentLevel]) recentGamesHistory[currentLevel] = []; 
+                recentGamesHistory[currentLevel].unshift(gameRecord); 
+                if (recentGamesHistory[currentLevel].length > 5) {
+                    recentGamesHistory[currentLevel].pop(); 
+                }
+                
+                if (currentLevel === 4 || (currentLevel === 5 && customConfig.timer)) { 
+                    statsByLevel[currentLevel].fotofinish += fotofinishCount;
+                    statsByLevel[currentLevel].grazie += grazieRicevuteCount;
+                }
+
+                if (currentLevel !== 0 && currentLevel !== 5 && currentLevel !== 6) {
+                    if (punteggio > allTimeBestScore) allTimeBestScore = punteggio;
+                    if (bestStreak > allTimeBestStreak) allTimeBestStreak = bestStreak;
+                    allTimeFotofinish += fotofinishCount;
+                    allTimeGrazie += grazieRicevuteCount;
+                    for (let sigla in nazioniDigitateCount) { allTimeNazioniCount[sigla] = (allTimeNazioniCount[sigla] || 0) + nazioniDigitateCount[sigla]; }
+                    for (let sigla in nazioniIgnorateCount) { allTimeNazioniIgnorate[sigla] = (allTimeNazioniIgnorate[sigla] || 0) + nazioniIgnorateCount[sigla]; }
+                }
+                
+                saveStats(); 
             }
 
-            // Statistiche Globali Legacy - Esclusi Livello 0, Livello 5 (Sandbox) e Livello 6
-            if (currentLevel !== 0 && currentLevel !== 5 && currentLevel !== 6) {
-                if (punteggio > allTimeBestScore) allTimeBestScore = punteggio;
-                if (bestStreak > allTimeBestStreak) allTimeBestStreak = bestStreak;
-                allTimeFotofinish += fotofinishCount;
-                allTimeGrazie += grazieRicevuteCount;
-                for (let sigla in nazioniDigitateCount) { allTimeNazioniCount[sigla] = (allTimeNazioniCount[sigla] || 0) + nazioniDigitateCount[sigla]; }
-                for (let sigla in nazioniIgnorateCount) { allTimeNazioniIgnorate[sigla] = (allTimeNazioniIgnorate[sigla] || 0) + nazioniIgnorateCount[sigla]; }
-            }
-            
             let badge = document.getElementById("new-record-badge");
             if(isNewRecord) badge.style.display = "block";
             else badge.style.display = "none";
 
-            saveStats(); 
-
-            // Calcolo tempo totale per UI
             let tTimeSecUI = totalActiveTimeMs / 1000;
             let minAttivi = Math.floor(tTimeSecUI / 60);
             let secAttivi = (tTimeSecUI % 60).toFixed(1);
             let strTempoTotale = minAttivi > 0 ? `${minAttivi}m ${secAttivi}s` : `${secAttivi}s`;
 
-            // Creiamo o aggiorniamo la riga del tempo totale
             let rowTempoTot = document.getElementById("stat-tempo-totale");
             if (!rowTempoTot) {
                 rowTempoTot = document.createElement("div");
@@ -2922,22 +3038,24 @@ function eseguiValidazioneMultipla(isTimeout = false) {
             let statRow = document.getElementById("game-over-stats").firstElementChild;
             let streakRow = document.getElementById("final-streak").parentNode;
 
-            // Personalizzazione testo risultati per il Livello 6
             if (currentLevel === 6) {
                 let pct = levelDb.length > 0 ? ((esatte / levelDb.length) * 100).toFixed(1) : 0;
                 statRow.innerHTML = `Hai indovinato <strong class="score-highlight">${esatte}</strong> nazioni su <strong class="score-highlight">${levelDb.length}</strong> (${pct}%).`;
-                streakRow.style.display = "none"; // Nasconde Serie Migliore
-                rowTempoTot.style.display = "block"; // Mostra Tempo Totale
+                streakRow.style.display = "none"; 
+                rowTempoTot.style.display = "block"; 
+            } else if (currentLevel === 8) {
+                statRow.innerHTML = `Hai risposto correttamente a <strong class="score-highlight">${esatte}</strong> domande di recupero.`;
+                streakRow.style.display = "none"; 
+                rowTempoTot.style.display = "block"; 
             } else {
                 statRow.innerHTML = `Hai totalizzato <strong class="score-highlight" id="final-score">${punteggio}</strong> punti con <strong id="final-esatte">${esatte}</strong> risposte esatte.`;
-                streakRow.style.display = "block"; // Mostra Serie Migliore
+                streakRow.style.display = "block"; 
                 document.getElementById("final-streak").innerText = bestStreak;
-                rowTempoTot.style.display = "none"; // Nasconde Tempo Totale
+                rowTempoTot.style.display = "none"; 
             }
 
             document.getElementById("final-fotofinish").innerText = fotofinishCount;
             document.getElementById("final-grazie").innerText = grazieRicevuteCount;
-// FIX: Mostra Fotofinish e Grazie solo se la modalità lo supporta (timer attivo)
             if (currentLevel === 4 || (currentLevel === 5 && customConfig.timer)) {
                 document.getElementById("stat-fotofinish-row").style.display = "block";
                 document.getElementById("stat-grazie-row").style.display = "block";
@@ -2964,15 +3082,25 @@ function eseguiValidazioneMultipla(isTimeout = false) {
                         titleEl.style.color = "#ffd700"; 
                         msgEl.innerHTML = "L'impresa è compiuta.<br>Hai dimostrato una padronanza geografica assoluta.";
                     }
+                } else if (currentLevel === 8) {
+                    titleEl.innerText = "DEBITI AZZERATI!";
+                    titleEl.style.color = "#ff9800"; 
+                    msgEl.innerText = "Hai affrontato e superato i tuoi punti deboli. Ottimo lavoro!";
                 } else {
                     titleEl.innerText = "VITTORIA!";
                     titleEl.style.color = "#4caf50"; 
                     msgEl.innerText = "Sei troppo bravo per questo livello, passa al prossimo!";
                 }
             } else {
-                titleEl.innerText = "GAME OVER";
-                titleEl.style.color = "#f44336";
-                msgEl.innerText = "";
+                if (currentLevel === 8) {
+                    titleEl.innerText = "SESSIONE TERMINATA";
+                    titleEl.style.color = "#ff9800";
+                    msgEl.innerText = "Hai concluso questa sessione di recupero.";
+                } else {
+                    titleEl.innerText = "GAME OVER";
+                    titleEl.style.color = "#f44336";
+                    msgEl.innerText = "";
+                }
             }
 
             errorLogEl.style.display = "block";
@@ -2991,31 +3119,27 @@ function eseguiValidazioneMultipla(isTimeout = false) {
                 errorLogEl.innerHTML = errorHtml;
             }
 
-            // 1. Pulisce le ignorate
             for (let chiave in nazioniIgnorateCount) {
                 if (nazioniDigitateCount[chiave] && nazioniDigitateCount[chiave] > 0) {
                     delete nazioniIgnorateCount[chiave];
                 }
             }
 
-            // 2. Calcola Usate (Anti-crash)
             let allUsate = Object.keys(nazioniDigitateCount).map(chiave => {
                 let n = globalDb.find(c => c.sigla === chiave || c.nome === chiave);
-                // Passiamo anche la sigla così le tue bandierine in buildMiniList continuano a funzionare!
                 return { nome: n ? n.nome : chiave, count: nazioniDigitateCount[chiave], sigla: n ? n.sigla : chiave };
             }).sort((a, b) => b.count - a.count);
             
-            let sortedUsate = allUsate.slice(0, 5); // UI
-            let logUsate = allUsate.slice(0, 20);   // LOG
+            let sortedUsate = allUsate.slice(0, 5);
+            let logUsate = allUsate.slice(0, 20);
             
-            // 3. Calcola Ignorate (Anti-crash)
             let allIgnorate = Object.keys(nazioniIgnorateCount).map(chiave => {
                 let n = globalDb.find(c => c.sigla === chiave || c.nome === chiave);
                 return { nome: n ? n.nome : chiave, count: nazioniIgnorateCount[chiave], sigla: n ? n.sigla : chiave };
             }).sort((a, b) => b.count - a.count);
             
-            let sortedIgnorate = allIgnorate.slice(0, 5); // UI
-            let logIgnorate = allIgnorate.slice(0, 20);   // LOG
+            let sortedIgnorate = allIgnorate.slice(0, 5); 
+            let logIgnorate = allIgnorate.slice(0, 20);   
 
             const buildMiniList = (arr, color) => {
                 if (arr.length === 0) return `<p style="font-size:13px; color:#888;">Nessun dato</p>`;
@@ -3032,11 +3156,8 @@ function eseguiValidazioneMultipla(isTimeout = false) {
                 return h + `</div>`;
             };
 
-            // FIX: Recupera il contenitore HTML che era andato perso!
             let top5Container = document.getElementById("top5-nations");
-
-            // FIX: Mostra Top 5 solo se NON siamo nel livello 0 e NON nel livello 6
-            if (currentLevel !== 0 && currentLevel !== 6 && (sortedUsate.length > 0 || sortedIgnorate.length > 0)) {
+            if (currentLevel !== 0 && currentLevel !== 6 && currentLevel !== 8 && (sortedUsate.length > 0 || sortedIgnorate.length > 0)) {
                 let html = `<div style="display:flex; gap:15px; margin-top:10px;">
                                 <div style="flex:1;">
                                     <h3 style="color:#4caf50; margin:0 0 10px 0; font-size:14px; text-transform:uppercase; text-align:center;">Top 5 Usate</h3>
@@ -3053,12 +3174,10 @@ function eseguiValidazioneMultipla(isTimeout = false) {
                 top5Container.style.display = "none";
             }
 
-            // --- AGGIUNTA DELLE STATISTICHE AL FILE DI LOG ---
             debugGameLog += "========================================\n";
             debugGameLog += "[STATISTICHE FINALI PARTITA]\n";
             debugGameLog += "Esito: " + (isVictory ? "🏆 VITTORIA" : "💀 GAME OVER") + "\n";
             
-            // FIX: Testo differenziato per il Log nel Livello 6
             if (currentLevel === 6) {
                 let pct = levelDb.length > 0 ? ((esatte / levelDb.length) * 100).toFixed(1) : 0;
                 if (isVictory) {
@@ -3066,6 +3185,8 @@ function eseguiValidazioneMultipla(isTimeout = false) {
                 } else {
                      debugGameLog += "Esatte: " + esatte + " su " + levelDb.length + " (" + pct + "%)\n";
                 }
+            } else if (currentLevel === 8) {
+                debugGameLog += "Esatte: " + esatte + " su " + logQuestionCounter + "\n";
             } else {
                 debugGameLog += "Punteggio: " + punteggio + " | Esatte: " + esatte + " su " + logQuestionCounter + " | Serie Max: " + bestStreak + "\n";
             }
@@ -3074,14 +3195,12 @@ function eseguiValidazioneMultipla(isTimeout = false) {
             if (currentLevel === 4 || (currentLevel === 5 && customConfig.timer)) {
                 debugGameLog += "Salvataggi al Fotofinish: " + fotofinishCount + " | Grazie Ricevute: " + grazieRicevuteCount + "\n";
             }
-            // Nasconde Top 5 dal log se si gioca a L0 o L6
-            if (currentLevel !== 0 && currentLevel !== 6) {
+            if (currentLevel !== 0 && currentLevel !== 6 && currentLevel !== 8) {
                 debugGameLog += "Top 20 Usate: " + (logUsate.length > 0 ? logUsate.map(u => u.nome + " (" + u.count + ")").join(", ") : "Nessuna") + "\n";
                 debugGameLog += "Top 20 Ignorate: " + (logIgnorate.length > 0 ? logIgnorate.map(i => i.nome + " (" + i.count + ")").join(", ") : "Nessuna") + "\n";
             }
             debugGameLog += "========================================\n";
 
-            // --- VOCE AUTOMATICA DEI RISULTATI ---
             if (voiceModeActive) {
                 let txt = "";
                 if (isVictory) {
@@ -3090,18 +3209,23 @@ function eseguiValidazioneMultipla(isTimeout = false) {
                         else if (configL6.bacino === 'onu') txt = "Eccezionale. Hai conquistato tutti gli Stati sovrani del mondo. La geografia non ha più segreti per te. ";
                         else txt = "Straordinario. Hai completato l'intero database. Nessun territorio al mondo ti è sconosciuto. Sei una leggenda vivente. ";
                     }
+                    else if (currentLevel === 8) {
+                        txt = "Bravissimo. Hai eliminato tutti i tuoi errori storici. ";
+                    }
                     else txt = "Vittoria! ";
                 } else {
-                    txt = "Game over. ";
+                    if (currentLevel === 8) txt = "Sessione di recupero terminata. ";
+                    else txt = "Game over. ";
                 }
 
                 if (currentLevel === 6) {
                     txt += "Hai indovinato " + esatte + " nazioni su " + levelDb.length + ".";
+                } else if (currentLevel === 8) {
+                    txt += "Hai risposto correttamente a " + esatte + " domande.";
                 } else {
                     txt += "Hai totalizzato " + punteggio + " punti con " + esatte + " risposte esatte.";
                 }
                 
-                // Legge i risultati e si ferma (non riapre il microfono)
                 setTimeout(() => { 
                     parla(txt, function() {
                         let btn = document.getElementById("assistant-btn");
@@ -3271,7 +3395,7 @@ function creaBottoneAssistente() {
             
             if (suoniAttivi) playSound("ding");
 
-            parla("Modalità vocale attivata. Quale livello vuoi giocare? Dire: livello + numero", function() {
+            parla("Modalità vocale attivata. Quale livello vuoi giocare? Pronuncia la parola livello, seguita dal numero.", function() {
                 if (assistantRec && !isListening) {
                     window.innescaMicrofonoConDing();
                 }
@@ -3422,7 +3546,7 @@ if (SpeechRecognition) {
     try {
         if (SpeechGrammarList) {
             // Aggiunti i nuovi comandi alla grammatica del browser
-            let paroleValide = ["livello zero", "livello 0", "livello uno", "livello 1", "livello due", "livello 2", "livello tre", "livello 3", "livello quattro", "livello 4", "livello cinque", "livello 5", "livello sei", "livello 6", "morte improvvisa", "senza mani", "livello senza mani", "ripeti", "mi arrendo", "arrendo", "termina partita", "termina"];
+            let paroleValide = ["livello zero", "livello 0", "livello uno", "livello 1", "livello due", "livello 2", "livello tre", "livello 3", "livello quattro", "livello 4", "livello cinque", "livello 5", "livello sei", "livello 6", "morte improvvisa", "senza mani", "livello senza mani", "ripeti", "mi arrendo", "arrendo", "termina partita", "termina", "recupero debiti", "livello recupero debiti"];
             globalDb.forEach(n => {
                 paroleValide.push(n.nome.toLowerCase());
                 if(n.capitale) paroleValide.push(n.capitale.toLowerCase());
@@ -3501,6 +3625,17 @@ if (SpeechRecognition) {
                 document.getElementById("start-screen").style.display = "none";
                 document.getElementById("l6-setup-screen").style.display = "flex";
                 parla("Configura la morte improvvisa e premi inizia.");
+            }
+            else if (parolaDetta.includes("recupero debiti") || parolaDetta.includes("livello recupero debiti")) {
+                if (debiti.length < 5) {
+                    parla("Non hai abbastanza debiti da recuperare. Complimenti!", function() {
+                        innescaMicrofonoConDing();
+                    });
+                } else {
+                    parla("Modalità vendetta attivata. Riscattati.", function() {
+                        startRecuperoGame();
+                    });
+                }
             }
             else {
                 parla("Livello non riconosciuto. Pronuncia la parola Livello seguita dal numero.", function() {
@@ -3591,7 +3726,7 @@ if (!window.voiceHooksAdded) {
                 let incipit = (numValide > 1) ? `Ti sei arreso. Una risposta valida era ${correctAns}.` : `Ti sei arreso. La risposta era ${correctAns}.`;
                 
                 setTimeout(() => {
-                    let testoVite = vite === 1 ? " Ti resta una vita." : ` Ti restano ${vite} vite.`;
+                    let testoVite = (currentLevel === 8) ? "" : (vite === 1 ? " Ti resta una vita." : ` Ti restano ${vite} vite.`);
                     parla(`${incipit}${testoVite}`, function() {
                         setTimeout(() => nextTurnMulti(), 1000);
                     });
@@ -3620,7 +3755,7 @@ if (!window.voiceHooksAdded) {
                 let incipit = (numValide > 1) ? `Sbagliato, potevi dire: ${correctAns}.` : `Sbagliato, era ${correctAns}.`;
                 
                 setTimeout(() => {
-                    let testoVite = vite === 1 ? " Ti resta una vita." : ` Ti restano ${vite} vite.`;
+                    let testoVite = (currentLevel === 8) ? "" : (vite === 1 ? " Ti resta una vita." : ` Ti restano ${vite} vite.`);
                     parla(`${incipit}${testoVite}`, function() {
                         setTimeout(() => nextTurnMulti(), 1000); 
                     });
@@ -3659,7 +3794,7 @@ if (!window.voiceHooksAdded) {
                 let incipit = (numValideRimanenti > 1) ? `${baseText}, potevi dire: ${correctAns}.` : `${baseText}, era ${correctAns}.`;
 
                 setTimeout(() => {
-                    let testoVite = vite === 1 ? " Ti resta una vita." : ` Ti restano ${vite} vite.`;
+                    let testoVite = (currentLevel === 8) ? "" : (vite === 1 ? " Ti resta una vita." : ` Ti restano ${vite} vite.`);
                     parla(`${incipit}${testoVite}`, function() {
                         setTimeout(() => nextTurnMulti(), 1000);
                     });
@@ -3688,14 +3823,14 @@ if (!window.voiceHooksAdded) {
                 let extraTesto = "";
                 
                 if (badgeTesto.includes("grazia")) {
-                    testoEsatto = `Tempo scaduto, ma ti sei salvato per grazia ricevuta! Più ${puntiGuadagnati} punti.`;
+                    testoEsatto = `Tempo scaduto, ma ti salva la grazia! Più ${puntiGuadagnati} punti.`;
                 } else {
-                    if (badgeTesto.includes("fotofinish")) extraTesto += " Salvataggio al fotofinish.";
-                    if (badgeTesto.includes("audacia")) extraTesto += " Doppio punteggio per audacia.";
-                    if (badgeTesto.includes("pigrizia") || badgeTesto.includes("déjà vu")) extraTesto += " Punteggio dimezzato per pigrizia.";
+                    if (badgeTesto.includes("fotofinish")) extraTesto += " Salvo al fotofinisc.";
+                    if (badgeTesto.includes("audacia")) extraTesto += " Bonus audacia, punti raddoppiati.";
+                    if (badgeTesto.includes("pigrizia") || badgeTesto.includes("déjà vu")) extraTesto += "Punteggio dimezzato per PIGRIZIA.";
                 }
                 
-                if (badgeTesto.includes("vita extra")) extraTesto += " Hai ottenuto una vita extra.";
+                if (badgeTesto.includes("vita extra")) extraTesto += " Hai guadagnato una vita.";
                 
                 testoEsatto += extraTesto;
                 
@@ -3747,11 +3882,17 @@ if (!window.voiceHooksAdded) {
                 let badgeEl = document.getElementById("event-badge");
                 let badgeTesto = (badgeEl && badgeEl.style.display !== "none") ? badgeEl.innerText.toLowerCase() : "";
                 let extraTesto = "";
-
-                if (badgeTesto.includes("audacia")) extraTesto += " Audacia.";
-                if (badgeTesto.includes("pigrizia") || badgeTesto.includes("déjà vu")) extraTesto += " Pigrizia.";
-                if (badgeTesto.includes("vita extra")) extraTesto += " Vita extra.";
-
+                
+                if (badgeTesto.includes("grazia")) {
+                    testoEsatto = `Tempo scaduto, ma ti salva la grazia! Più ${puntiGuadagnati} punti.`;
+                } else {
+                    if (badgeTesto.includes("fotofinish")) extraTesto += " Salvo al fotofinisc.";
+                    if (badgeTesto.includes("audacia")) extraTesto += " Bonus audacia, punti raddoppiati.";
+                    if (badgeTesto.includes("pigrizia") || badgeTesto.includes("déjà vu")) extraTesto += " Déjà vu, punteggio dimezzato.";
+                }
+                
+                if (badgeTesto.includes("vita extra")) extraTesto += " Hai guadagnato una vita.";
+                
                 testoEsatto += extraTesto;
 
                 setTimeout(() => {
