@@ -118,6 +118,13 @@ body {
 .menu-btn.btn-danger:hover { background-color: #d32f2f; border-color: #ff5252; }
 .menu-btn.btn-import { display: flex; align-items: center; justify-content: center; margin: 0; box-sizing: border-box; }
 
+/* Stile Esclusivo per il Tasto Modalità Vendetta */
+#btn-vendetta { background-color: #ff9800; border: 2px solid #e65100; color: #121212; width: 100%; padding: 10px; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; margin-top: 25px; text-transform: uppercase; transition: all 0.2s; box-sizing: border-box; }
+#btn-vendetta:hover { background-color: #f57c00; border-color: #ffd700; color: #fff; }
+
+#btn-vendetta strong { color: #121212; /* Il testo "RECUPERO DEBITI" deve essere scuro sull'arancione */ }
+
+#btn-vendetta:hover strong { color: #fff; }
 
 /* ========================================= */
 /*    PANNELLI CONFIGURAZIONE (L5 e L6)      */

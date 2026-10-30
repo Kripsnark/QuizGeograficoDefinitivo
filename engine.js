@@ -546,7 +546,7 @@ window.startRecuperoGame = function() {
 if (btnVendetta) {
     if (debiti.length >= 5) {
         btnVendetta.style.display = "block";
-        btnVendetta.innerText = `🎯 RECUPERO DEBITI (${debiti.length} in sospeso)`;
+        btnVendetta.innerHTML = `<strong>🎯 RECUPERO DEBITI</strong><div class="level-desc">${debiti.length} in sospeso</div>`;
     } else {
         btnVendetta.style.display = "none";
     }
