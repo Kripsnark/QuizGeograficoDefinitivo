@@ -2,7 +2,7 @@
 AF	Afghanistan	Afganistan		Kabul			iran, turkmenistan, uzbekistan, tagikistan, cina, pakistan	Asia, Subcontinente indiano	rosso, nero, verde	bianco	scritta, emblema nazionale		strisce verticali	1
 AL	Albania			Tirana	Irama		Montenegro, Kosovo, Macedonia del Nord, grecia, mare	Europa, Mediterraneo, Balcani	rosso, nero	nero	aquila		lenzuolo rosso	1
 DZ	Algeria			Algeri			marocco, tunisia, libia, niger, mali, mauritania, mare	Africa, Africa settentrionale, Mediterraneo	verde, bianco	rosso	mezzaluna, stella		strisce verticali, mezzaluna rossa, stella rossa	1
-AD	Andorra		Andòra	Andorra la Vella	La Vella, dora la vella	Andòra la Vèglia	francia, spagna	Europa, Penisola Iberica	blu, giallo, rosso		emblema nazionale		strisce verticali	2
+AD	Andorra		Andòra	Andorra la Vella	La Vella, dora la vella, pandora ravenna, pandora la vella, vella	Andòra la Vèglia	francia, spagna	Europa, Penisola Iberica	blu, giallo, rosso		emblema nazionale		strisce verticali	2
 AO	Angola			Luanda			namibia, zambia, repubblica democratica del congo, congo, mare	Africa, Africa Centrale	rosso, nero	giallo	machete, arma, ruota dentata, stella		strisce orizzontali, stella gialla	2
 AI	Anguilla			The Valley				Nord America, caraibi	blu		emblema nazionale, delfino, animale, union jack	x		3
 AG	Antigua e Barbuda	Antigua, Barbuda		Saint John's	St John's, Saint Johns, St Johns, Saint Jones			Nord America, caraibi	rosso, nero, giallo, blu, bianco		sole			2
@@ -114,7 +114,7 @@ FK	Isole Falkland	Falkland		Stanley		Stènli		Sud America	blu		emblema nazionale
 FO	Isole Faroe	Faroer		Tórshavn	Dr Shadn, thor charme	Tòrsciaven		Europa, Europa Settentrionale	bianco, rosso, blu		croce scandinava	x		3
 MP	Isole Marianne Settentrionali	*Marianne Settentrionali, Marianne, Isole Marianne		Saipan	*Capitol Hill, Capitol			Asia	blu, bianco		emblema nazionale, stella	x	stella bianca, lenzuolo blu	3
 MH	Isole Marshall	Marshall		Majuro	Maiuro, Ma giuro, Lavoro	Magiuro		Oceania	blu, bianco, arancione		stella		stella bianca, taglio diagonale	2
-PN	Isole Pitcairn	Pitcairn, isole big cairn, isole pick up, isole fitkair, fitkair, speedcairn, isole bitcoin, bitcoin, isole pitcar, isole pittar, pittar, isole pitbull, pitbull, isole pitburn, pitburn, isole fitker, fitker		Adamstown	Adam's Town			Oceania	blu		emblema nazionale, union jack	x		3
+PN	Isole Pitcairn	Pitcairn, isole big cairn, isole pick up, isole fitkair, fitkair, speedcairn, isole bitcoin, bitcoin, isole pitcar, isole pittar, pittar, isole pitbull, pitbull, isole pitburn, pitburn, isole fitker, fitker, isole pitcher		Adamstown	Adam's Town			Oceania	blu		emblema nazionale, union jack	x		3
 SB	Isole Salomone	Salomone		Honiara	Onyara, Uniara, Onira, ogni ara			Oceania	azzurro, giallo, verde	bianco	stella		stella bianca, taglio diagonale	2
 VI	Isole Vergini americane	Vergini americane		Charlotte Amelie	carlot amelie, sciarlot, carlotta meli			Nord America, caraibi	bianco, blu, giallo		emblema nazionale, aquila, animale, uccello, scritta	x	lenzuolo bianco	3
 VG	Isole Vergini britanniche	Vergini britanniche		Road Town				Nord America, caraibi	blu		emblema nazionale, persona, union jack	x		3
@@ -140,7 +140,7 @@ MK	Macedonia del Nord	Macedonia		Skopje	Skopie		albania, grecia, bulgaria, serbi
 MG	Madagascar			Antananarivo	Antatanarivo, Antanarivo, captain america			africa, africa orientale	bianco, rosso, verde				Banda verticale a lato	1
 MW	Malawi		Malauui	Lilongwe		Lilòngue	tanzania, mozambico, zambia	africa, africa orientale	nero, rosso, verde	rosso	sole		strisce orizzontali	2
 MY	Malaysia	Malesia, Alessia		Kuala Lumpur			thailandia, singapore, brunei, indonesia, mare	Asia, Sud-Est Asiatico, Penisola indocinese	blu, rosso, bianco	giallo	mezzaluna, stella		mezzaluna gialla, stella gialla, Riquadro in alto a sinistra	1
-MV	Maldive			Malé	Ma lì			Asia, Subcontinente indiano	rosso, verde	bianco	mezzaluna		mezzaluna bianca, cornice perimetrale	2
+MV	Maldive	Mal di neve		Malé	Ma lì			Asia, Subcontinente indiano	rosso, verde	bianco	mezzaluna		mezzaluna bianca, cornice perimetrale	2
 ML	Mali	Mari		Bamako			algeria, niger, burkina faso, costa d'avorio, guinea, senegal, mauritania	africa, africa occidentale	verde, giallo, rosso				strisce verticali	2
 MT	Malta			La Valletta	Valletta			Europa, Mediterraneo	bianco, rosso		croce simmetrica		strisce verticali	1
 MA	Marocco	Rocco		Rabat			spagna, algeria, mauritania, mare	Africa, Africa settentrionale, Mediterraneo	rosso, verde	verde	stella		stella verde, lenzuolo rosso	1
@@ -190,7 +190,7 @@ RO	Romania			Bucarest			moldavia, ucraina, bulgaria, serbia, ungheria, mare	euro
 RW	Ruanda			Kigali	Cigali, Cialis, chi gali		uganda, tanzania, burundi, repubblica democratica del congo	africa, africa orientale	azzurro, giallo, verde	giallo	sole		strisce orizzontali	2
 RU	Russia			Mosca			norvegia, finlandia, estonia, lettonia, lituania, polonia, bielorussia, ucraina, georgia, azerbaigian, kazakistan, cina, mongolia, corea del nord, mare	europa	bianco, blu, rosso				strisce orizzontali	1
 SAB	Saba			The Bottom	Bottom, de botto			nord america, caraibi	rosso, bianco, blu	giallo	stella	x	stella gialla	3
-EH	Sahara Occidentale	Sara Occidentale		El Aaiún	el aiun, aaiun, Ela jun, Aiun, elaine	El Aiùn	marocco, mauritania, mare	Africa, Africa settentrionale	rosso, nero, bianco, verde	rosso	mezzaluna, stella	x	triangolo a sinistra rosso, mezzaluna rossa, stella rossa	3
+EH	Sahara Occidentale	Sara Occidentale		El Aaiún	el aiun, aaiun, Ela jun, Aiun, elaine, e la hyunda, e la une	El Aiùn	marocco, mauritania, mare	Africa, Africa settentrionale	rosso, nero, bianco, verde	rosso	mezzaluna, stella	x	triangolo a sinistra rosso, mezzaluna rossa, stella rossa	3
 KN	Saint Kitts e Nevis	Saint Kitts, S Kitts, Nevis, sun kids and nevis, sanchizza e nevis, sanchez & nevis, saint kitze nevis, send kids in iris, sankitsi nevis, thank you say nadies, zenkids e nevis, send kids a nevis, schizzenavis, senkids e nadies, sentize nevis, than kisse nevis, sam kitchenavis, kids e nevis, sanchizze nevis, saint kitchenavis	Sènt chits end nèvis	Basseterre	base terra, passe terra			nord america, caraibi	verde, rosso, nero	bianco	stella		stella bianca, taglio diagonale	2
 LC	Saint Lucia	S Lucia, Santa Lucia		Castries				nord america, caraibi	azzurro, nero, giallo	bianco, nero, giallo			lenzuolo azzurro	2
 VC	Saint Vincent e Grenadine	S Vincent, Grenadine, Saint Vincent		Kingstown	King's Town			nord america, caraibi	blu, giallo, verde	verde			strisce verticali	2
