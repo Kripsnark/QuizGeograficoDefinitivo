@@ -365,10 +365,11 @@ window.setL6Argomento = function(val) {
 
 window.openRecords = function(defaultTab = 'global') {
     let html = `
-    <div style="display:flex; gap:10px; margin-bottom:15px; width:100%;">
+    <div style="display:flex; gap:5px; margin-bottom:15px; width:100%;">
         <button onclick="renderRecordTab('global')" class="ui-tab-btn ${defaultTab==='global'?'active':''}" id="tab-btn-global">🌍 GLOBALE</button>
         <button onclick="renderRecordTab('levels')" class="ui-tab-btn ${defaultTab==='levels'?'active':''}" id="tab-btn-levels">📊 LIVELLI</button>
         <button onclick="renderRecordTab('logs')" class="ui-tab-btn ${defaultTab==='logs'?'active':''}" id="tab-btn-logs">📜 LOG</button>
+        <button onclick="renderRecordTab('trofei')" class="ui-tab-btn ${defaultTab==='trofei'?'active':''}" id="tab-btn-trofei">🎖️ TROFEI</button>
     </div>
     <div id="record-tab-content"></div>
     `;
@@ -384,7 +385,7 @@ window.openRecords = function(defaultTab = 'global') {
 }
 
 window.renderRecordTab = function(tabName) {
-    ['global', 'levels', 'logs'].forEach(t => document.getElementById(`tab-btn-${t}`).classList.remove('active'));
+    ['global', 'levels', 'logs', 'trofei'].forEach(t => document.getElementById(`tab-btn-${t}`).classList.remove('active'));
     document.getElementById(`tab-btn-${tabName}`).classList.add('active');
     
     let container = document.getElementById("record-tab-content");
@@ -422,7 +423,7 @@ const buildList10 = (arr, color) => {
                 <div style="display:flex; flex-direction:column;"><span>Partite</span><strong style="font-size:16px; color:#fff;">${globalPlays}</strong></div>
                 <div style="display:flex; flex-direction:column;"><span>Record Assoluto</span><strong style="font-size:16px; color:#fff;">${allTimeBestScore}</strong></div>
                 <div style="display:flex; flex-direction:column;"><span>Serie Max</span><strong style="font-size:16px; color:#fff;">${allTimeBestStreak}</strong></div>
-                <div style="display:flex; flex-direction:column;"><span>Tempo Medio</span><strong style="font-size:16px; color:#fff;">${allTimeBestAvgTime > 0 ? allTimeBestAvgTime + "s" : "-"}</strong></div>
+                <div style="display:flex; flex-direction:column;"><span>Tempo Record</span><strong style="font-size:16px; color:#fff;">${allTimeBestAvgTime > 0 ? allTimeBestAvgTime + "s" : "-"}</strong></div>
             </div>
         </div>
         <div style="display:flex; gap:15px;">
@@ -439,7 +440,7 @@ const buildList10 = (arr, color) => {
 
         html += `
         <div style="display:flex; gap:5px; margin-bottom:10px; flex-wrap:wrap; justify-content:center;">
-            ${visibleLevels.map(l => `<button onclick="switchLevelTab(${l})" class="ui-tab-btn" id="lvl-btn-${l}" style="padding:6px; font-size:11px;">${l===5?'CUST':l===6?'SUDDEN':(l===7?'L7':'L'+l)}</button>`).join('')}
+            ${visibleLevels.map(l => `<button onclick="switchLevelTab(${l})" class="ui-tab-btn" id="lvl-btn-${l}" style="padding:6px; font-size:11px;">${l===5?'L5':l===6?'L6':(l===7?'L7':'L'+l)}</button>`).join('')}
         </div>
         <div id="level-detail-container" style="background:#2a2a2a; border:1px solid #444; border-radius:6px; padding:15px; text-align:center;">
             <!-- Contenuto dinamico -->
@@ -483,6 +484,8 @@ const buildList10 = (arr, color) => {
             }
         });
         html += "</div>";
+    } else if (tabName === 'trofei') {
+        html = window.renderMedagliere();
     }
 
     container.innerHTML = html;
@@ -555,7 +558,7 @@ window.switchLevelTab = function(lvl) {
         html += `<div style="display:flex; justify-content:space-around; font-size:12px; color:#aaa; margin-bottom:10px;">`;
         html += `<div style="display:flex; flex-direction:column; align-items:center;"><span>Partite</span><strong style="font-size:18px; color:#fff;">${s.plays}</strong></div>`;
         html += `<div style="display:flex; flex-direction:column; align-items:center;"><span>Sopravvivenza Max</span><strong style="font-size:18px; color:#fff;">${s.bestStreak} Naz.</strong></div>`;
-        html += `<div style="display:flex; flex-direction:column; align-items:center;"><span>Tempo Medio</span><strong style="font-size:18px; color:#fff;">${s.bestAvgTime > 0 ? s.bestAvgTime + "s" : "-"}</strong></div>`;
+        html += `<div style="display:flex; flex-direction:column; align-items:center;"><span>Tempo Record</span><strong style="font-size:18px; color:#fff;">${s.bestAvgTime > 0 ? s.bestAvgTime + "s" : "-"}</strong></div>`;
         html += `</div>`;
 
     } else {
@@ -608,15 +611,52 @@ window.switchLevelTab = function(lvl) {
         html += `<div style="display:flex; flex-direction:column; align-items:center;"><span>Partite</span><strong style="font-size:18px; color:#fff;">${s.plays}</strong></div>`;
         html += `<div style="display:flex; flex-direction:column; align-items:center;"><span>Record</span><strong style="font-size:18px; color:#fff;">${s.plays > 0 ? s.bestScore : '-'}</strong></div>`;
         html += `<div style="display:flex; flex-direction:column; align-items:center;"><span>Serie Max</span><strong style="font-size:18px; color:#fff;">${s.bestStreak}</strong></div>`;
-        html += `<div style="display:flex; flex-direction:column; align-items:center;"><span>Tempo Medio</span><strong style="font-size:18px; color:#fff;">${s.bestAvgTime > 0 ? s.bestAvgTime + "s" : "-"}</strong></div>`;
+        html += `<div style="display:flex; flex-direction:column; align-items:center;"><span>Tempo Record</span><strong style="font-size:18px; color:#fff;">${s.bestAvgTime > 0 ? s.bestAvgTime + "s" : "-"}</strong></div>`;
         html += `</div>`;
 
         // Modificatori L4 / L5
         if (lvl === 4 || lvl === 5) {
-            html += `<div style="display:flex; justify-content:center; gap:20px; font-size:12px; color:#888; border-top:1px dashed #444; padding-top:10px;">`;
+            html += `<div style="display:flex; justify-content:center; gap:20px; font-size:12px; color:#888; border-top:1px dashed #444; padding-top:10px; padding-bottom:5px;">`;
             html += `<span>Fotofinish: <strong style="color:#2196f3;">${s.fotofinish || 0}</strong></span>`;
             html += `<span>Grazie: <strong style="color:#ffd700;">${s.grazie || 0}</strong></span>`;
             html += `</div>`;
+        }
+
+        // --- INIEZIONE STEMMI LIVELLO STORICO IN FONDO ---
+        let badgeHtml = "";
+        
+        // 1. Badge Serie Max (Inarrestabile)
+        if (s.bestStreak >= 10) { // La soglia base del Bronzo
+            let tierS = s.bestStreak >= 50 ? 3 : (s.bestStreak >= 25 ? 2 : 1);
+            let colorS = tierS === 3 ? "#ffd700" : (tierS === 2 ? "#c0c0c0" : "#cd7f32");
+            badgeHtml += `<div class="level-badge-row">
+                            <div class="level-badge-inner" style="border-left:3px solid ${colorS};">
+                                <div class="level-badge-left">
+                                    <div class="level-badge-icon" style="color:${colorS};"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg></div>
+                                    <span class="level-badge-title" style="color:${colorS};">INARRESTABILE</span>
+                                </div>
+                                <span class="level-badge-record">Record: ${s.bestStreak}</span>
+                             </div>
+                          </div>`;
+        }
+
+        // 2. Badge Tempo Medio (Scheggia)
+        if (s.bestAvgTime > 0 && s.bestAvgTime <= 15) { // La soglia base del Bronzo
+            let tierT = s.bestAvgTime <= 5 ? 3 : (s.bestAvgTime <= 10 ? 2 : 1);
+            let colorT = tierT === 3 ? "#ffd700" : (tierT === 2 ? "#c0c0c0" : "#cd7f32");
+            badgeHtml += `<div class="level-badge-row" style="margin-top:5px;">
+                            <div class="level-badge-inner" style="border-left:3px solid ${colorT};">
+                                <div class="level-badge-left">
+                                    <div class="level-badge-icon" style="color:${colorT};"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div>
+                                    <span class="level-badge-title" style="color:${colorT};">SCHEGGIA</span>
+                                </div>
+                                <span class="level-badge-record">Record: ${s.bestAvgTime}s</span>
+                             </div>
+                          </div>`;
+        }
+
+        if (badgeHtml !== "") {
+            html += `<div style="margin-top:15px; width:100%;">` + badgeHtml + `</div>`;
         }
     }
     

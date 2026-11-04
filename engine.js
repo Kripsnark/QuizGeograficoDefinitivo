@@ -111,8 +111,11 @@ function gestisciDebito(esatto) {
 
 let currentStreak = 0;
 let bestStreak = 0;
+let currentStreakOneLife = 0;
+let bestStreakOneLife = 0;
 let fotofinishCount = 0;
 let grazieRicevuteCount = 0;
+let dejavuPenalties = 0;
 
 let timerState = "stopped"; 
 let readingTimeout = null;
@@ -146,6 +149,8 @@ window.addEventListener('popstate', function(event) {
 
 document.addEventListener('touchmove', function(e) {
     if (document.getElementById("start-screen").style.display === "flex") return; 
+    // IL FIX: Spegne il blocco touch durante il Game Over per permettere lo scorrimento
+    if (document.getElementById("game-over-screen").style.display === "flex") return; 
     if (e.target.closest('.db-table-container') || e.target.closest('#modal-body') || e.target.closest('#error-log') || e.target.closest('#top5-nations')) return;
     e.preventDefault();
 }, { passive: false });
@@ -463,6 +468,7 @@ window.startRecuperoGame = function() {
     }
     debiti = uniqueDebiti;
     localStorage.setItem('geoQuizDebiti', JSON.stringify(debiti));
+    window.initialDebtsCount = debiti.length; // <--- AGGIUNGI QUESTA RIGA PER IL BADGE VENDICATORE
 
     if (debiti.length < 5) {
         alert("Non hai abbastanza debiti da recuperare (Minimo 5). Gioca per affrontarne di nuovi!");
@@ -524,7 +530,8 @@ window.startRecuperoGame = function() {
             homeBtn.style.display = "none"; 
             
             vite = 3; esatte = 0; punteggio = 0; prossimoCuore = 750;
-            currentStreak = 0; bestStreak = 0; fotofinishCount = 0; grazieRicevuteCount = 0;
+            currentStreak = 0; bestStreak = 0; fotofinishCount = 0; grazieRicevuteCount = 0; dejavuPenalties = 0;
+            currentStreakOneLife = 0; bestStreakOneLife = 0;
             erroriCommessi = []; comboInserted = []; nazioniUsate = [];
             logQuestionCounter = 0; 
             recentTargets = [];
@@ -1674,8 +1681,15 @@ td.buildQuestionText = (num) => {
             let bestMatchNameStr = "";
             let bestMatchCapitalStr = "";
 
-            // Il motore guarda tutto il mondo SOLO per le tre casistiche di confine, altrimenti resta nel livello/continente!
-            let searchPool = (td.format === 4 || td.format === 7 || td.isComboInception) ? globalDb : getAnswerPool(level);
+            let searchPool = globalDb;
+            
+            // --- FIX LIVELLO 0: Restringe il bacino SOLO alle 3 nazioni dei bottoni ---
+            if (level === 0 && td.sigleOpzioniL0) {
+                searchPool = globalDb.filter(c => td.sigleOpzioniL0.includes(c.sigla));
+            } else {
+                // Motore Standard per gli altri livelli
+                searchPool = (td.format === 4 || td.format === 7 || td.isComboInception) ? globalDb : getAnswerPool(level);
+            }
             
             for (let country of searchPool) {
                 if (td.negColor && (country.colori_base.includes(td.negColor) || country.colori_emblema.includes(td.negColor))) continue;
@@ -2097,6 +2111,7 @@ td.buildQuestionText = (num) => {
     }
 
         function surrenderTurn() {
+	    window.isTransitioning = true;
             clearTimeout(actionTimeout);
             if (inputEl.disabled && errPanel.style.display === "flex") return; 
     
@@ -2155,9 +2170,10 @@ gestisciDebito(false);
 
             let debitiGiocabili = currentLevel === 8 ? debiti.filter(d => !d.rinviato) : [];
             if (currentLevel === 8 && (logQuestionCounter >= window.maxTurniVendetta || debitiGiocabili.length === 0)) {
-                logQuestionCounter = Math.min(logQuestionCounter, window.maxTurniVendetta); // Fix sforamento visivo
-                window.pendingVictory = true;
-                popolaGameOver(true);
+                logQuestionCounter = Math.min(logQuestionCounter, window.maxTurniVendetta);
+                let veraVittoria = (debiti.length === 0);
+                window.pendingVictory = veraVittoria;
+                popolaGameOver(veraVittoria);
                 return;
             }
 
@@ -2186,6 +2202,7 @@ gestisciDebito(false);
             let opzioniL0 = [];
             if (currentLevel === 0) {
                 opzioniL0 = generaDistrattori(currentTurnData);
+                currentTurnData.sigleOpzioniL0 = opzioniL0.map(o => o.sigla);
             }
 
             if (voiceModeActive) {
@@ -2203,14 +2220,18 @@ gestisciDebito(false);
                     if (startTag !== -1 && endTag !== -1) {
                         let introduzione = testoDaLeggere.substring(0, startTag);
                         let bersaglio = testoDaLeggere.substring(startTag + 8, endTag);
+                        let chiusura = testoDaLeggere.substring(endTag + 9); // IL FIX: Salva e legge le opzioni finali!
                         
                         let currentDefaultSpeed = typeof voiceSpeed !== 'undefined' ? voiceSpeed : 1.0;
                         let slowSpeed = currentDefaultSpeed * 0.8;
                         
                         parla(introduzione, function() {
                             parla(bersaglio, function() {
-                                if (assistantRec && !isListening) innescaMicrofonoConDing();
-                                if (timerState === "reading") activateMainTimer();
+                                // Legge il resto della frase e le alternative prima di accendere il microfono
+                                parla(chiusura, function() {
+                                    if (assistantRec && !isListening) innescaMicrofonoConDing();
+                                    if (timerState === "reading") activateMainTimer();
+                                }, true);
                             }, true, slowSpeed); 
                         }, true); 
                     } else {
@@ -2344,8 +2365,12 @@ gestisciDebito(false);
         }
 
 function processaRisposta() {
-            clearTimeout(actionTimeout);
-            let inputStr = inputEl.value.trim().toLowerCase();
+    // Lucchetto Assoluto: Se la tastiera è disabilitata (es. il turno è appena finito o si sta ricaricando), scarta immediatamente l'input fantasma o ritardato del microfono.
+    let inputEl = document.getElementById("answer-input");
+    if (inputEl.disabled) return;
+
+    clearTimeout(actionTimeout);
+    let inputStr = inputEl.value.trim().toLowerCase();
     if (!inputStr) return;
 
     let isMulti = (currentLevel === 4 || (currentLevel === 5 && currentTurnData.numReq > 1) || (currentLevel === 8 && currentTurnData.numReq > 1));
@@ -2358,7 +2383,12 @@ function processaRisposta() {
         let alreadyInCombo = comboInserted.map(s => s.toLowerCase()).includes(inputStrClean);
 
         if (alreadyInCombo) {
-            if (voiceModeActive) parla("Risposta già inserita, cambia.");
+            if (voiceModeActive) {
+                try { assistantRec.stop(); isListening = false; } catch(e) {}
+                parla("Già usata.", function() {
+                    if (assistantRec && !isListening) window.innescaMicrofonoConDing();
+                });
+            }
             inputEl.classList.add("shake", "warning-flash");
             setTimeout(()=> inputEl.classList.remove("shake", "warning-flash"), 400);
             inputEl.value = "";
@@ -2388,7 +2418,12 @@ function processaRisposta() {
     }
     
     if ((currentLevel === 6 && res.isCorrect && !isMulti && nazioniUsate.includes(res.matchedCountry.sigla)) || isDuplicateL8) {
-        if (voiceModeActive) parla("L'hai già usata, cambia.");
+        if (voiceModeActive) {
+            try { assistantRec.stop(); isListening = false; } catch(e) {}
+            parla("Già usata.", function() {
+                if (assistantRec && !isListening) window.innescaMicrofonoConDing();
+            });
+        }
         let wasActive = (timerState === "active");
         let currentQ = logQuestionCounter; 
         
@@ -2464,6 +2499,14 @@ function processaRisposta() {
         esatte++;
         currentStreak++;
         if (currentStreak > bestStreak) bestStreak = currentStreak;
+        
+        // NUOVA LOGICA: Accumula la serie per la Fenice solo se sei a un passo dalla morte
+        if (vite === 1) {
+            currentStreakOneLife++;
+            if (currentStreakOneLife > bestStreakOneLife) bestStreakOneLife = currentStreakOneLife;
+        } else {
+            currentStreakOneLife = 0; // Appena guadagni un cuore, la serie si interrompe
+        }
 
         // --- CONTROLLO STATO DEBITO PRIMA DI AGGIORNARLO ---
         let isDebitoSaldato = false;
@@ -2507,9 +2550,10 @@ function processaRisposta() {
             }
             if (isLazy) {
                 puntiGuadagnati = Math.floor(puntiGuadagnati / 2);
-                badgeText += "⚠️ DÉJÀ VU! (Malus pigrizia)<br>";
-                badgeBorder = "#ff9800";
-            }
+        	badgeText += "⚠️ DÉJÀ VU! (Malus pigrizia)<br>";
+           	badgeBorder = "#ff9800";
+          	dejavuPenalties++;
+       	    }
         }
         
         punteggio += puntiGuadagnati;
@@ -2733,6 +2777,14 @@ function eseguiValidazioneMultipla(isTimeout = false) {
         
         esatte ++; currentStreak++;
         if (currentStreak > bestStreak) bestStreak = currentStreak;
+        
+        // NUOVA LOGICA: Accumula la serie per la Fenice solo se sei a un passo dalla morte
+        if (vite === 1) {
+            currentStreakOneLife++;
+            if (currentStreakOneLife > bestStreakOneLife) bestStreakOneLife = currentStreakOneLife;
+        } else {
+            currentStreakOneLife = 0; // Appena guadagni un cuore, la serie si interrompe
+        }
 
         let basePunti = 0;
         if ([0, 1, 9, 10].includes(currentTurnData.format) && !currentTurnData.isComboInception) {
@@ -2766,7 +2818,11 @@ function eseguiValidazioneMultipla(isTimeout = false) {
             puntiRound = Math.round(puntiRound / 5) * 5; if (puntiRound < 5) puntiRound = 5;
             
             if (audaceNames.length > 0) { badgeText += `⭐ AUDACIA su ${audaceNames.join(", ")} (x2)<br>`; if (!isGrazia) badgeBorder = "#ffd700"; }
-            if (lazyNames.length > 0) { badgeText += `⚠️ DÉJÀ VU su ${lazyNames.join(", ")} (-50%)<br>`; if (!isGrazia && audaceNames.length === 0) badgeBorder = "#ff9800"; }
+            if (lazyNames.length > 0) { 
+            badgeText += `⚠️ DÉJÀ VU su ${lazyNames.join(", ")} (-50%)<br>`; 
+            if (!isGrazia && audaceNames.length === 0) badgeBorder = "#ff9800"; 
+            dejavuPenalties++;
+            }
         }
         
         let isDebitoSaldato = false;
@@ -2891,6 +2947,7 @@ function eseguiValidazioneMultipla(isTimeout = false) {
             debugGameLog += `-> ESITO [${failTime}s] [0pti]: ❌ ERRORE (Input: ` + (wrongInput || "Nessuno") + ")\n\n";
             vite--;
             currentStreak = 0;
+            currentStreakOneLife = 0;
             aggiornaUI();
             
             let domPulita = currentTurnData.questionText.replace(/<[^>]*>?/gm, ''); 
@@ -2926,6 +2983,7 @@ gestisciDebito(false);
         }
 
         function failMulti(reason, wrongInput) {
+	    window.isTransitioning = true;
             playSound("errore"); 
             let failTimeNum = (Date.now() - turnStartTime) / 1000;
             let numRisp = comboInserted.length > 0 ? comboInserted.length : 1; 
@@ -3039,6 +3097,8 @@ gestisciDebito(false);
             clearAutoSave();
             playSound(isVictory ? "vittoria" : "sconfitta");
             
+            document.body.style.overscrollBehavior = "auto";
+            
             document.getElementById("header").style.display = "none";
             document.getElementById("question").style.display = "none";
             document.getElementById("input-area").style.display = "none";
@@ -3049,14 +3109,130 @@ gestisciDebito(false);
             homeBtn.style.display = "none"; 
             
             gameOverScreen.style.display = "flex";
-            
+                       
             let avgTime = totalAnswersSubmitted > 0 ? (totalActiveTimeMs / totalAnswersSubmitted / 1000).toFixed(1) : "0.0";
             let avgTimeFloat = parseFloat(avgTime);
+            let validAvgTime = (esatte >= 5) ? avgTimeFloat : 0;
+            
             document.getElementById("final-avg-time").innerText = avgTime + "s";
             
-            let isNewRecord = false;
+            let tTimeSecUI = totalActiveTimeMs / 1000;
+            let minAttivi = Math.floor(tTimeSecUI / 60);
+            let secAttivi = (tTimeSecUI % 60).toFixed(1);
+            let strTempoTotale = minAttivi > 0 ? `${minAttivi}m ${secAttivi}s` : `${secAttivi}s`;
 
-            // SCUDO LIVELLO 8: Nessun record, nessuna statistica globale registrata
+            // --- 1. PREPARAZIONE DATI PER IL LOG E I BADGE ---
+            for (let chiave in nazioniIgnorateCount) {
+                if (nazioniDigitateCount[chiave] && nazioniDigitateCount[chiave] > 0) {
+                    delete nazioniIgnorateCount[chiave];
+                }
+            }
+
+            // GESTIONE SERIE CONSECUTIVE GLOBALI (L1-L4)
+            let nationStreaks = JSON.parse(localStorage.getItem('geoQuizNationStreaks')) || {};
+            let maxPendolare = 0;
+            let maxRotta = 0;
+
+            if (currentLevel >= 1 && currentLevel <= 4) {
+                for (let sigla in nazioniDigitateCount) {
+                    if (!nationStreaks[sigla]) nationStreaks[sigla] = { inserted: 0, ignored: 0 };
+                    nationStreaks[sigla].inserted++;
+                    nationStreaks[sigla].ignored = 0;
+                    if (nationStreaks[sigla].inserted > maxPendolare) maxPendolare = nationStreaks[sigla].inserted;
+                }
+                for (let sigla in nazioniIgnorateCount) {
+                    if (!nationStreaks[sigla]) nationStreaks[sigla] = { inserted: 0, ignored: 0 };
+                    nationStreaks[sigla].ignored++;
+                    nationStreaks[sigla].inserted = 0;
+                    if (nationStreaks[sigla].ignored > maxRotta) maxRotta = nationStreaks[sigla].ignored;
+                }
+                localStorage.setItem('geoQuizNationStreaks', JSON.stringify(nationStreaks));
+            }
+
+            let allUsate = Object.keys(nazioniDigitateCount).map(chiave => {
+                let n = globalDb.find(c => c.sigla === chiave || c.nome === chiave);
+                return { nome: n ? n.nome : chiave, count: nazioniDigitateCount[chiave], sigla: n ? n.sigla : chiave };
+            }).sort((a, b) => b.count - a.count);
+            let sortedUsate = allUsate.slice(0, 5);
+            let logUsate = allUsate.slice(0, 20);
+            
+            let allIgnorate = Object.keys(nazioniIgnorateCount).map(chiave => {
+                let n = globalDb.find(c => c.sigla === chiave || c.nome === chiave);
+                return { nome: n ? n.nome : chiave, count: nazioniIgnorateCount[chiave], sigla: n ? n.sigla : chiave };
+            }).sort((a, b) => b.count - a.count);
+            let sortedIgnorate = allIgnorate.slice(0, 5); 
+            let logIgnorate = allIgnorate.slice(0, 20);
+
+            let maxVoloDiLinea = Object.keys(nazioniDigitateCount).length > 0 ? Math.max(...Object.values(nazioniDigitateCount)) : 0;
+            let maxBlacklist = Object.keys(nazioniIgnorateCount).length > 0 ? Math.max(...Object.values(nazioniIgnorateCount)) : 0;
+            let top1UsataVal = sortedUsate.length > 0 ? sortedUsate[0].count : 0;
+            let top1IgnorataVal = sortedIgnorate.length > 0 ? sortedIgnorate[0].count : 0;
+
+            // Calcolo Badge Logico
+            let stringaBadgeLog = "Nessuno";
+            let earned = [];
+            if (typeof window.checkBadges === 'function') {
+                earned = window.checkBadges({
+                    currentLevel: currentLevel,
+                    esatte: (currentLevel === 8 ? Math.min(esatte, logQuestionCounter) : esatte),
+                    isVictory: (isVictory || endlessVittoriaSbloccata),
+                    debitiIniziali: window.initialDebtsCount || 0,
+                    debitiRimasti: debiti.length,
+                    bestStreak: bestStreak,
+                    avgTime: validAvgTime,
+                    fotofinish: fotofinishCount,
+                    grazie: grazieRicevuteCount,
+                    cuori: Math.floor(punteggio / 750),
+                    domandeTotali: logQuestionCounter,
+                    hasDejavu: (dejavuPenalties > 0),
+                    erroriTotali: erroriCommessi.length,
+                    bestStreakOneLife: bestStreakOneLife,
+                    punteggio: punteggio,
+                    maxVoloDiLinea: maxVoloDiLinea,
+                    maxBlacklist: maxBlacklist,
+                    top1UsataVal: top1UsataVal,
+                    top1IgnorataVal: top1IgnorataVal,
+                    maxPendolare: maxPendolare,
+                    maxRotta: maxRotta
+                });
+                
+                if (earned && earned.length > 0) {
+                     stringaBadgeLog = earned.map(b => {
+                         let livelloT = b.tier === 4 ? "Speciale" : (b.tier === 3 ? "Oro" : (b.tier === 2 ? "Argento" : "Bronzo"));
+                         return `${BADGE_INFO[b.id].title} (${livelloT})`;
+                     }).join(", ");
+                }
+            }
+
+            // --- 2. COSTRUZIONE STRINGA LOG FINALE ---
+            debugGameLog += "========================================\n";
+            debugGameLog += "[STATISTICHE FINALI PARTITA]\n";
+            debugGameLog += "Esito: " + (isVictory ? "🏆 VITTORIA" : "💀 GAME OVER") + "\n";
+            
+            if (currentLevel === 6) {
+                let pct = levelDb.length > 0 ? ((esatte / levelDb.length) * 100).toFixed(1) : 0;
+                if (isVictory) debugGameLog += "Esatte: COMPLETAMENTO TOTALE (" + esatte + " su " + levelDb.length + ")\n";
+                else debugGameLog += "Esatte: " + esatte + " su " + levelDb.length + " (" + pct + "%)\n";
+            } else if (currentLevel === 8) {
+                let safeEsatte = Math.min(esatte, logQuestionCounter);
+                debugGameLog += "Esatte: " + safeEsatte + " su " + logQuestionCounter + "\n";
+            } else {
+                debugGameLog += "Punteggio: " + punteggio + " | Esatte: " + esatte + " su " + logQuestionCounter + " | Serie Max: " + bestStreak + "\n";
+            }
+            
+            debugGameLog += "Tempo Medio di Risposta: " + avgTime + "s | Tempo di Gioco Attivo: " + strTempoTotale + "\n";
+            if (currentLevel === 4 || (currentLevel === 5 && customConfig.timer)) {
+                debugGameLog += "Salvataggi al Fotofinish: " + fotofinishCount + " | Grazie Ricevute: " + grazieRicevuteCount + "\n";
+            }
+            if (currentLevel !== 0 && currentLevel !== 6 && currentLevel !== 8) {
+                debugGameLog += "Top 20 Usate: " + (logUsate.length > 0 ? logUsate.map(u => u.nome + " (" + u.count + ")").join(", ") : "Nessuna") + "\n";
+                debugGameLog += "Top 20 Ignorate: " + (logIgnorate.length > 0 ? logIgnorate.map(i => i.nome + " (" + i.count + ")").join(", ") : "Nessuna") + "\n";
+            }
+            debugGameLog += "Trofei Sbloccati: " + stringaBadgeLog + "\n";
+            debugGameLog += "========================================\n";
+
+            // --- 3. AGGIORNAMENTO STATISTICHE GLOBALI (Il Log qui è completo!) ---
+            let isNewRecord = false;
             if (currentLevel !== 8) {
                 if (!statsByLevel[currentLevel]) {
                     statsByLevel[currentLevel] = { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0, fotofinish: 0, grazie: 0 };
@@ -3067,12 +3243,8 @@ gestisciDebito(false);
                 
                 if (currentLevel === 6) {
                     let pKey = configL6.bacino + "_" + configL6.argomento;
-                    if (!statsByLevel[6].progress) {
-                        statsByLevel[6].progress = { sprint_bandiere: 0, sprint_stati: 0, sprint_capitali: 0, onu_bandiere: 0, onu_stati: 0, onu_capitali: 0, totale_bandiere: 0, totale_stati: 0, totale_capitali: 0 };
-                    }
-                    if (esatte > (statsByLevel[6].progress[pKey] || 0)) {
-                        statsByLevel[6].progress[pKey] = esatte;
-                    }
+                    if (!statsByLevel[6].progress) statsByLevel[6].progress = { sprint_bandiere: 0, sprint_stati: 0, sprint_capitali: 0, onu_bandiere: 0, onu_stati: 0, onu_capitali: 0, totale_bandiere: 0, totale_stati: 0, totale_capitali: 0 };
+                    if (esatte > (statsByLevel[6].progress[pKey] || 0)) statsByLevel[6].progress[pKey] = esatte;
                 }
                    
                 if (punteggio > statsByLevel[currentLevel].bestScore && punteggio > 0) {
@@ -3081,9 +3253,9 @@ gestisciDebito(false);
                 }
                 if (bestStreak > statsByLevel[currentLevel].bestStreak) statsByLevel[currentLevel].bestStreak = bestStreak;
                 
-                if (avgTimeFloat > 0 && esatte >= 5) {
-                    if (statsByLevel[currentLevel].bestAvgTime === 0 || avgTimeFloat < statsByLevel[currentLevel].bestAvgTime) {
-                        statsByLevel[currentLevel].bestAvgTime = avgTimeFloat;
+                if (validAvgTime > 0) {
+                    if (statsByLevel[currentLevel].bestAvgTime === 0 || validAvgTime < statsByLevel[currentLevel].bestAvgTime) {
+                        statsByLevel[currentLevel].bestAvgTime = validAvgTime;
                     }
                 }
                 
@@ -3095,9 +3267,7 @@ gestisciDebito(false);
                 };
                 if (!recentGamesHistory[currentLevel]) recentGamesHistory[currentLevel] = []; 
                 recentGamesHistory[currentLevel].unshift(gameRecord); 
-                if (recentGamesHistory[currentLevel].length > 5) {
-                    recentGamesHistory[currentLevel].pop(); 
-                }
+                if (recentGamesHistory[currentLevel].length > 5) recentGamesHistory[currentLevel].pop(); 
                 
                 if (currentLevel === 4 || (currentLevel === 5 && customConfig.timer)) { 
                     statsByLevel[currentLevel].fotofinish += fotofinishCount;
@@ -3107,6 +3277,12 @@ gestisciDebito(false);
                 if (currentLevel !== 0 && currentLevel !== 5 && currentLevel !== 6) {
                     if (punteggio > allTimeBestScore) allTimeBestScore = punteggio;
                     if (bestStreak > allTimeBestStreak) allTimeBestStreak = bestStreak;
+                    if (validAvgTime > 0) {
+                        if (typeof window.allTimeBestAvgTime === 'undefined') window.allTimeBestAvgTime = 0;
+                        if (window.allTimeBestAvgTime === 0 || validAvgTime < window.allTimeBestAvgTime) {
+                            window.allTimeBestAvgTime = validAvgTime;
+                        }
+                    }
                     allTimeFotofinish += fotofinishCount;
                     allTimeGrazie += grazieRicevuteCount;
                     for (let sigla in nazioniDigitateCount) { allTimeNazioniCount[sigla] = (allTimeNazioniCount[sigla] || 0) + nazioniDigitateCount[sigla]; }
@@ -3116,14 +3292,10 @@ gestisciDebito(false);
                 saveStats(); 
             }
 
+            // --- 4. RENDER DELLA SCHERMATA VISIVA UI ---
             let badge = document.getElementById("new-record-badge");
             if(isNewRecord) badge.style.display = "block";
             else badge.style.display = "none";
-
-            let tTimeSecUI = totalActiveTimeMs / 1000;
-            let minAttivi = Math.floor(tTimeSecUI / 60);
-            let secAttivi = (tTimeSecUI % 60).toFixed(1);
-            let strTempoTotale = minAttivi > 0 ? `${minAttivi}m ${secAttivi}s` : `${secAttivi}s`;
 
             let rowTempoTot = document.getElementById("stat-tempo-totale");
             if (!rowTempoTot) {
@@ -3225,28 +3397,6 @@ gestisciDebito(false);
                 errorLogEl.innerHTML = errorHtml;
             }
 
-            for (let chiave in nazioniIgnorateCount) {
-                if (nazioniDigitateCount[chiave] && nazioniDigitateCount[chiave] > 0) {
-                    delete nazioniIgnorateCount[chiave];
-                }
-            }
-
-            let allUsate = Object.keys(nazioniDigitateCount).map(chiave => {
-                let n = globalDb.find(c => c.sigla === chiave || c.nome === chiave);
-                return { nome: n ? n.nome : chiave, count: nazioniDigitateCount[chiave], sigla: n ? n.sigla : chiave };
-            }).sort((a, b) => b.count - a.count);
-            
-            let sortedUsate = allUsate.slice(0, 5);
-            let logUsate = allUsate.slice(0, 20);
-            
-            let allIgnorate = Object.keys(nazioniIgnorateCount).map(chiave => {
-                let n = globalDb.find(c => c.sigla === chiave || c.nome === chiave);
-                return { nome: n ? n.nome : chiave, count: nazioniIgnorateCount[chiave], sigla: n ? n.sigla : chiave };
-            }).sort((a, b) => b.count - a.count);
-            
-            let sortedIgnorate = allIgnorate.slice(0, 5); 
-            let logIgnorate = allIgnorate.slice(0, 20);   
-
             const buildMiniList = (arr, color) => {
                 if (arr.length === 0) return `<p style="font-size:13px; color:#888;">Nessun dato</p>`;
                 let h = `<div style="display:flex; flex-direction:column;">`;
@@ -3280,33 +3430,32 @@ gestisciDebito(false);
                 top5Container.style.display = "none";
             }
 
-            debugGameLog += "========================================\n";
-            debugGameLog += "[STATISTICHE FINALI PARTITA]\n";
-            debugGameLog += "Esito: " + (isVictory ? "🏆 VITTORIA" : "💀 GAME OVER") + "\n";
+            let logErroriEl = document.getElementById("error-log");
+            let top5El = document.getElementById("top5-nations");
             
-            if (currentLevel === 6) {
-                let pct = levelDb.length > 0 ? ((esatte / levelDb.length) * 100).toFixed(1) : 0;
-                if (isVictory) {
-                     debugGameLog += "Esatte: COMPLETAMENTO TOTALE (" + esatte + " su " + levelDb.length + ")\n";
-                } else {
-                     debugGameLog += "Esatte: " + esatte + " su " + levelDb.length + " (" + pct + "%)\n";
+            [logErroriEl, top5El].forEach(el => {
+                if(el) {
+                    el.style.width = "100%";
+                    el.style.maxWidth = "700px";
+                    el.style.boxSizing = "border-box";
+                    el.style.marginLeft = "auto";
+                    el.style.marginRight = "auto";
                 }
-            } else if (currentLevel === 8) {
-                let safeEsatte = Math.min(esatte, logQuestionCounter);
-                debugGameLog += "Esatte: " + safeEsatte + " su " + logQuestionCounter + "\n";
+            });
+
+            let containerBadges = document.getElementById("game-over-badges");
+            if (!containerBadges) {
+                containerBadges = document.createElement("div");
+                containerBadges.id = "game-over-badges";
+                containerBadges.className = "game-over-section";
+                document.getElementById("top5-nations").after(containerBadges);
+            }
+            if (earned && earned.length > 0) {
+                containerBadges.style.display = "block";
+                containerBadges.innerHTML = window.renderBadgeNotification(earned);
             } else {
-                debugGameLog += "Punteggio: " + punteggio + " | Esatte: " + esatte + " su " + logQuestionCounter + " | Serie Max: " + bestStreak + "\n";
+                containerBadges.style.display = "none";
             }
-            
-            debugGameLog += "Tempo Medio di Risposta: " + avgTime + "s | Tempo di Gioco Attivo: " + strTempoTotale + "\n";
-            if (currentLevel === 4 || (currentLevel === 5 && customConfig.timer)) {
-                debugGameLog += "Salvataggi al Fotofinish: " + fotofinishCount + " | Grazie Ricevute: " + grazieRicevuteCount + "\n";
-            }
-            if (currentLevel !== 0 && currentLevel !== 6 && currentLevel !== 8) {
-                debugGameLog += "Top 20 Usate: " + (logUsate.length > 0 ? logUsate.map(u => u.nome + " (" + u.count + ")").join(", ") : "Nessuna") + "\n";
-                debugGameLog += "Top 20 Ignorate: " + (logIgnorate.length > 0 ? logIgnorate.map(i => i.nome + " (" + i.count + ")").join(", ") : "Nessuna") + "\n";
-            }
-            debugGameLog += "========================================\n";
 
             if (voiceModeActive) {
                 let txt = "";
@@ -3317,11 +3466,8 @@ gestisciDebito(false);
                         else txt = "Straordinario. Hai completato l'intero database. Nessun territorio al mondo ti è sconosciuto. Sei una leggenda vivente. ";
                     }
                     else if (currentLevel === 8) {
-                        if (debiti.length === 0) {
-                            txt = "Bravissimo. Hai eliminato tutti i tuoi errori storici. ";
-                        } else {
-                            txt = "Sessione conclusa. Ti restano ancora dei debiti per la prossima volta. ";
-                        }
+                        if (debiti.length === 0) txt = "Bravissimo. Hai eliminato tutti i tuoi errori storici. ";
+                        else txt = "Sessione conclusa. Ti restano ancora dei debiti per la prossima volta. ";
                     }
                     else txt = "Vittoria! ";
                 } else {
@@ -3473,13 +3619,28 @@ async function gestisciSchermo(attivo) {
     }
 }
 
-// RIATTIVA IL WAKELOCK SE TORNI AL BROWSER DOPO AVER ABBASSATO LA TENDINA
+// GESTIONE STANDBY: Mette in pausa il tempo e il timer se si abbassa l'app o si spegne lo schermo
+let backgroundStartTime = 0;
 document.addEventListener("visibilitychange", async () => {
-    if (wakeLock !== null && document.visibilityState === "visible" && voiceModeActive) {
-        try { wakeLock = await navigator.wakeLock.request('screen'); } catch(e){}
+    if (document.visibilityState === "hidden") {
+        backgroundStartTime = Date.now();
+        if (timerState === "active") clearInterval(mainTimerInterval);
+    } else if (document.visibilityState === "visible") {
+        if (backgroundStartTime > 0) {
+            let timeAway = Date.now() - backgroundStartTime;
+            if (turnStartTime > 0) turnStartTime += timeAway; // Cancella il tempo in background dal timer della domanda
+            
+            if (timerState === "active") {
+                timerState = "paused"; // Forza il motore a ricreare un intervallo pulito
+                activateMainTimer();
+            }
+            backgroundStartTime = 0;
+        }
+        if (wakeLock !== null && voiceModeActive) {
+            try { wakeLock = await navigator.wakeLock.request('screen'); } catch(e){}
+        }
     }
 });
-
 
 function creaBottoneAssistente() {
     let oldBtn = document.getElementById("assistant-btn");
@@ -3795,9 +3956,11 @@ if (SpeechRecognition) {
         if(inputEl) inputEl.value = parolaDetta;
         
         if (document.getElementById("continua-btn").style.display === "block") {
-            continuaSfida();
+            // IL FIX: Richiede l'intenzione esplicita, non basta un fruscio
+            if (parolaDetta.includes("continua") || parolaDetta.includes("sfida")) continuaSfida();
         } else if (document.getElementById("next-btn").style.display === "block") {
-            nextTurnMulti(); 
+            // L'auto-avanzamento ci pensa da solo. Se vuoi forzarlo a voce, devi dirlo.
+            if (parolaDetta.includes("prossima") || parolaDetta.includes("avanti")) nextTurnMulti(); 
         } else if (inputEl && !inputEl.disabled) {
             processaRisposta(); 
         }
