@@ -1422,23 +1422,23 @@ td.buildQuestionText = (num) => {
                 if ([0, 1, 9, 10].includes(format) && !td.isComboInception) {
                     td.numReq = 1; 
                 } else {
-                    // CONTA QUANTE RISPOSTE UNICHE DIGITABILI SONO PRESENTI NELLA TUA DIFFICOLTÀ
                     let localTypeableSet = new Set();
                     td.validSiglas.forEach(s => {
                         let node = levelDb.find(n => n.sigla === s);
                         if (node) {
+                            // COMPATTAZIONE ESTREMA: rimuove tutti gli spazi.
+                            // Così "Basse-Terre" e "Basseterre" diventano un solo bersaglio!
                             if (isCapRequired && node.capitale) {
-                                localTypeableSet.add(normalizzaTesto(node.capitale));
+                                localTypeableSet.add(normalizzaTesto(node.capitale).replace(/\s/g, ''));
                             } else {
-                                localTypeableSet.add(normalizzaTesto(node.nome));
+                                localTypeableSet.add(normalizzaTesto(node.nome).replace(/\s/g, ''));
                             }
                         }
                     });
                     
                     let maxUniche = localTypeableSet.size;
-                    if (maxUniche === 0) maxUniche = 1; // Sicurezza anti-crash
+                    if (maxUniche === 0) maxUniche = 1; 
                     
-                    // IL LIMITE DELLA RICHIESTA ORA USA I NOMI UNICI (maxUniche)
                     let maxR = Math.min(limitCombo, maxUniche); 
                     td.numReq = Math.floor(Math.random() * maxR) + 1;
                 }
@@ -2456,9 +2456,27 @@ function processaRisposta() {
 
     totalAnswersSubmitted++;
     totalActiveTimeMs += (Date.now() - turnStartTime);
-    let actionTime = ((Date.now() - turnStartTime) / 1000).toFixed(1);
+    let actionTimeNum = (Date.now() - turnStartTime) / 1000;
+    let actionTime = actionTimeNum.toFixed(1);
 
     if (res.isCorrect) {
+        // --- CALCOLO SEGRETO PER I BADGE DEL LIVELLO 6 ---
+        if (currentLevel === 6) {
+            // ARTIFICIERE: si salva a meno di 2 secondi dall'esplosione!
+            if (activeTimeLeft <= 2) {
+                if (typeof gameData !== 'undefined') gameData.sprintBombaExtremis = (gameData.sprintBombaExtremis || 0) + 1;
+                else window.sprintBombaExtremis = (window.sprintBombaExtremis || 0) + 1;
+            }
+            
+            // SANGUE FREDDO: risponde entro 5 secondi netti
+            if (actionTimeNum <= 5) {
+                window.serieFulminea = (window.serieFulminea || 0) + 1;
+                window.maxSerieFulminea = Math.max((window.maxSerieFulminea || 0), window.serieFulminea);
+            } else {
+                window.serieFulminea = 0; // Se ci metti più di 5s, la serie di Sangue Freddo si spezza
+            }
+        }
+        // -------------------------------------------------
         triggerVibration(30);
         playSound("esatto");
         if (useTimer) stopTimer();
@@ -3133,7 +3151,7 @@ gestisciDebito(false);
             let maxPendolare = 0;
             let maxRotta = 0;
 
-            if (currentLevel >= 1 && currentLevel <= 4) {
+            if ((currentLevel >= 1 && currentLevel <= 4) || currentLevel === 7) {
                 for (let sigla in nazioniDigitateCount) {
                     if (!nationStreaks[sigla]) nationStreaks[sigla] = { inserted: 0, ignored: 0 };
                     nationStreaks[sigla].inserted++;
@@ -3193,7 +3211,13 @@ gestisciDebito(false);
                     top1UsataVal: top1UsataVal,
                     top1IgnorataVal: top1IgnorataVal,
                     maxPendolare: maxPendolare,
-                    maxRotta: maxRotta
+                    maxRotta: maxRotta,
+                    nazioniDigitate: Object.keys(nazioniDigitateCount),
+                    nazioniDigitateCount: nazioniDigitateCount,
+                    totaleNazioni: levelDb.length,
+                    sprintBombaExtremis: window.sprintBombaExtremis || 0,
+                    maxSerieFulminea: window.maxSerieFulminea || 0,
+                    risposteEsotiche: (window.audaceNamesCount || 0) // Contatore che devi creare se vuoi Mete Esotiche
                 });
                 
                 if (earned && earned.length > 0) {
@@ -4007,21 +4031,23 @@ if (!window.voiceHooksAdded) {
         try { assistantRec.stop(); isListening = false; } catch(e) {} 
         origSurrenderTurn();
         if (voiceModeActive) {
-            if (window.pendingDefeat) {
-                setTimeout(() => nextTurnMulti(), 800);
-            } else {
-                let rndAns = currentTurnData.validAnswersCache[Math.floor(Math.random() * currentTurnData.validAnswersCache.length)];
-                let correctAns = rndAns.split(" (")[0]; 
-                let numValide = currentTurnData.validAnswersCache.length;
-                let incipit = (numValide > 1) ? `Ti sei arreso. Una risposta valida era ${correctAns}.` : `Ti sei arreso. La risposta era ${correctAns}.`;
-                
-                setTimeout(() => {
+            let rndAns = currentTurnData.validAnswersCache[Math.floor(Math.random() * currentTurnData.validAnswersCache.length)];
+            let correctAns = rndAns.split(" (")[0]; 
+            let numValide = currentTurnData.validAnswersCache.length;
+            let incipit = (numValide > 1) ? `Ti sei arreso. Una risposta valida era ${correctAns}.` : `Ti sei arreso. La risposta era ${correctAns}.`;
+            
+            setTimeout(() => {
+                if (window.pendingDefeat) {
+                    parla(`${incipit} Partita terminata.`, function() {
+                        setTimeout(() => nextTurnMulti(), 800);
+                    });
+                } else {
                     let testoVite = (currentLevel === 8) ? "" : (vite === 1 ? " Ti resta una vita." : ` Ti restano ${vite} vite.`);
                     parla(`${incipit}${testoVite}`, function() {
                         setTimeout(() => nextTurnMulti(), 1000);
                     });
-                }, 200);
-            }
+                }
+            }, 200);
         }
     };
 
@@ -4031,26 +4057,28 @@ if (!window.voiceHooksAdded) {
         try { assistantRec.stop(); isListening = false; } catch(e) {}
         origFailStandard(wrongInput);
         if (voiceModeActive) {
-            if (window.pendingDefeat) {
-                setTimeout(() => nextTurnMulti(), 800);
-            } else {
-                let rndAns = currentTurnData.validAnswersCache[Math.floor(Math.random() * currentTurnData.validAnswersCache.length)];
-                let correctAns = rndAns.split(" (")[0]; 
-                
-                if (currentLevel === 0 && currentTurnData.validAnswersCache.length > 0) {
-                     correctAns = currentTurnData.validAnswersCache[0].split(" (")[0];
-                }
-                
-                let numValide = currentTurnData.validAnswersCache.length;
-                let incipit = (numValide > 1) ? `Sbagliato, potevi dire: ${correctAns}.` : `Sbagliato, era ${correctAns}.`;
-                
-                setTimeout(() => {
+            let rndAns = currentTurnData.validAnswersCache[Math.floor(Math.random() * currentTurnData.validAnswersCache.length)];
+            let correctAns = rndAns.split(" (")[0]; 
+            
+            if (currentLevel === 0 && currentTurnData.validAnswersCache.length > 0) {
+                 correctAns = currentTurnData.validAnswersCache[0].split(" (")[0];
+            }
+            
+            let numValide = currentTurnData.validAnswersCache.length;
+            let incipit = (numValide > 1) ? `Sbagliato, potevi dire: ${correctAns}.` : `Sbagliato, era ${correctAns}.`;
+            
+            setTimeout(() => {
+                if (window.pendingDefeat) {
+                    parla(`${incipit} Game over.`, function() {
+                        setTimeout(() => nextTurnMulti(), 800); 
+                    });
+                } else {
                     let testoVite = (currentLevel === 8) ? "" : (vite === 1 ? " Ti resta una vita." : ` Ti restano ${vite} vite.`);
                     parla(`${incipit}${testoVite}`, function() {
                         setTimeout(() => nextTurnMulti(), 1000); 
                     });
-                }, 200);
-            }
+                }
+            }, 200);
         }
     };
 
@@ -4060,36 +4088,38 @@ if (!window.voiceHooksAdded) {
         try { assistantRec.stop(); isListening = false; } catch(e) {}
         origFailMulti(reason, wrongInput);
         if (voiceModeActive) {
-            if (window.pendingDefeat) {
-                setTimeout(() => nextTurnMulti(), 800);
-            } else {
-                let sigleIndovinate = [];
-                comboInserted.forEach(ans => {
-                    let res = checkSingleAnswer(ans, currentTurnData, currentLevel);
-                    if (res.isCorrect) sigleIndovinate.push(res.matchedCountry.sigla);
-                });
+            let sigleIndovinate = [];
+            comboInserted.forEach(ans => {
+                let res = checkSingleAnswer(ans, currentTurnData, currentLevel);
+                if (res.isCorrect) sigleIndovinate.push(res.matchedCountry.sigla);
+            });
 
-                let risposteNonDette = currentTurnData.validAnswersCache.filter((ans, index) => {
-                    let sigla = currentTurnData.validSiglas[index];
-                    return !sigleIndovinate.includes(sigla);
-                });
+            let risposteNonDette = currentTurnData.validAnswersCache.filter((ans, index) => {
+                let sigla = currentTurnData.validSiglas[index];
+                return !sigleIndovinate.includes(sigla);
+            });
 
-                if (risposteNonDette.length === 0) risposteNonDette = currentTurnData.validAnswersCache;
+            if (risposteNonDette.length === 0) risposteNonDette = currentTurnData.validAnswersCache;
 
-                let rndAns = risposteNonDette[Math.floor(Math.random() * risposteNonDette.length)];
-                let correctAns = rndAns.split(" (")[0]; 
-                
-                let numValideRimanenti = risposteNonDette.length;
-                let baseText = reason.includes("Tempo scaduto") ? "Tempo scaduto" : "Sbagliato";
-                let incipit = (numValideRimanenti > 1) ? `${baseText}, potevi dire: ${correctAns}.` : `${baseText}, era ${correctAns}.`;
+            let rndAns = risposteNonDette[Math.floor(Math.random() * risposteNonDette.length)];
+            let correctAns = rndAns.split(" (")[0]; 
+            
+            let numValideRimanenti = risposteNonDette.length;
+            let baseText = reason.includes("Tempo scaduto") ? "Tempo scaduto" : "Sbagliato";
+            let incipit = (numValideRimanenti > 1) ? `${baseText}, potevi dire: ${correctAns}.` : `${baseText}, era ${correctAns}.`;
 
-                setTimeout(() => {
+            setTimeout(() => {
+                if (window.pendingDefeat) {
+                    parla(`${incipit} Game over.`, function() {
+                        setTimeout(() => nextTurnMulti(), 800);
+                    });
+                } else {
                     let testoVite = (currentLevel === 8) ? "" : (vite === 1 ? " Ti resta una vita." : ` Ti restano ${vite} vite.`);
                     parla(`${incipit}${testoVite}`, function() {
                         setTimeout(() => nextTurnMulti(), 1000);
                     });
-                }, 200);
-            }
+                }
+            }, 200);
         }
     };
 
@@ -4102,8 +4132,15 @@ if (!window.voiceHooksAdded) {
         origEseguiValidazioneMultipla(isTimeout);
         
         if (voiceModeActive && !window.pendingVictory && !window.pendingDefeat) {
+            // IL FIX: Blocca l'avanzamento forzato se sei diventato Leggenda
+            let btnContinua = document.getElementById("continua-btn");
+            if (btnContinua && btnContinua.style.display === "block") {
+                setTimeout(() => parla("Traguardo raggiunto. Scegli se ritirarti o continuare."), 200);
+                return;
+            }
+
             if (esatte > esattePrima) {
-                window.isTransitioning = true; // SBLOCCA LUCCHETTO ANTI-DOPPIONI
+                window.isTransitioning = true; 
                 
                 let puntiGuadagnati = punteggio - puntiPrima;
                 let testoEsatto = (currentLevel === 6 || currentLevel === 8 || puntiGuadagnati === 0) ? "Esatto!" : `Esatto! Più ${puntiGuadagnati} punti.`;
@@ -4112,16 +4149,14 @@ if (!window.voiceHooksAdded) {
                 let badgeTesto = (badgeEl && badgeEl.style.display !== "none") ? badgeEl.innerText.toLowerCase() : "";
                 let frasiExtra = [];
                 
-                if (badgeTesto.includes("grazia")) {
-                    testoEsatto = (currentLevel === 6 || currentLevel === 8) ? "Tempo scaduto, ma ti salva la grazia!" : `Tempo scaduto, ma ti salva la grazia! Più ${puntiGuadagnati} punti.`;
-                } else {
+                if (badgeTesto.includes("grazia")) testoEsatto = `Tempo scaduto, ma ti salva la grazia! Più ${puntiGuadagnati} punti.`;
+                else {
                     if (badgeTesto.includes("fotofinish")) frasiExtra.push("Salvo al fotofinisc.");
                     if (badgeTesto.includes("audacia")) frasiExtra.push("Bonus audacia, punti raddoppiati.");
                     if (badgeTesto.includes("pigrizia") || badgeTesto.includes("déjà vu")) frasiExtra.push("Déjà vu, punteggio dimezzato.");
                 }
                 
                 if (badgeTesto.includes("vita extra")) frasiExtra.push("Hai guadagnato una vita.");
-                
                 if (frasiExtra.length > 0) testoEsatto += " " + frasiExtra.join(" ");
                 
                 setTimeout(() => {

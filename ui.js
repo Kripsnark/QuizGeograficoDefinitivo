@@ -210,17 +210,17 @@ function openRules() {
 
 // --- VARIABILE DI STATO PER L'ORDINAMENTO ---
 let statoOrdinamento = {
-    colonna: null, // 'paese' o 'capitale'
-    isAsc: true    // true = A-Z, false = Z-A
+    colonna: null,
+    isAsc: true    
 };
 
 // --- FUNZIONE DI ORDINAMENTO ---
 window.ordinaEnciclopedia = function(colonnaRichiesta) {
     if (statoOrdinamento.colonna === colonnaRichiesta) {
-        statoOrdinamento.isAsc = !statoOrdinamento.isAsc; // Inverte l'ordine se clicchi la stessa
+        statoOrdinamento.isAsc = !statoOrdinamento.isAsc; 
     } else {
         statoOrdinamento.colonna = colonnaRichiesta;
-        statoOrdinamento.isAsc = true; // Nuova colonna, parte sempre da A-Z
+        statoOrdinamento.isAsc = true; 
     }
 
     globalDb.sort((a, b) => {
@@ -231,12 +231,10 @@ window.ordinaEnciclopedia = function(colonnaRichiesta) {
             valA = a.nome;
             valB = b.nome;
         } else if (colonnaRichiesta === 'capitale') {
-            // Se la nazione non ha capitale, la sbatte sempre in fondo con ZZZ o stringa vuota
             valA = a.capitale ? a.capitale : (statoOrdinamento.isAsc ? "ZZZ" : "");
             valB = b.capitale ? b.capitale : (statoOrdinamento.isAsc ? "ZZZ" : "");
         }
 
-        // Normalizzazione spietata: toglie gli asterischi e passa al minuscolo per un confronto puro
         valA = valA.replace(/\*/g, '').toLowerCase();
         valB = valB.replace(/\*/g, '').toLowerCase();
 
@@ -245,13 +243,12 @@ window.ordinaEnciclopedia = function(colonnaRichiesta) {
         return 0;
     });
 
-    openDB(); // Ridisegna la tabella con il nuovo ordine
+    openDB(); 
 };
 
 // --- FUNZIONE OPEN DB AGGIORNATA ---
 function openDB() {
-    // Gestione grafica delle freccette
-    let iconaPaese = "⇕"; // Simbolo neutro
+    let iconaPaese = "⇕";
     let iconaCapitale = "⇕";
 
     if (statoOrdinamento.colonna === 'paese') {
@@ -374,7 +371,6 @@ window.openRecords = function(defaultTab = 'global') {
     <div id="record-tab-content"></div>
     `;
 
-    // Aggiungi il tasto vendetta in fondo, FUORI dai tab intercambiabili
     let debiti = JSON.parse(localStorage.getItem('geoQuizDebiti')) || [];
     if (debiti.length >= 5) {
         html += `<button id="btn-vendetta" onclick="startRecuperoGame(); closeModal();">🎯 RECUPERO DEBITI (${debiti.length})</button>`;
@@ -402,7 +398,7 @@ window.renderRecordTab = function(tabName) {
             return { nome: n ? n.nome : sigla, count: allTimeNazioniIgnorate[sigla], sigla: sigla };
         }).sort((a, b) => b.count - a.count).slice(0, 10);
 
-const buildList10 = (arr, color) => {
+        const buildList10 = (arr, color) => {
             if (arr.length === 0) return "<p style='color:#888; font-size:12px;'>Nessun dato</p>";
             let h = "<div style='display:flex; flex-direction:column;'>";
             arr.forEach((sn, idx) => {
@@ -432,7 +428,6 @@ const buildList10 = (arr, color) => {
         </div>`;
     } 
     else if (tabName === 'levels') {
-        // Mostra il Livello 7 solo se è stato giocato almeno una volta
         let visibleLevels = [0, 1, 2, 3, 4, 5, 6];
         if (statsByLevel[7] && statsByLevel[7].plays > 0) {
             visibleLevels.push(7);
@@ -492,21 +487,16 @@ const buildList10 = (arr, color) => {
 }
 
 window.switchLevelTab = function(lvl) {
-    // 1. Accensione pulsanti in alto
     for(let i=0; i<=7; i++) {
         let btn = document.getElementById(`lvl-btn-${i}`);
         if(btn) { btn.style.background = (i===lvl) ? "#ffd700" : "#2a2a2a"; btn.style.color = (i===lvl) ? "#121212" : "#ccc"; }
     }
     
-    // Inizializza statistiche mancanti
     if (!statsByLevel[lvl]) statsByLevel[lvl] = { plays: 0, bestScore: 0, bestStreak: 0, bestAvgTime: 0 };
     let s = statsByLevel[lvl];
     let html = ``;
 
     if (lvl === 6) {
-        // ==========================================
-        // LAYOUT LIVELLO 6 (MORTE IMPROVVISA)
-        // ==========================================
         let p = s.progress || {};
         
         const buildL6Bar = (label, current, max) => {
@@ -533,7 +523,6 @@ window.switchLevelTab = function(lvl) {
             </div>`;
         };
 
-        // Riquadro a larghezza piena (Simile al Grado di L1)
         html += `
         <div style="background:#1a1a1a; padding:15px; border-radius:6px; border:1px solid #444; margin-bottom:15px; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
             <div style="font-size:11px; color:#aaa; margin-bottom:15px; text-transform:uppercase; text-align:center; font-weight:bold; letter-spacing:1px;">Progressi Morte Improvvisa</div>
@@ -554,7 +543,6 @@ window.switchLevelTab = function(lvl) {
             </div>
         </div>`;
 
-        // Statistiche sottostanti (in riga, come gli altri livelli)
         html += `<div style="display:flex; justify-content:space-around; font-size:12px; color:#aaa; margin-bottom:10px;">`;
         html += `<div style="display:flex; flex-direction:column; align-items:center;"><span>Partite</span><strong style="font-size:18px; color:#fff;">${s.plays}</strong></div>`;
         html += `<div style="display:flex; flex-direction:column; align-items:center;"><span>Sopravvivenza Max</span><strong style="font-size:18px; color:#fff;">${s.bestStreak} Naz.</strong></div>`;
@@ -562,28 +550,22 @@ window.switchLevelTab = function(lvl) {
         html += `</div>`;
 
     } else {
-        // ==========================================
-        // LAYOUT LIVELLI NORMALI (L0, L1, L2, L3, L4, L5, L7)
-        // ==========================================
         if (lvl > 0 && lvl !== 5) {
             let maxTarget = 10000;
             let targetLabel = "Leggenda (10.000 pt)";
             
-            // Limiti dinamici per L1 e L2
             if (lvl === 1) { maxTarget = 2500; targetLabel = "Vittoria (2.500 pt)"; } 
             else if (lvl === 2) { maxTarget = 3500; targetLabel = "Vittoria (3.500 pt)"; }
             
             let rankColor = "#aaa"; let rankName = "Nessun Grado";
             
             if (lvl === 1 || lvl === 2) {
-                // Gradi scalati su 2500 e 3500
                 if (s.bestScore >= maxTarget) { rankColor = "#ffd700"; rankName = "CAMPIONE"; }
                 else if (s.bestScore >= maxTarget * 0.7) { rankColor = "#e5e4e2"; rankName = "PLATINO"; }
                 else if (s.bestScore >= maxTarget * 0.4) { rankColor = "#ffeb3b"; rankName = "ORO"; }
                 else if (s.bestScore >= maxTarget * 0.15) { rankColor = "#c0c0c0"; rankName = "ARGENTO"; }
                 else if (s.bestScore > 0) { rankColor = "#cd7f32"; rankName = "BRONZO"; }
             } else {
-                // Gradi classici su 10000
                 if (s.bestScore >= 10000) { rankColor = "#ffd700"; rankName = "LEGGENDA"; }
                 else if (s.bestScore >= 5000) { rankColor = "#e5e4e2"; rankName = "PLATINO"; }
                 else if (s.bestScore >= 2500) { rankColor = "#ffeb3b"; rankName = "ORO"; }
@@ -606,7 +588,6 @@ window.switchLevelTab = function(lvl) {
             </div>`;
         }
 
-        // Statistiche sottostanti comuni
         html += `<div style="display:flex; justify-content:space-around; font-size:12px; color:#aaa; margin-bottom:10px;">`;
         html += `<div style="display:flex; flex-direction:column; align-items:center;"><span>Partite</span><strong style="font-size:18px; color:#fff;">${s.plays}</strong></div>`;
         html += `<div style="display:flex; flex-direction:column; align-items:center;"><span>Record</span><strong style="font-size:18px; color:#fff;">${s.plays > 0 ? s.bestScore : '-'}</strong></div>`;
@@ -614,61 +595,117 @@ window.switchLevelTab = function(lvl) {
         html += `<div style="display:flex; flex-direction:column; align-items:center;"><span>Tempo Record</span><strong style="font-size:18px; color:#fff;">${s.bestAvgTime > 0 ? s.bestAvgTime + "s" : "-"}</strong></div>`;
         html += `</div>`;
 
-        // Modificatori L4 / L5
         if (lvl === 4 || lvl === 5) {
             html += `<div style="display:flex; justify-content:center; gap:20px; font-size:12px; color:#888; border-top:1px dashed #444; padding-top:10px; padding-bottom:5px;">`;
             html += `<span>Fotofinish: <strong style="color:#2196f3;">${s.fotofinish || 0}</strong></span>`;
             html += `<span>Grazie: <strong style="color:#ffd700;">${s.grazie || 0}</strong></span>`;
             html += `</div>`;
         }
-
-        // --- INIEZIONE STEMMI LIVELLO STORICO IN FONDO ---
-        let badgeHtml = "";
-        
-        // 1. Badge Serie Max (Inarrestabile)
-        if (s.bestStreak >= 10) { // La soglia base del Bronzo
-            let tierS = s.bestStreak >= 50 ? 3 : (s.bestStreak >= 25 ? 2 : 1);
-            let colorS = tierS === 3 ? "#ffd700" : (tierS === 2 ? "#c0c0c0" : "#cd7f32");
-            badgeHtml += `<div class="level-badge-row">
-                            <div class="level-badge-inner" style="border-left:3px solid ${colorS};">
-                                <div class="level-badge-left">
-                                    <div class="level-badge-icon" style="color:${colorS};"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg></div>
-                                    <span class="level-badge-title" style="color:${colorS};">INARRESTABILE</span>
-                                </div>
-                                <span class="level-badge-record">Record: ${s.bestStreak}</span>
-                             </div>
-                          </div>`;
-        }
-
-        // 2. Badge Tempo Medio (Scheggia)
-        if (s.bestAvgTime > 0 && s.bestAvgTime <= 15) { // La soglia base del Bronzo
-            let tierT = s.bestAvgTime <= 5 ? 3 : (s.bestAvgTime <= 10 ? 2 : 1);
-            let colorT = tierT === 3 ? "#ffd700" : (tierT === 2 ? "#c0c0c0" : "#cd7f32");
-            badgeHtml += `<div class="level-badge-row" style="margin-top:5px;">
-                            <div class="level-badge-inner" style="border-left:3px solid ${colorT};">
-                                <div class="level-badge-left">
-                                    <div class="level-badge-icon" style="color:${colorT};"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div>
-                                    <span class="level-badge-title" style="color:${colorT};">SCHEGGIA</span>
-                                </div>
-                                <span class="level-badge-record">Record: ${s.bestAvgTime}s</span>
-                             </div>
-                          </div>`;
-        }
-
-        if (badgeHtml !== "") {
-            html += `<div style="margin-top:15px; width:100%;">` + badgeHtml + `</div>`;
-        }
     }
+
+    // --- INIEZIONE STEMMI LIVELLO STORICO IN FONDO ---
+    let badgeHtml = "";
     
+    if (typeof BADGE_INFO !== 'undefined' && typeof SVG_ICONS !== 'undefined') {
+        
+        const badgesByLevel = {
+            0: ['inarrestabile', 'scheggia', 'fenice', 'infallibile', 'conquistatore'],
+            1: ['veterano', 'maratoneta', 'inarrestabile', 'scheggia', 'infermiere', 'fenice', 'esploratore_esotico', 'lucido', 'secondacasa', 'blacklist', 'hub', 'infallibile', 'conquistatore', 'magellano', 'pendolare', 'rotta', 'ascensione'],
+            2: ['veterano', 'maratoneta', 'inarrestabile', 'scheggia', 'infermiere', 'fenice', 'esploratore_esotico', 'lucido', 'secondacasa', 'blacklist', 'hub', 'infallibile', 'conquistatore', 'magellano', 'pendolare', 'rotta', 'ascensione'],
+            3: ['veterano', 'maratoneta', 'inarrestabile', 'scheggia', 'infermiere', 'fenice', 'lucido', 'secondacasa', 'blacklist', 'hub', 'infallibile', 'conquistatore', 'cyborg', 'magellano', 'pendolare', 'rotta', 'ascensione'],
+            4: ['veterano', 'maratoneta', 'inarrestabile', 'scheggia', 'infermiere', 'fenice', 'fotofinish', 'grazia', 'cecchino', 'secondacasa', 'blacklist', 'hub', 'infallibile', 'conquistatore', 'cyborg', 'magellano', 'pendolare', 'rotta', 'ascensione'],
+            5: ['veterano', 'maratoneta', 'inarrestabile', 'scheggia', 'fotofinish', 'grazia', 'esploratore_esotico', 'cecchino', 'lucido', 'infallibile'],
+            6: ['scheggia', 'highlander', 'artificiere', 'sangue_freddo', 'decollo_fallito'],
+            7: ['veterano', 'maratoneta', 'inarrestabile', 'scheggia', 'infermiere', 'fenice', 'fotofinish', 'cecchino', 'lucido', 'secondacasa', 'blacklist', 'hub', 'infallibile', 'conquistatore', 'cyborg', 'sestosenso', 'magellano', 'pendolare', 'rotta'],
+            8: ['vendicatore']
+        };
+
+        // Legge sia i trofei della carriera globale sia quelli isolati del livello
+        let globalUserB = JSON.parse(localStorage.getItem('geoQuizBadges')) || {};
+        let sandboxUserB = JSON.parse(localStorage.getItem('geoQuizBadges_L' + lvl)) || {};
+        let expectedBadges = badgesByLevel[lvl] || [];
+
+        expectedBadges.forEach(badgeId => {
+            if (badgeId === 'regionali') return;
+            
+            let info = BADGE_INFO[badgeId];
+            if (!info) return;
+
+            // Capisce da quale blocco di memoria pescare il risultato
+            let isSandboxBadge = [0, 5, 6, 8].includes(lvl);
+            if (isSandboxBadge && ['vendicatore', 'highlander', 'artificiere', 'sangue_freddo', 'decollo_fallito'].includes(badgeId)) {
+                isSandboxBadge = false; 
+            }
+
+            let count = isSandboxBadge ? sandboxUserB[badgeId] : globalUserB[badgeId];
+            let isUnlocked = count !== undefined && count !== 0 && count !== 9999;
+            
+            // SE NON È SBLOCCATO, SALTA E NON LO DISEGNA
+            if (!isUnlocked) return;
+
+            let tier = 0;
+            let color = "#333"; 
+            let bgColor = "transparent";
+            let borderColor = "#333";
+            
+            if (info.isSpecial) {
+                tier = 4;
+                color = "#4fc3f7"; borderColor = "#4fc3f7"; bgColor = "rgba(79, 195, 247, 0.08)";
+            } else if (info.isInverse) {
+                if (count <= info.tiers[2]) { tier = 3; color = "#ffd700"; borderColor = "#ffd700"; bgColor = "rgba(255, 215, 0, 0.08)"; }
+                else if (count <= info.tiers[1]) { tier = 2; color = "#c0c0c0"; borderColor = "#c0c0c0"; bgColor = "rgba(192, 192, 192, 0.08)"; }
+                else if (count <= info.tiers[0]) { tier = 1; color = "#cd7f32"; borderColor = "#cd7f32"; bgColor = "rgba(205, 127, 50, 0.08)"; }
+            } else {
+                if (count >= info.tiers[2]) { tier = 3; color = "#ffd700"; borderColor = "#ffd700"; bgColor = "rgba(255, 215, 0, 0.08)"; }
+                else if (count >= info.tiers[1]) { tier = 2; color = "#c0c0c0"; borderColor = "#c0c0c0"; bgColor = "rgba(192, 192, 192, 0.08)"; }
+                else if (count >= info.tiers[0]) { tier = 1; color = "#cd7f32"; borderColor = "#cd7f32"; bgColor = "rgba(205, 127, 50, 0.08)"; }
+            }
+
+            let recordText = "SBLOCCATO";
+            if (info.isSpecial) recordText = "SBLOCCATO";
+            else if (badgeId === 'scheggia') recordText = `RECORD: ${count}s`;
+            else if (badgeId === 'highlander') {
+                if (count === 1) recordText = "RECORD: SPRINT";
+                else if (count === 2) recordText = "RECORD: ONU";
+                else if (count === 3) recordText = "RECORD: GLOBALE";
+            }
+            else recordText = `RECORD: ${count}`;
+
+            badgeHtml += `
+            <div style="margin-top:6px;">
+                <div style="border-left:4px solid ${borderColor}; background-color: ${bgColor}; padding:8px 12px; display:flex; justify-content:space-between; align-items:center; border-radius:4px; border:1px solid #333;">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <div style="color:${color}; width:24px; height:24px;">${SVG_ICONS[badgeId]}</div>
+                        <div style="display:flex; flex-direction:column; text-align:left;">
+                            <span style="color:${color}; font-size:13px; font-weight:bold;">${info.title.toUpperCase()}</span>
+                            <span style="font-size:11px; color:#aaa; margin-top:2px; font-style:italic;">${info.flavor}</span>
+                        </div>
+                    </div>
+                    <span style="color:${color}; font-size:11px; font-weight:bold; letter-spacing:0.5px; text-align:right;">${recordText}</span>
+                 </div>
+            </div>`;
+        });
+    }
+
+    if (badgeHtml !== "") {
+        html += `<div style="margin-top:20px; width:100%;">
+                    <h4 style="color:#ffd700; text-align:center; margin-bottom:12px; font-size:14px; letter-spacing:1px; border-bottom:1px dashed #444; padding-bottom:8px;">🏆 TROFEI SBLOCCATI</h4>
+                    <div style="display:flex; flex-direction:column;">
+                        ${badgeHtml}
+                    </div>
+                 </div>`;
+    } else {
+        html += `<p style="text-align:center; color:#888; font-size:12px; margin-top:20px; font-style:italic;">Nessun trofeo sbloccato finora in questo livello.</p>`;
+    }
+
     document.getElementById("level-detail-container").innerHTML = html;
-}
+};
 
 // --- FIX GLOBALI BANDIERE E LOG ---
 window.openFlagModal = function(src) {
     let lightbox = document.getElementById("flag-lightbox");
     let lightboxImg = document.getElementById("flag-lightbox-img");
     
-    // Se il lightbox non esiste nel DOM, lo crea al volo
     if (!lightbox) {
         lightbox = document.createElement("div");
         lightbox.id = "flag-lightbox";
@@ -681,7 +718,6 @@ window.openFlagModal = function(src) {
         lightbox.appendChild(lightboxImg);
         document.body.appendChild(lightbox);
         
-        // Chiudi al clic
         lightbox.onclick = function() {
             this.style.display = "none";
         };
@@ -691,21 +727,19 @@ window.openFlagModal = function(src) {
     lightbox.style.display = "flex";
 };
 
-// Forza l'aggancio del click sulla bandiera principale durante il gioco
 if (typeof bandieraImg !== 'undefined' && bandieraImg) {
     bandieraImg.style.cursor = "pointer";
     bandieraImg.addEventListener("click", function() {
         if (this.src) window.openFlagModal(this.src);
     });
 }
+
 window.scaricaLog = function() {
     let testo = typeof debugGameLog !== 'undefined' ? debugGameLog : "Nessun dato registrato.";
     
-    // Crea la data: sostituisce la virgola/spazio centrale con "_" e barre/due punti con "-"
     let dataAttuale = new Date().toLocaleString();
     let dataPulita = dataAttuale.replace(", ", "_").replace(" ", "_").replace(/[\/:]/g, "-");
     
-    // Recupera il livello appena giocato
     let livelloLog = typeof currentLevel !== 'undefined' ? currentLevel : "X";
     
     let nomeFile = `GeoQuiz_Log_L${livelloLog}_${dataPulita}.txt`;
@@ -733,7 +767,6 @@ window.downloadSpecificLog = function(livello, indice) {
         return;
     }
 
-    // Applica la stessa formattazione (Data_Ora) per i file dello storico
     let dataPulita = record.date.replace(", ", "_").replace(" ", "_").replace(/[\/:]/g, "-");
     let nomeFile = `GeoQuiz_Log_L${livello}_${dataPulita}.txt`;
 
